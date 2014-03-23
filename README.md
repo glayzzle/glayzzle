@@ -28,3 +28,15 @@ Here's the todo list :
 * Migrate most used PHP modules
 
 If you want to contribute, fell free to contact me from github
+
+Install & Run :
+===============
+
+```
+npm intall pegjs
+node phpnode.js test/fibo.php
+```
+
+Actually I rebuild the lexer at each run to be able to test and update 
+the lexer more easily, but in future the lexer will be generated and it will not
+be necessary to install pegjs.
