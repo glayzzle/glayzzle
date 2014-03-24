@@ -176,11 +176,12 @@ statement
     = '{' __ statements:inner_statement_list __ '}' {
       return { type: "php_statements", data: statements };
     }
-    / T_IF __ condition:parentheses_expr __ statement:statement __ _else:elseif* {
+    / T_IF __ condition:parentheses_expr __ statement:statement __ _elseif:elseif* _else:else_single? {
       return {
         type: "php_if"
         , condition: condition
         , statement: statement
+        , _elseif: _elseif
         , _else: _else
       };
     }
@@ -194,6 +195,9 @@ elseif
   = T_ELSEIF __ condition:parentheses_expr __ statement:statement {
     return { type: "php_elseif", condition: condition, statement: statement };
   }
+
+else_single
+  = T_ELSE statement:statement { return { type: 'php_else', data: statement }; }
 
 expr
   = variable

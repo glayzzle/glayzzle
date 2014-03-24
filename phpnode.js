@@ -19,10 +19,13 @@ var builder = {
     return item.name + ' = null;';
   }
   ,php_if: function(item) {
-    return 'if (' + jsBuild(item.condition) + ')' + jsBuild(item.statement) + jsBuild(item._else); 
+    return 'if (' + jsBuild(item.condition) + ')' + jsBuild(item.statement) + jsBuild(item._elseif) + jsBuild(item._else); 
   }
   ,php_statements: function(item) {
     return '{\n' + jsBuild(item.data) + '\n}\n';
+  }
+  ,php_else: function(item) {
+    return ' else ' + jsBuild(item.statement);
   }
   ,php_elseif: function(item) {
     return ' elseif(' + jsBuild(item.condition) + ')' + jsBuild(item.statement);
@@ -30,6 +33,7 @@ var builder = {
 };
 
 var jsBuild = function(nodes) {
+  if (!nodes) return '';
   if (nodes.type) {
     return builder[nodes.type](nodes) + "\n";
   } else {
