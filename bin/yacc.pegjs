@@ -1,39 +1,64 @@
-{
-  function makeInteger(o) {
-    return parseInt(o.join(""), 10);
-  }
-}
-
 start
-  = __ statements:top_statement_list __ {
-    return statements;
+  = statement*
+
+statement
+  = token
+  / LineTerminator
+  / WhiteSpace
+  / rule
+
+token
+  = '%token' WhiteSpace* name:identifier WhiteSpace* id:string WhiteSpace* LineTerminator {
+    return {
+      type: 'token'
+      , name: name
+      , value: id
+    };
+  }
+  / '%' [^\r\n]* LineTerminator { return null; }
+
+string
+  = '"' contents:[^"]* '"' { return contents.join(''); }
+
+rule
+  = name:identifier ':' __ items:rule_pattern* LineTerminator ';' {
+    return {
+      type: 'rules',
+      name: name,
+      rules: items
+    };
   }
 
-EOF
-  = !.
-/* Skipped */
-__
-  = (WhiteSpace / LineTerminatorSequence / Comment)*
+rule_pattern
+  = space* rules:rule_desc* code:block? LineTerminator {
+    return {
+      type: 'rule',
+      items: rules,
+      code: code
+    }
+  }
+/*  
+  / __ '|' __ rules:rule_desc* code:block? LineTerminator {
+    return {
+      type: 'rule',
+      items: rules,
+      code: code
+    }
+  }
+*/
 
-_
-  = (WhiteSpace / MultiLineCommentNoLineTerminator)*
+identifier
+  = id:[A-Za-z0-9_]+ { return id.join(''); }
 
-/* Tokens */
-T_FUNCTION        = "function"          !IdentifierPart
-T_ARRAY           = "array"             !IdentifierPart
-T_CALLABLE        = "callable"          !IdentifierPart
-T_HALT_COMPILER   = "__halt_compiler"   !IdentifierPart
-T_VARIABLE        = "var"
-T_IT              = "if"
-T_DOUBLE_ARROW    = "=>"
-T_YIELD           = "yield"
-T_IF              = "if"
-T_ELSEIF          = "elseif"
-T_ENDIF           = "endif"
-T_ELSE            = "else"
+rule_desc
+  = identifier space*
 
+block
+  = '{' ([^}])* '}' space*
 
-
+space
+  = '\t'
+  / ' '
 
 /*
  * Unicode Character Categories
@@ -111,7 +136,6 @@ UnicodeDigit
 UnicodeConnectorPunctuation
   = Pc
 
-/* LEXER */
 SourceCharacter
   = .
 
@@ -133,7 +157,7 @@ LineTerminatorSequence "end of line"
   / "\r"
   / "\u2028"
   / "\u2029"
-
+                
 Comment "comment"
   = MultiLineComment
   / SingleLineComment
@@ -147,91 +171,11 @@ MultiLineCommentNoLineTerminator
 SingleLineComment
   = "//" (!LineTerminator SourceCharacter)*
 
-name
-  = letters:UnicodeLetter+              { return letters.join(''); }
+EOF
+  = !.
 
-variable
-  = '$' name:name                       { return { type: 'php_variable', name: name }; }
+__
+  = (WhiteSpace / LineTerminatorSequence / Comment)*
 
-IdentifierPart
-  = variable
-
-/** PHP LEXER **/
-top_statement_list
-    = top_statement*
-
-top_statement
-    = statement
-    / function_declaration_statement
-
-inner_statement_list
-  = inner_statement*
-
-inner_statement
-    = statement
-    / function_declaration_statement
-    / T_HALT_COMPILER
-
-statement
-    = '{' __ statements:inner_statement_list __ '}' {
-      return { type: "php_statements", data: statements };
-    }
-    / T_IF __ condition:parentheses_expr __ statement:statement __ _elseif:elseif* _else:else_single? {
-      return {
-        type: "php_if"
-        , condition: condition
-        , statement: statement
-        , _elseif: _elseif
-        , _else: _else
-      };
-    }
-    / __ expr:expr __ ';' __ { return expr; }
-
-parentheses_expr
-  = '(' __ expr:expr __ ')'         { return expr; }
-  / '(' __ expr:yield_expr __ ')'   { return expr; }
-
-elseif
-  = T_ELSEIF __ condition:parentheses_expr __ statement:statement {
-    return { type: "php_elseif", condition: condition, statement: statement };
-  }
-
-else_single
-  = T_ELSE statement:statement { return { type: 'php_else', data: statement }; }
-
-expr
-  = variable
-
-yield_expr
-  = T_YIELD expr
-  / T_YIELD expr T_DOUBLE_ARROW expr
-
-optional_ref
-  = __ ref:'&'?                                   { return ref ? true : false; }
-
-parameter_list
-  = non_empty_parameter_list?
-
-non_empty_parameter_list
-  = parameter (',' parameter)*
-
-parameter
-  = __ type:class_type? ref:optional_ref __ param:variable       { return { type: 'php_parameter', name: param.name, ref: ref, class: type }; }
-
-/* @todo  / class_type? optional_ref T_VARIABLE '=' static_scalar **/
-
-class_type
-  = name
-  / T_ARRAY
-  / T_CALLABLE
-
-function_declaration_statement
-    = phpdoc:__ T_FUNCTION  optional_ref name:name __ '(' parameters:parameter_list ')' __ '{' __ statements:inner_statement_list __ '}' {
-      return {
-        type: 'php_function',
-        meta: phpdoc,
-        name: name,
-        parameters: parameters,
-        body: statements
-      };
-    }
+_
+  = (WhiteSpace / MultiLineCommentNoLineTerminator)*
