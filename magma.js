@@ -1,8 +1,6 @@
 var fs = require('fs');
-var PEG = require("pegjs");
+var util = require('util');
 var php = null;
-
-console.log("read parser");
 
 var readFiles = function(files, cb) {
   var counter = files.length;
@@ -32,7 +30,13 @@ var builder = {
     return jsBuild(item.data);
   }
   ,php_function: function(item) {
-    return 'function ' + item.name + '() {\n' 
+    var params = [];
+    if (item.parameters) {
+      item.parameters.forEach(function(param) {
+        if (param && param.name) params.push(param.name);
+      });
+    }
+    return 'function ' + item.name + '(' + params.join(', ') + ') {\n' 
       + jsBuild(item.body)
       + '\n}'
     ;
@@ -47,7 +51,7 @@ var builder = {
     return '{\n' + jsBuild(item.data) + '\n}\n';
   }
   ,php_else: function(item) {
-    return ' else ' + jsBuild(item.statement);
+    return ' else ' + jsBuild(item.data);
   }
   ,php_elseif: function(item) {
     return ' elseif(' + jsBuild(item.condition) + ')' + jsBuild(item.statement);
@@ -68,56 +72,6 @@ var jsBuild = function(nodes) {
     return result.join("\n");
   }
 };
-
-
-fs.readFile('src/grammar/php.pegjs', 'utf8', function(err, data) {
-  if (err) {
-    return console.error(err);
-  }
-
-  console.log("build parser");
-
-  var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
-  var files = [];
-  match = importRegex.exec(data);
-  while (match != null) {
-    files.push(match[1]);
-    match = importRegex.exec(data);
-  }
-  if (files && files.length > 0) {
-    for(var i = 0; i < files.length; i++) {
-      files[i] = 'src/grammar/' + files[i];
-    }
-  } else {
-    files = [];
-  }
-  readFiles(files, function(imports) {
-    try {
-      data = data.replace(
-        importRegex,
-        function(match, file) {
-          return imports.files['src/grammar/' + file];
-        }
-      );
-      php = PEG.buildParser(data);
-      
-      var cache = fs.createWriteStream('src/php.js');
-      cache.write(
-        PEG.buildParser(data, {
-          cache:    false,
-          output:   "source",
-          optimize: "speed",
-          plugins:  []
-        })
-      );
-      cache.end();
-      console.log("read " + process.argv[2]);
-      php_include(process.argv[2]);
-    } catch(e) {
-      show_error(e, data);
-    }
-  });
-});
 
 var show_error = function(e, file) {
   if(e.line) {
@@ -164,12 +118,13 @@ var show_error = function(e, file) {
   }
 };
 
-var php_include = function(filename) {
+var php_include = function(filename, debug) {
+  if (debug) console.log("-> PHP INCLUDE " + filename);
   fs.readFile(filename, 'utf8', function (err,data) {
     if (err) {
       return console.log(err);
     }
-    console.log("parse file");
+    if (debug) console.log("parse file");
     try {
       var results = [];
       var buffer = '';
@@ -207,13 +162,76 @@ var php_include = function(filename) {
         }
         buffer += c;
       }
-      console.log(JSON.stringify(results));
-      console.log(jsBuild(results));
+      var source = jsBuild(results);
+      if (debug) {
+        console.log('** AST :');
+        console.log(util.inspect(results, {
+          depth: debug, colors: true
+        }));
+        console.log('** GENERATED SOURCE :');
+        console.log(source);
+      }
+      eval(source);
     } catch(e) {
-      console.error(
-        e.message + "\n"
-        + "At line " + e.line + ', ' + e.column 
-      );
+      show_error(e, data);
     }
   });
 };
+
+if (process.argv[2] == '--debug') {
+  php = require('./src/php');
+  php_include(process.argv[4], process.argv[3]);
+} else if (process.argv[2] == '--build') {
+  var PEG = require("pegjs");
+  console.log("*** DEBUG MODE *** read parser");
+  fs.readFile('src/grammar/php.pegjs', 'utf8', function(err, data) {
+    if (err) {
+      return console.error(err);
+    }
+  
+    console.log("build parser");
+  
+    var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
+    var files = [];
+    match = importRegex.exec(data);
+    while (match != null) {
+      files.push(match[1]);
+      match = importRegex.exec(data);
+    }
+    if (files && files.length > 0) {
+      for(var i = 0; i < files.length; i++) {
+        files[i] = 'src/grammar/' + files[i];
+      }
+    } else {
+      files = [];
+    }
+    readFiles(files, function(imports) {
+      try {
+        data = data.replace(
+          importRegex,
+          function(match, file) {
+            return imports.files['src/grammar/' + file];
+          }
+        );
+        php = PEG.buildParser(data);
+        
+        var cache = fs.createWriteStream('src/php.js');
+        cache.write(
+          'module.exports = ' + PEG.buildParser(data, {
+            cache:    false,
+            output:   "source",
+            optimize: "speed",
+            plugins:  []
+          }) + ';\n'
+        );
+        cache.end();
+        if (process.argv[3]) php_include(process.argv[3]);
+      } catch(e) {
+        show_error(e, data);
+      }
+    });
+  });
+} else {
+  php = require('./src/php');
+  php_include(process.argv[2]);
+}

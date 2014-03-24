@@ -9,8 +9,11 @@ start
     return statements;
   }
 
+@import 'number.pegjs'
+@import 'string.pegjs'
 @import 'tokens.pegjs'
 @import 'unicode.pegjs'
+@import 'maths.pegjs'
 
 /** PHP LEXER **/
 
@@ -91,7 +94,7 @@ statement
         , _else: _else
       };
     }
-    / T_IF parentheses_expr ':' inner_statement_list __ _elseif:elseif* _else:else_single? T_ENDIF ';'
+    / T_IF __ parentheses_expr ':' inner_statement_list __ _elseif:elseif* _else:else_single? T_ENDIF ';'
     / T_WHILE parentheses_expr while_statement
     / T_DO statement T_WHILE parentheses_expr ';'
     / T_FOR '(' for_expr ';'  for_expr ';' for_expr ')' for_statement
@@ -105,7 +108,7 @@ statement
     / yield_expr ';'
     / T_GLOBAL global_var_list ';'
     / T_STATIC static_var_list ';'
-    / T_ECHO expr_list ';'
+    / __ T_ECHO __ expr_list __ ';'
     / T_INLINE_HTML
     / __ expr:expr __ ';' __
     / T_UNSET '(' variables_list ')' ';'
@@ -135,7 +138,7 @@ optional_ref
   = __ ref:'&'?                                   { return ref ? true : false; }
 
 function_declaration_statement
-    = phpdoc:__ T_FUNCTION  optional_ref name:name __ '(' parameters:parameter_list ')' __ '{' __ statements:inner_statement_list __ '}' {
+    = phpdoc:__ T_FUNCTION  optional_ref name:T_STRING __ '(' parameters:parameter_list ')' __ '{' __ statements:inner_statement_list __ '}' {
       return {
         type: 'php_function',
         meta: phpdoc,
@@ -212,7 +215,7 @@ elseif
   }
 
 else_single
-  = T_ELSE statement:statement { return { type: 'php_else', data: statement }; }
+  = T_ELSE __ statement:statement { return { type: 'php_else', data: statement }; }
 
 foreach_variable
   = variable
@@ -240,7 +243,7 @@ argument_list
   / '(' yield_expr ')'
 
 non_empty_argument_list
-  = argument (',' argument)*
+  = argument __ (',' __ argument __)*
 
 argument
   = expr
@@ -320,7 +323,7 @@ property_declaration
   / T_VARIABLE '=' static_scalar
 
 expr_list
-  = expr (',' expr)*
+  = expr __ (',' __ expr __)*
 
 for_expr
   = expr_list*
@@ -332,64 +335,51 @@ boolean_expr
   = 
 
 expr
-  = variable
-  / list_expr '=' nexpr
-  / variable '=' nexpr
-  / variable '=' '&' variable
-  / variable '=' '&' new_expr
-  / new_expr
-  / T_CLONE nexpr
-  / variable T_PLUS_EQUAL nexpr
-  / variable T_MINUS_EQUAL nexpr
-  / variable T_MUL_EQUAL nexpr
-  / variable T_DIV_EQUAL nexpr
-  / variable T_CONCAT_EQUAL nexpr
-  / variable T_MOD_EQUAL nexpr
-  / variable T_AND_EQUAL nexpr
-  / variable T_OR_EQUAL nexpr
-  / variable T_XOR_EQUAL nexpr
-  / variable T_SL_EQUAL nexpr
-  / variable T_SR_EQUAL nexpr
-  / variable T_INC
-  / T_INC variable
-  / variable T_DEC
-  / T_DEC variable
+  = __ variable __ expr?
+  / __ list_expr __ '=' expr
+  / __ variable __ '=' expr
+  / __ variable __ '='  __ '&' variable
+  / __ variable '=' '&' new_expr
+  / __ new_expr
+  / __ T_CLONE nexpr
+  / __ variable __ T_PLUS_EQUAL expr
+  / __ variable __ T_MINUS_EQUAL expr
+  / __ variable __ T_MUL_EQUAL expr
+  / __ variable __ T_DIV_EQUAL expr
+  / __ variable __ T_CONCAT_EQUAL expr
+  / __ variable __ T_MOD_EQUAL expr
+  / __ variable __ T_AND_EQUAL expr
+  / __ variable __ T_OR_EQUAL expr
+  / __ variable __ T_XOR_EQUAL expr
+  / __ variable __ T_SL_EQUAL expr
+  / __ variable __ T_SR_EQUAL expr
+  / __ variable __ T_INC
+  / __ T_INC variable __
+  / __ variable T_DEC __
+  / __ T_DEC variable __
+  / __ MathOperators expr
+  / __ RelationalOperator expr
   /* ---- LEFT RECURSION
   / nexpr T_BOOLEAN_OR nexpr
   / nexpr T_BOOLEAN_AND nexpr
   / nexpr T_LOGICAL_OR nexpr
   / nexpr T_LOGICAL_AND nexpr
   / nexpr T_LOGICAL_XOR nexpr
-  / nexpr '|' nexpr
-  / nexpr '&' nexpr
-  / nexpr '^' nexpr
-  / nexpr '.' nexpr
-  / nexpr '+' nexpr
-  / nexpr '-' nexpr
-  / nexpr '*' nexpr
-  / nexpr '/' nexpr
-  / nexpr '%' nexpr
   / nexpr T_SL nexpr
   / nexpr T_SR nexpr
   / nexpr T_IS_IDENTICAL nexpr
   / nexpr T_IS_NOT_IDENTICAL nexpr
   / nexpr T_IS_EQUAL nexpr
   / nexpr T_IS_NOT_EQUAL nexpr
-  / nexpr '<' nexpr
   / nexpr T_IS_SMALLER_OR_EQUAL nexpr
-  / nexpr '>' nexpr
   / nexpr T_IS_GREATER_OR_EQUAL nexpr
   / nexpr T_INSTANCEOF class_name_reference
   / nexpr '?' nexpr ':' nexpr
   / nexpr '?' ':' nexpr
   ---*/
-  / '+' nexpr /* %prec T_INC */
-  / '-' nexpr /* %prec T_INC */
-  / '!' nexpr
-  / '~' nexpr
-  / parentheses_expr
+  / __ parentheses_expr __
   /* we need a separate '(' new_expr ')' rule to avoid problems caused by a s/r conflict */
-  / '(' new_expr ')'
+  / '(' __ new_expr __ ')'
   / T_ISSET '(' variables_list ')'
   / T_EMPTY '(' nexpr ')'
   / T_INCLUDE nexpr
@@ -406,9 +396,9 @@ expr
   / T_UNSET_CAST nexpr
   / T_EXIT exit_expr?
   / '@' nexpr
-  / scalar
-  / array_expr
-  / scalar_dereference
+  / __ scalar
+  / __ array_expr
+  / __ scalar_dereference
   / '`' backticks_expr? '`'
   / T_PRINT nexpr
   / T_YIELD
@@ -416,13 +406,13 @@ expr
   / T_STATIC T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
 
 parentheses_expr
-  = '(' __ expr:expr __ ')'         { return expr; }
-  / '(' __ expr:yield_expr __ ')'   { return expr; }
+  = '(' expr:expr* ')'          { return expr; }
+  / '(' expr:yield_expr ')'     { return expr; }
 
 
 yield_expr
-  = T_YIELD expr
-  / T_YIELD expr T_DOUBLE_ARROW expr
+  = __ T_YIELD expr
+  / __ T_YIELD expr __ T_DOUBLE_ARROW __ expr
 
 array_expr
   = T_ARRAY '(' array_pair_list? ')'
@@ -527,7 +517,7 @@ static_scalar
   / T_ARRAY '(' static_array_pair_list? ')'
   / '[' static_array_pair_list? ']'
 
-scalar
+scalar "Scalar Value"
   = common_scalar
   / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM class_const_name
   / '"' encaps_list '"'
@@ -548,6 +538,12 @@ non_empty_static_array_pair_list
 static_array_pair
   = static_scalar T_DOUBLE_ARROW static_scalar
   / static_scalar
+
+IdentifierStart
+  = '$'+
+
+Identifier
+  = IdentifierStart name:T_STRING                       { return { type: 'php_variable', name: name }; }
 
 variable
   = base_variable /** @todo LR object_access **/
@@ -578,7 +574,7 @@ variable_or_new_expr
 
 variable_without_objects
   = reference_variable
-  / '$' variable_without_objects
+  / Identifier
 
 base_variable
   = variable_without_objects
@@ -603,7 +599,7 @@ reference_variable
   / reference_variable_var
 
 reference_variable_var
-  =  T_VARIABLE
+  = Identifier
   / '$' '{' expr '}'
 
 dim_offset

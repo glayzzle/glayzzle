@@ -1,0 +1,16 @@
+MathOperators "Operators"
+  = '|'
+  / '&'
+  / '^'
+  / '.'
+  / '+'
+  / '-'
+  / '*'
+  / '/'
+  / '%'
+RelationalOperator "RelationalOperator"
+  = '<'
+  / '>'
+  / '!'
+  / '~'
+  / '='

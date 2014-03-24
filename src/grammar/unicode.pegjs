@@ -120,12 +120,5 @@ __
 _
   = (WhiteSpace / MultiLineCommentNoLineTerminator)*
 
-
 name
   = letters:UnicodeLetter+              { return letters.join(''); }
-
-variable
-  = '$' name:name                       { return { type: 'php_variable', name: name }; }
-
-IdentifierPart
-  = variable
