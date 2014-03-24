@@ -225,7 +225,7 @@ if (process.argv[2] == '--debug') {
           }) + ';\n'
         );
         cache.end();
-        if (process.argv[3]) php_include(process.argv[3]);
+        if (process.argv[3]) php_include(process.argv[3], 10);
       } catch(e) {
         show_error(e, data);
       }
