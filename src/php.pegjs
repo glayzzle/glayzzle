@@ -9,64 +9,31 @@ start
     return statements;
   }
 
-php
-  = php_start __ statements:top_statement_list __ php_end                 { return statements; }
+EOF
+  = !.
+/* Skipped */
+__
+  = (WhiteSpace / LineTerminatorSequence / Comment)*
 
-php_start
-  = '<?php'
-  / '<?='
-
-php_end
-  = '?>'
-  / EOF
+_
+  = (WhiteSpace / MultiLineCommentNoLineTerminator)*
 
 /* Tokens */
 T_FUNCTION        = "function"          !IdentifierPart
 T_ARRAY           = "array"             !IdentifierPart
 T_CALLABLE        = "callable"          !IdentifierPart
 T_HALT_COMPILER   = "__halt_compiler"   !IdentifierPart
-T_VARIABLE        = "var"               !IdentifierPart
+T_VARIABLE        = "var"
+T_IT              = "if"
+T_DOUBLE_ARROW    = "=>"
+T_YIELD           = "yield"
+T_IF              = "if"
+T_ELSEIF          = "elseif"
+T_ENDIF           = "endif"
+T_ELSE            = "else"
 
-BreakToken      = "break"      !IdentifierPart
-CaseToken       = "case"       !IdentifierPart
-CatchToken      = "catch"      !IdentifierPart
-ClassToken      = "class"      !IdentifierPart
-ConstToken      = "const"      !IdentifierPart
-ContinueToken   = "continue"   !IdentifierPart
-DebuggerToken   = "debugger"   !IdentifierPart
-DefaultToken    = "default"    !IdentifierPart
-DeleteToken     = "delete"     !IdentifierPart
-DoToken         = "do"         !IdentifierPart
-ElseToken       = "else"       !IdentifierPart
-EnumToken       = "enum"       !IdentifierPart
-ExportToken     = "export"     !IdentifierPart
-ExtendsToken    = "extends"    !IdentifierPart
-FalseToken      = "false"      !IdentifierPart
-FinallyToken    = "finally"    !IdentifierPart
-ForToken        = "for"        !IdentifierPart
-GetToken        = "get"        !IdentifierPart
-IfToken         = "if"         !IdentifierPart
-ImportToken     = "import"     !IdentifierPart
-InstanceofToken = "instanceof" !IdentifierPart
-InToken         = "in"         !IdentifierPart
-NewToken        = "new"        !IdentifierPart
-NullToken       = "null"       !IdentifierPart
-ReturnToken     = "return"     !IdentifierPart
-SetToken        = "set"        !IdentifierPart
-SuperToken      = "super"      !IdentifierPart
-SwitchToken     = "switch"     !IdentifierPart
-ThisToken       = "this"       !IdentifierPart
-ThrowToken      = "throw"      !IdentifierPart
-TrueToken       = "true"       !IdentifierPart
-TryToken        = "try"        !IdentifierPart
-TypeofToken     = "typeof"     !IdentifierPart
-VarToken        = "var"        !IdentifierPart
-VoidToken       = "void"       !IdentifierPart
-WhileToken      = "while"      !IdentifierPart
-WithToken       = "with"       !IdentifierPart
 
-EOF
-  = !.
+
 
 /*
  * Unicode Character Categories
@@ -189,14 +156,6 @@ variable
 IdentifierPart
   = variable
 
-/* Skipped */
-
-__
-  = (WhiteSpace / LineTerminatorSequence / Comment)*
-
-_
-  = (WhiteSpace / MultiLineCommentNoLineTerminator)*
-
 /** PHP LEXER **/
 top_statement_list
     = top_statement*
@@ -214,11 +173,34 @@ inner_statement
     / T_HALT_COMPILER
 
 statement
-    = '{' inner_statement_list '}'
-    / __ expr __ ';' __
+    = '{' __ statements:inner_statement_list __ '}' {
+      return { type: "php_statements", data: statements };
+    }
+    / T_IF __ condition:parentheses_expr __ statement:statement __ _else:elseif* {
+      return {
+        type: "php_if"
+        , condition: condition
+        , statement: statement
+        , _else: _else
+      };
+    }
+    / __ expr:expr __ ';' __ { return expr; }
+
+parentheses_expr
+  = '(' __ expr:expr __ ')'         { return expr; }
+  / '(' __ expr:yield_expr __ ')'   { return expr; }
+
+elseif
+  = T_ELSEIF __ condition:parentheses_expr __ statement:statement {
+    return { type: "php_elseif", condition: condition, statement: statement };
+  }
 
 expr
   = variable
+
+yield_expr
+  = T_YIELD expr
+  / T_YIELD expr T_DOUBLE_ARROW expr
 
 optional_ref
   = __ ref:'&'?                                   { return ref ? true : false; }

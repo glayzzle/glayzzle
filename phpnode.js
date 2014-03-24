@@ -18,16 +18,29 @@ var builder = {
   ,php_variable: function(item) {
     return item.name + ' = null;';
   }
+  ,php_if: function(item) {
+    return 'if (' + jsBuild(item.condition) + ')' + jsBuild(item.statement) + jsBuild(item._else); 
+  }
+  ,php_statements: function(item) {
+    return '{\n' + jsBuild(item.data) + '\n}\n';
+  }
+  ,php_elseif: function(item) {
+    return ' elseif(' + jsBuild(item.condition) + ')' + jsBuild(item.statement);
+  }
 };
 
 var jsBuild = function(nodes) {
-  var result = [];
-  for(var i = 0; i < nodes.length; i++) {
-    if (nodes[i].type) {
-      result.push(builder[nodes[i].type](nodes[i]));
+  if (nodes.type) {
+    return builder[nodes.type](nodes) + "\n";
+  } else {
+    var result = [];
+    for(var i = 0; i < nodes.length; i++) {
+      if (nodes[i].type) {
+        result.push(builder[nodes[i].type](nodes[i]));
+      }
     }
+    return result.join("\n");
   }
-  return result.join("\n");
 };
 
 
