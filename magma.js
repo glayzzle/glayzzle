@@ -179,7 +179,7 @@ var php_include = function(filename, debug) {
 };
 
 if (process.argv[2] == '--debug') {
-  php = require('./src/php');
+  php = require('./src/parser');
   php_include(process.argv[4], process.argv[3]);
 } else if (process.argv[2] == '--build') {
   var PEG = require("pegjs");
@@ -215,7 +215,7 @@ if (process.argv[2] == '--debug') {
         );
         php = PEG.buildParser(data);
         
-        var cache = fs.createWriteStream('src/php.js');
+        var cache = fs.createWriteStream('src/parser.js');
         cache.write(
           'module.exports = ' + PEG.buildParser(data, {
             cache:    false,
@@ -232,6 +232,6 @@ if (process.argv[2] == '--debug') {
     });
   });
 } else {
-  php = require('./src/php');
+  php = require('./src/parser');
   php_include(process.argv[2]);
 }
