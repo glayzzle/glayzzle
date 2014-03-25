@@ -15,7 +15,8 @@ http://pegjs.majda.cz/documentation
 Project Status :
 ================
 
-Actually the project is a Prof Of Concept, and does not run yet.
+Actually the project is a Prof Of Concept, and does not run over all PHP syntax.
+Take a look at test folder for supported syntaxes.
 
 Here's the todo list :
 
@@ -36,9 +37,6 @@ Install & Run :
 ../magma/bin $ node php ../test/fibo.php
 ```
 
-Actually I rebuild the lexer at each run to be able to test and update 
-the lexer more easily, but in future the lexer will be generated and it will not
-be necessary to install pegjs.
 
 Test & Rebuild :
 ================

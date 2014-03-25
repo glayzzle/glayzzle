@@ -108,7 +108,7 @@ statement
     / yield_expr ';'
     / T_GLOBAL global_var_list ';'
     / T_STATIC static_var_list ';'
-    / __ T_ECHO __ expr_list __ ';'
+    / __ T_ECHO __ tokens:expr_list __ ';'		{ return { type: 'php_T_ECHO', statements: tokens }; }
     / T_INLINE_HTML
     / __ expr:expr __ ';' __
     / T_UNSET '(' variables_list ')' ';'

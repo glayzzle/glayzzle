@@ -129,6 +129,7 @@ module.exports = {
             }));
             console.log('** GENERATED SOURCE :');
             console.log(source);
+            console.log('** RUNTIME OUTPUT :');
           }
           eval(source);
         } catch(e) {
