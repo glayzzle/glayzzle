@@ -47,7 +47,7 @@ You can update the parser, or show AST and generated code :
 
 You will need pegjs library :
 ```
-npm intall pegjs
+npm install pegjs
 ```
 
 Show some debug (the debug parameter is the nesting level on AST output) :
