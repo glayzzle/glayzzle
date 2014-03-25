@@ -33,7 +33,7 @@ Install & Run :
 ===============
 
 ```
-node magma.js test/fibo.php
+../magma/bin $ node php ../test/fibo.php
 ```
 
 Actually I rebuild the lexer at each run to be able to test and update 
@@ -52,12 +52,12 @@ npm install pegjs
 
 Show some debug (the debug parameter is the nesting level on AST output) :
 ```
-node magma.js --debug 5 test/fibo.php
+../magma/bin $ node php --debug 5 ../test/fibo.php
 ```
 
 If you want to test some updates on lexer just use the build flag
 ```
-node magma.js --build test/fibo.php
+../magma/bin $ node php --build ../test/fibo.php
 ```
 
 NOTE : The lexer use @import keywords to use external lexer files and this feature is not supported by pegjs so the only way to generate the lexer (to src/php.js) is to use the build flag.

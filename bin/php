@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+
+/**
+ * Magma : PHP on NodeJS
+ * @license BSD
+ */
+
+var util = require('util');
+var fs = require('fs');
+var PHP = require('../src/php');
+
+function printVersion() {
+	util.puts('Magma version ' + PHP.VERSION);
+}
+
+function printHelp() {
+	util.puts("Usage: php [options] [-f] <file>");
+	util.puts("");
+	util.puts("  --build                            rebuilds the parser before executing the request");
+	util.puts("  --debug [0-9]+                     enables debug ouput (with a specific level)");
+	util.puts("  -f <file>                          parse and execute file");
+	util.puts("  -v, --version                      print version information and exit");
+	util.puts("  -h, --help                         print help and exit");
+}
+
+// aborts the execution with the specified error message
+function abort(message) {
+	util.error(message);
+	process.exit(1);
+}
+
+// Reads a list of files and executes the specified callback
+function readFiles(files, cb) {
+	var counter = files.length;
+	var result = { files: {}, errors: []};
+	if (!files || files.length == 0) {
+		cb(result);
+	} else {
+		files.forEach(function (file){
+			fs.readFile(file, 'utf8', function(err,data) {
+				if (err) {
+					result.errors.push(err);
+				} else {
+					result.files[file] = data;
+				}
+				counter --;
+				if (counter == 0) cb(result);
+			});
+		});
+	}
+};
+
+/* Arguments */
+
+var args = process.argv.slice(2); // Trim "node" and the script path.
+
+function isOption(arg) {
+	return (/^-/).test(arg);
+}
+
+function nextArg() {
+	args.shift();
+}
+
+var options = {
+	debug: 0,
+	build: false,
+	filename: null
+};
+
+// Reading arguments
+while (args.length > 0 && isOption(args[0])) {
+	switch(args[0]) {
+		case "-f":
+			nextArg();
+			options.filename = args[0];
+			break;
+
+		case "--debug":
+			nextArg();
+			options.debug = args[0];
+			break;
+
+		case "--build":
+			options.build = true;
+			break;
+
+		case "-v":
+		case "--version":
+			printVersion();
+			process.exit(0);
+			break;
+
+		case "-h":
+		case "--help":
+			printHelp();
+			process.exit(0);
+			break;
+
+		default:
+			abort("Unknown option: " + args[0] + ".");
+	}
+	nextArg();
+}
+
+// Checking last parameters
+if ( args.length > 0 ) {
+	if ( args.length == 1 && !options.filename ) {
+		options.filename = args[0];
+	} else {
+		abort("Too many arguments.");
+	}
+}
+
+if ( !options.filename ) {
+	abort("Expecting a filename.");
+}
+
+if (options.debug) console.log("*** DEBUG MODE ***");
+
+// Handling the parser build
+if ( options.build ) {
+	var PEG = require("pegjs");
+	var GRAMMAR_PATH = '../src/grammar/';
+	if (options.debug) console.log("> Read parsing rules");
+	fs.readFile(GRAMMAR_PATH + 'php.pegjs', 'utf8', function(err, data) {
+		if (err) return abort(err);
+		if (options.debug) console.log("> Build parser");
+		var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
+		var files = [];
+		match = importRegex.exec(data);
+		while (match != null) {
+			files.push(match[1]);
+			match = importRegex.exec(data);
+		}
+		if (files && files.length > 0) {
+			for(var i = 0; i < files.length; i++) {
+				files[i] = GRAMMAR_PATH + files[i];
+			}
+		} else {
+			files = [];
+		}
+		readFiles(files, function(imports) {
+			try {
+				data = data.replace(
+					importRegex,
+					function(match, file) {
+						return imports.files[GRAMMAR_PATH + file];
+					}
+				);
+				var cache = fs.createWriteStream('../src/parser.js');
+				cache.write(
+					'module.exports = ' 
+					+ PEG.buildParser(data, {
+						cache:    false,
+						output:   "source",
+						optimize: "speed",
+						plugins:  []
+					})
+					+ ';\n'
+				);
+				cache.end();
+			} catch(e) {
+				PHP.parseError(e, data);
+			}
+			if (options.debug) console.log("*** BUILD DONE ***");
+			// RUNS THE SPECIFIED SCRIPT
+			PHP.debug = options.debug;
+			PHP.include(options.filename);
+		});
+	});
+} else {
+	// RUNS THE SPECIFIED SCRIPT
+	PHP.debug = options.debug;
+	PHP.include(options.filename);
+}
