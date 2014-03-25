@@ -1,0 +1,30 @@
+{
+  "name": "magma",
+  "version": "0.0.1",
+  "description": "A NodeJS engine that converts on-fly the php into JS and execute it.",
+  "main": "magma.js",
+  "bin": {
+    "magma": "build_parser.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ichiriac/magma.git"
+  },
+  "keywords": [
+    "php"
+  ],
+  "author": "Ioan Chiriac",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/ichiriac/magma/issues"
+  },
+  "dependencies": {
+    "pegjs": "~0.8.0"
+  }
+}
