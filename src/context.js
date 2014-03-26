@@ -37,7 +37,11 @@ if ( !Buffer.prototype.indexOf ) {
 		return ret;
 	};
 }
-
+if ( !Buffer.prototype.substring ) {
+	Buffer.prototype.substring = function(start, end) {
+		return this.toString('utf8', start, end);
+	};
+}
 // This module handles the project 
 module.exports = {
 
@@ -76,6 +80,7 @@ module.exports = {
 				+ "At line " + e.line + ', ' + e.column
 			);
 			if ( file ) {
+				file = file.toString();
 				console.log("\nSource Code :\n");
 				var line = e.line - 2;
 				if (line < 0) line = 0;
@@ -90,14 +95,14 @@ module.exports = {
 					pstart = pnext + 1; 
 				}
 				var pend = pstart;
-				for(var i = 0; i < 5; i++) {
+				for(var i = 1; i < 5; i++) {
 					pnext = file.indexOf("\n", pend);
-					if ( pnext < 0 ) {
+					if ( pend > pnext ) {
 						pnext = file.length;
 						break;
 					}
 					var curLine = line + i;
-					var loc = file.substring(pnext, pend)
+					var loc = file.substring(pend, pnext);
 					if (curLine ==  e.line ) {
 						loc = '>> ' + loc;
 					}
