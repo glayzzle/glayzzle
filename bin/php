@@ -157,9 +157,9 @@ if ( options.build ) {
 						return imports.files[GRAMMAR_PATH + file];
 					}
 				);
-				var cache = fs.createWriteStream('../src/parser.js');
-				cache.write(
-					'module.exports = ' 
+				fs.writeFileSync(
+					'../src/parser.js'
+					, 'module.exports = ' 
 					+ PEG.buildParser(data, {
 						cache:    false,
 						output:   "source",
@@ -168,7 +168,6 @@ if ( options.build ) {
 					})
 					+ ';\n'
 				);
-				cache.end();
 			} catch(e) {
 				PHP.context.parseError(e, data);
 			}
