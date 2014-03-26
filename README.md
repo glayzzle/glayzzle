@@ -38,7 +38,6 @@ Install & Run :
 ../magma/bin $ node php ../test/fibo.php
 ```
 
-
 Test & Rebuild :
 ================
 
@@ -60,4 +59,3 @@ If you want to test some updates on lexer just use the build flag
 ```
 
 NOTE : The lexer use @import keywords to use external lexer files and this feature is not supported by pegjs so the only way to generate the lexer (to src/php.js) is to use the build flag.
-

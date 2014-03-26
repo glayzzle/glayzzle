@@ -6,7 +6,25 @@ var util = require('util');
 
 module.exports = {
 	compat: null,
-	getCompat: function() {
+	requires: [],
+	init: function() {
+		this.requires = [];
+	}
+	,use: function(module, alias) {
+		if ( this.requires.indexOf(module) == -1 ) {
+			this.requires.push(module);
+		}
+		return module.replace(/[\.\\//]+/g, '_'); 
+	}
+	,headers: function() {
+		if (this.requires.length == 0) return '';
+		var result = [];
+		this.requires.forEach(function(req) {
+			result.push('var ' + req.replace(/[\.\\//]+/g, '_') + ' = require(\'' + req + '\')');
+		});
+		return result.join(';\n');
+	}
+	,getCompat: function() {
 		if (!this.compat) {
 			this.compat = require('./compat');
 		}
@@ -35,7 +53,7 @@ module.exports = {
 	}
 	// The T_ECHO equivalent
 	,output: function(item) {
-		return 'console.log(' + JSON.stringify(item.data) + ');\n';
+		return 'process.stdout.write(' + JSON.stringify(item.data) + ');\n';
 	}
 	,php: function(item) {
 		return this.toString(item.data);
@@ -55,8 +73,12 @@ module.exports = {
 	,php_variable: function(item) {
 		return item.name;
 	}
+	,php_string: function(item) {
+		var output = JSON.stringify(item.data);
+		return item.char + output.substring(1, output.length - 1) + item.char;
+	}
 	,php_T_ECHO: function(item) {
-		return 'console.log(' + this.toString(item.statements) + ');\n';
+		return 'process.stdout.write(String(' + this.toString(item.statements) + '));\n';
 	}
 	// PROXY for functions
 	,php_FUNCTION_CALL: function(item) {

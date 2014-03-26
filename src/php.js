@@ -82,11 +82,9 @@ module.exports = {
 	include: function(filename, cb) {
 		if (this.debug) console.log("-> PHP INCLUDE " + filename);
 		var module = this;
-      fs.readFile(filename, 'utf8', function (err,data) {
-        if (err) {
-          return console.log(err);
-        }
-        if (module.debug) console.log("parse file");
+		fs.readFile(filename, 'utf8', function (err,data) {
+			if (err) return console.log(err);
+			if (module.debug) console.log("parse file");
         try {
           var results = [];
           var buffer = '';
@@ -124,7 +122,9 @@ module.exports = {
             }
             buffer += c;
           }
+          builder.init();
           var source = builder.toString(results);
+          source = '/** MAGMA GENERATED CODE : '+filename+'**/\n\n' + builder.headers() + '\n' + source;
           if (module.debug) {
             console.log('** AST :');
             console.log(util.inspect(results, {
@@ -134,7 +134,7 @@ module.exports = {
             console.log(source);
             console.log('** RUNTIME OUTPUT :');
           }
-          eval(source);
+					eval(source);
         } catch(e) {
           module.parseError(e, data);
         }

@@ -238,8 +238,8 @@ class_type
   / T_CALLABLE
 
 argument_list
-  = '(' ')'											{ return ['(', [], ')']; }
-  / '(' __ arg1:argument argList:( __ ',' __ argument )* __ ')'	{
+  = '(' ')'                                                     { return ['(', [], ')']; }
+  / '(' __ arg1:argument argList:( __ ',' __ argument )* __ ')' {
     var args = [arg1[3] ? arg1 : arg1[1]];
     if (argList) for(var i = 0; i<argList.length; i++) {
       if (argList[i][3][3]) {
@@ -414,8 +414,8 @@ expr
   / T_STATIC T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
 
 parentheses_expr
-  = '(' expr:expr* ')'          { return expr; }
-  / '(' expr:yield_expr ')'     { return expr; }
+  = __ '(' __ expr:expr* __ ')' __                      { return ['(', expr, ')']; }
+  / __ '(' __ expr:yield_expr __ ')' __                 { return ['(', expr, ')'];}
 
 
 yield_expr

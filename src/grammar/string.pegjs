@@ -1,9 +1,9 @@
 StringLiteral "string"
   = '"' chars:DoubleStringCharacter* '"' {
-      return ['"', chars.join(""),'"'];
+      return {type: 'php_string', char: '"', data: chars.join("")};
     }
   / "'" chars:SingleStringCharacter* "'" {
-      return  ["'", chars.join(""), "'"];
+      return {type: 'php_string', char: "'", data: chars.join("")};
     }
 
 DoubleStringCharacter

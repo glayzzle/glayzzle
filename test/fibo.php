@@ -8,5 +8,5 @@ function fibo($x) {
     }
 }
 $start = microtime(true);
-echo fibo(35);
-echo 'Run in ' . (microtime(true) - $start);
+echo 'The result is : ' . fibo(30) . "\n";
+echo 'Run in ' . round( microtime(true) - $start, 3) . "sec\n";
