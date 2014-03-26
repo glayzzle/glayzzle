@@ -390,11 +390,11 @@ expr
   / '(' __ new_expr __ ')'
   / T_ISSET '(' variables_list ')'
   / T_EMPTY '(' expr ')'
-  / T_INCLUDE expr
-  / T_INCLUDE_ONCE expr
+  / __ i:'@'? T_INCLUDE __ target:expr					{ return { type: 'php_T_INCLUDE', target: target, ignore: i }; }
+  / __ i:'@'? T_INCLUDE_ONCE __ target:expr			{ return { type: 'php_T_INCLUDE_ONCE', target: target, ignore: i }; }
   / T_EVAL parentheses_expr
-  / T_REQUIRE expr
-  / T_REQUIRE_ONCE expr
+  / __ T_REQUIRE __ target:expr					{ return { type: 'php_T_REQUIRE', target: target }; }
+  / __ T_REQUIRE_ONCE __ target:expr			{ return { type: 'php_T_REQUIRE_ONCE', target: target }; }
   / T_INT_CAST expr
   / T_DOUBLE_CAST expr
   / T_STRING_CAST expr

@@ -9,7 +9,11 @@ module.exports = {
 	compat: null,
 	requires: [],
 	functions: [],
-	init: function() {
+	filename: null,
+	directory: null,
+	init: function(filename) {
+		this.filename = filename;
+		this.directory = path.dirname(filename);
 		this.requires = [];
 		this.functions = [];
 		return this;
@@ -112,6 +116,38 @@ module.exports = {
 			}
 		});
 		return result.join(', ');
+	}
+	, php_T_INCLUDE: function(item) {
+		return  this.use('./php') 
+			+ '.include(' 
+			+ this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+			+ ', ' + (item.ignore ? 'true' : 'false')
+			+ ', __output'
+		+')';
+	}
+	, php_T_INCLUDE_ONCE: function(item) {
+		return  this.use('./php') 
+			+ '.include_once(' 
+			+ this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+			+ ', ' + (item.ignore ? 'true' : 'false')
+			+ ', __output'
+		+')';
+	}
+	, php_T_REQUIRE: function(item) {
+		return  this.use('./php') 
+			+ '.require(' 
+			+ this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+			+ ', ' + (item.ignore ? 'true' : 'false')
+			+ ', __output'
+		+')';
+	}
+	, php_T_REQUIRE_ONCE: function(item) {
+		return  this.use('./php') 
+			+ '.require_once(' 
+			+ this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+			+ ', ' + (item.ignore ? 'true' : 'false')
+			+ ', __output'
+		+')';
 	}
 	,php_if: function(item) {
 		return 'if (' +  this.toString(item.condition) + ')'

@@ -63,7 +63,6 @@ module.exports = {
 
 	// check if the specified was never called
 	once: function(filename) {
-		filename = path.resolve(filename);
 		return this.files.indexOf(filename) == -1;
 	},
 
@@ -126,7 +125,6 @@ module.exports = {
 		if (!this.once(filename)) return this.includes[filename];
 		// check files cache
 		if (process.env.DEBUG == 0) {
-			filename = path.resolve(filename);
 			var cache = this.getCacheFile(filename);
 			try {
 				var filenameStat = fs.statSync(filename);
@@ -191,7 +189,7 @@ module.exports = {
 				}
 				buffer += c;
 			}
-			var source = builder.init().toString(results);
+			var source = builder.init(filename).toString(results);
 			builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
 			source = '/** MAGMA GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
 				+ builder.headers() + '\n'
