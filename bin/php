@@ -8,6 +8,8 @@
 var util = require('util');
 var fs = require('fs');
 var PHP = require('../src/php');
+var http = require('http');
+var cluster = require('cluster');
 
 function printVersion() {
 	util.puts('Magma version ' + PHP.VERSION);
@@ -65,7 +67,8 @@ function nextArg() {
 var options = {
 	debug: 0,
 	build: false,
-	filename: null
+	filename: null,
+	server: false
 };
 
 // Reading arguments
@@ -89,6 +92,11 @@ while (args.length > 0 && isOption(args[0])) {
 		case "--version":
 			printVersion();
 			process.exit(0);
+			break;
+
+		case "-S":
+			nextArg();
+			options.server = args[0];
 			break;
 
 		case "-h":
@@ -117,6 +125,7 @@ if ( !options.filename ) {
 }
 
 if (options.debug) console.log("*** DEBUG MODE ***");
+process.env.DEBUG = options.debug;
 
 // Handling the parser build
 if ( options.build ) {
@@ -161,16 +170,51 @@ if ( options.build ) {
 				);
 				cache.end();
 			} catch(e) {
-				PHP.parseError(e, data);
+				PHP.context.parseError(e, data);
 			}
 			if (options.debug) console.log("*** BUILD DONE ***");
-			// RUNS THE SPECIFIED SCRIPT
-			PHP.debug = options.debug;
-			PHP.include(options.filename);
+			run(options);
 		});
 	});
 } else {
-	// RUNS THE SPECIFIED SCRIPT
-	PHP.debug = options.debug;
-	PHP.include(options.filename);
+	run(options);
+}
+
+// runs the command
+function run(options) {
+	if (options.server) {
+		process.env.DEBUG = 0;
+		if (cluster.isMaster) {
+			var numCPUs = require('os').cpus().length;		
+			printVersion();
+			console.log('Started at ' + (new Date()));
+			// Fork workers.
+			for (var i = 0; i < numCPUs; i++) {
+				cluster.fork();
+			}
+			console.log('Listening at ' + options.server + '\n');
+			cluster.on('exit', function(worker, code, signal) {
+				console.log('worker ' + worker.process.pid + ' died');
+				cluster.fork();
+			});
+		} else {
+			var endpoint = options.server.split(':');
+			http.createServer(function(req, res) {
+				if (options.debug) {
+					var now = new Date();
+					console.log(now.getHours()+':'+now.getMinutes()+':'+now.getSeconds() + '\t' + req.method + ' ' + req.url);
+				}
+				try {
+					PHP.include(options.filename, false, res);
+					res.end();
+				} catch(e) {
+					util.error(e);
+					res.end('Error : ' + e.message);
+				}
+			}).listen(parseInt(endpoint[1]), endpoint[0]);
+		}
+	} else {
+		// RUNS THE SPECIFIED SCRIPT
+		PHP.include(options.filename);
+	}
 }

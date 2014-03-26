@@ -3,12 +3,16 @@
  * @license BSD
  */
 var util = require('util');
+var path = require('path');
 
 module.exports = {
 	compat: null,
 	requires: [],
+	functions: [],
 	init: function() {
 		this.requires = [];
+		this.functions = [];
+		return this;
 	}
 	,use: function(module, alias) {
 		if ( this.requires.indexOf(module) == -1 ) {
@@ -20,7 +24,7 @@ module.exports = {
 		if (this.requires.length == 0) return '';
 		var result = [];
 		this.requires.forEach(function(req) {
-			result.push('var ' + req.replace(/[\.\\//]+/g, '_') + ' = require(\'' + req + '\')');
+			result.push('var ' + req.replace(/[\.\\//]+/g, '_') + ' = require(' + JSON.stringify(req[0] == '.' ? path.resolve(__dirname, req) : req) + ')');
 		});
 		return result.join(';\n');
 	}
@@ -53,11 +57,12 @@ module.exports = {
 	}
 	// The T_ECHO equivalent
 	,output: function(item) {
-		return 'process.stdout.write(' + JSON.stringify(item.data) + ');\n';
+		return '__output.write(' + JSON.stringify(item.data) + ');\n';
 	}
 	,php: function(item) {
 		return this.toString(item.data);
 	}
+	// SERIALIZE A GLOBAL FUNCTION
 	,php_function: function(item) {
 		var params = [];
 		if (item.parameters) {
@@ -65,10 +70,12 @@ module.exports = {
 				if (param && param.name) params.push(param.name);
 			});
 		}
-		return '\nfunction ' + item.name + '(' + params.join(', ') + ') {\n' 
+		this.functions.push(
+			item.name + ': function(' + params.join(', ') + ') {\n\t\t' 
 			+ this.toString(item.body)
-			+ '\n}\n'
-		;
+			+ '\n\t}'
+		);
+		return '';
 	}
 	,php_variable: function(item) {
 		return item.name;
@@ -78,13 +85,19 @@ module.exports = {
 		return item.char + output.substring(1, output.length - 1) + item.char;
 	}
 	,php_T_ECHO: function(item) {
-		return 'process.stdout.write(String(' + this.toString(item.statements) + '));\n';
+		return '__output.write(String(' + this.toString(item.statements) + '));\n';
 	}
 	// PROXY for functions
 	,php_FUNCTION_CALL: function(item) {
 		var ret = this.getCompat().checkFunction(item.name, item.args[1].args);
 		if (ret === false) {
-			return item.name + this.toString(item.args);
+			if (require('./php').functions.hasOwnProperty(item.name)) {
+				// global function
+				return  builder.use('./php') + '.functions.' + item.name + this.toString(item.args);
+			} else {
+				// local scope function
+				return 'this.' + item.name + this.toString(item.args);
+			}
 		} else return ret;
 	}
 	// Serialize arguments for a function call

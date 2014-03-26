@@ -21,11 +21,11 @@ module.exports = {
 			} else if ( args.length == 1 && args[0] === false) {
 				return '((Math.round(((new Date().getTime() / 1000) - parseInt((new Date().getTime() / 1000), 10)) * 1000) / 1000) + \' \' + parseInt((new Date().getTime() / 1000), 10)';
 			} else {
-				return builder.use('./php')+'.compat.microtime(' + builder.php_args({args: args}) + ')';
+				return builder.use('./php')+'.globals.microtime(' + builder.php_args({args: args}) + ')';
 			}
 		},
 		round: function(args) {
-				return builder.use('./php')+'.compat.round(' + builder.php_args({args: args}) + ')';
+				return builder.use('./php')+'.globals.round(' + builder.php_args({args: args}) + ')';
 		}
 	},
 	//  discuss at: http://phpjs.org/functions/microtime/
@@ -89,5 +89,4 @@ module.exports = {
 		}
 		return (isHalf ? value : Math.round(value)) / m;
 	}
-
 };
