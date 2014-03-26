@@ -61,3 +61,19 @@ If you want to test some updates on lexer just use the build flag
 
 NOTE : The lexer use @import keywords to use external lexer files and this feature is not supported by pegjs so the only way to generate the lexer (to src/php.js) is to use the build flag.
 
+First bench :
+=============
+
+```
+// THE ORIGINAL CLI OUTPUT :
+~$ php ../test/fibo.php
+Hello world :
+The result is : 832040
+Run in 1.872sec
+
+// THE NODEJS OUTPUT
+../magma/bin $ node php -f ../test/fibo.php
+Hello world :
+The result is : 832040
+Run in 0.295sec
+```
