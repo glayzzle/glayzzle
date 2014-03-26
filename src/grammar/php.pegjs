@@ -238,12 +238,21 @@ class_type
   / T_CALLABLE
 
 argument_list
-  = '(' ')'
-  / '(' non_empty_argument_list ')'
-  / '(' yield_expr ')'
-
-non_empty_argument_list
-  = argument __ (',' __ argument __)*
+  = '(' ')'											{ return ['(', [], ')']; }
+  / '(' __ arg1:argument argList:( __ ',' __ argument )* __ ')'	{
+    var args = [arg1[3] ? arg1 : arg1[1]];
+    if (argList) for(var i = 0; i<argList.length; i++) {
+      if (argList[i][3][3]) {
+        args.push(argList[i][3]);
+      } else {
+        args.push(argList[i][3][1]);
+      }
+    }
+    return ['(', {
+      type: 'php_args', args: args
+    }, ')']; 
+  }
+  /* todo '(' yield_expr ')'  */
 
 argument
   = expr
@@ -328,37 +337,36 @@ expr_list
 for_expr
   = expr_list*
 
-nexpr
-  = expr
-
 boolean_expr
-  = 
+  = 'true' { return true; }
+  / 'false' { return false; }
 
 expr
   = __ variable __ expr?
+  / __ boolean_expr __ expr?
   / __ list_expr __ '=' expr
   / __ variable __ '=' expr
   / __ variable __ '='  __ '&' variable
   / __ variable '=' '&' new_expr
   / __ new_expr
-  / __ T_CLONE nexpr
-  / __ variable __ T_PLUS_EQUAL expr
-  / __ variable __ T_MINUS_EQUAL expr
-  / __ variable __ T_MUL_EQUAL expr
-  / __ variable __ T_DIV_EQUAL expr
-  / __ variable __ T_CONCAT_EQUAL expr
-  / __ variable __ T_MOD_EQUAL expr
-  / __ variable __ T_AND_EQUAL expr
-  / __ variable __ T_OR_EQUAL expr
-  / __ variable __ T_XOR_EQUAL expr
-  / __ variable __ T_SL_EQUAL expr
-  / __ variable __ T_SR_EQUAL expr
+  / __ T_CLONE expr
+  / __ variable __ T_PLUS_EQUAL __ expr
+  / __ variable __ T_MINUS_EQUAL __ expr
+  / __ variable __ T_MUL_EQUAL __ expr
+  / __ variable __ T_DIV_EQUAL __ expr
+  / __ variable __ T_CONCAT_EQUAL __ expr
+  / __ variable __ T_MOD_EQUAL __ expr
+  / __ variable __ T_AND_EQUAL __ expr
+  / __ variable __ T_OR_EQUAL __ expr
+  / __ variable __ T_XOR_EQUAL __ expr
+  / __ variable __ T_SL_EQUAL __ expr
+  / __ variable __ T_SR_EQUAL __ expr
   / __ variable __ T_INC
   / __ T_INC variable __
   / __ variable T_DEC __
   / __ T_DEC variable __
-  / __ MathOperators expr
-  / __ RelationalOperator expr
+  / __ MathOperators __ expr
+  / __ RelationalOperator __ expr
   /* ---- LEFT RECURSION
   / nexpr T_BOOLEAN_OR nexpr
   / nexpr T_BOOLEAN_AND nexpr
@@ -381,26 +389,26 @@ expr
   /* we need a separate '(' new_expr ')' rule to avoid problems caused by a s/r conflict */
   / '(' __ new_expr __ ')'
   / T_ISSET '(' variables_list ')'
-  / T_EMPTY '(' nexpr ')'
-  / T_INCLUDE nexpr
-  / T_INCLUDE_ONCE nexpr
+  / T_EMPTY '(' expr ')'
+  / T_INCLUDE expr
+  / T_INCLUDE_ONCE expr
   / T_EVAL parentheses_expr
-  / T_REQUIRE nexpr
-  / T_REQUIRE_ONCE nexpr
-  / T_INT_CAST nexpr
-  / T_DOUBLE_CAST nexpr
-  / T_STRING_CAST nexpr
-  / T_ARRAY_CAST nexpr
-  / T_OBJECT_CAST nexpr
-  / T_BOOL_CAST nexpr
-  / T_UNSET_CAST nexpr
+  / T_REQUIRE expr
+  / T_REQUIRE_ONCE expr
+  / T_INT_CAST expr
+  / T_DOUBLE_CAST expr
+  / T_STRING_CAST expr
+  / T_ARRAY_CAST expr
+  / T_OBJECT_CAST expr
+  / T_BOOL_CAST expr
+  / T_UNSET_CAST expr
   / T_EXIT exit_expr?
-  / '@' nexpr
-  / __ scalar
+  / '@' expr
+  / __ scalar __ expr?
   / __ array_expr
   / __ scalar_dereference
   / '`' backticks_expr? '`'
-  / T_PRINT nexpr
+  / T_PRINT expr
   / T_YIELD
   / T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
   / T_STATIC T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
@@ -445,7 +453,7 @@ function_call
   /* alternative array syntax missing intentionally */
 
 function_call_expr
-  = name argument_list
+  = name:name args:argument_list	{ return { type: 'php_FUNCTION_CALL', name: name, args: args }; }
   / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM T_STRING argument_list
   / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM '{' expr '}' argument_list
   / static_property argument_list
@@ -456,9 +464,9 @@ class_name
   / name
 
 name
-  = namespace_name_parts
-  / T_NS_SEPARATOR namespace_name_parts
-  / T_NAMESPACE T_NS_SEPARATOR namespace_name_parts
+  = namespace_name_parts								{ return text(); }
+  / T_NS_SEPARATOR namespace_name_parts					{ return text(); }
+  / T_NAMESPACE T_NS_SEPARATOR namespace_name_parts		{ return text(); }
 
 class_name_reference
   = class_name
@@ -512,8 +520,8 @@ static_scalar
   /* compile-time evaluated scalars */
   = common_scalar
   / class_name T_PAAMAYIM_NEKUDOTAYIM class_const_name
-  / '+' static_scalar
-  / '-' static_scalar
+  / __ '+' __ static_scalar
+  / __ '-' __ static_scalar
   / T_ARRAY '(' static_array_pair_list? ')'
   / '[' static_array_pair_list? ']'
 

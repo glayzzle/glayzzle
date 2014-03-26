@@ -7,4 +7,6 @@ function fibo($x) {
         return fibo($x - 1) + fibo($x - 2);
     }
 }
-echo fibo(10);
+$start = microtime(true);
+echo fibo(35);
+echo 'Run in ' . (microtime(true) - $start);

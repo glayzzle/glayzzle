@@ -3,9 +3,17 @@
  * @license BSD
  */
 var util = require('util');
+
 module.exports = {
+	compat: null,
+	getCompat: function() {
+		if (!this.compat) {
+			this.compat = require('./compat');
+		}
+		return this.compat;
+	}
 	// Builds a PHP AST to JavaScript
-	toString: function(ast) {
+	,toString: function(ast) {
 		if (!ast) return '';
 		if (ast.type) {
 			return this[ast.type](ast);
@@ -49,6 +57,26 @@ module.exports = {
 	}
 	,php_T_ECHO: function(item) {
 		return 'console.log(' + this.toString(item.statements) + ');\n';
+	}
+	// PROXY for functions
+	,php_FUNCTION_CALL: function(item) {
+		var ret = this.getCompat().checkFunction(item.name, item.args[1].args);
+		if (ret === false) {
+			return item.name + this.toString(item.args);
+		} else return ret;
+	}
+	// Serialize arguments for a function call
+	,php_args: function(item) {
+		var result = [];
+		var module = this;
+		item.args.forEach(function(i) {
+			if (Array.isArray(i)) {
+				result.push(module.toString(i));
+			} else {
+				result.push(i);
+			}
+		});
+		return result.join(', ');
 	}
 	,php_if: function(item) {
 		return 'if (' +  this.toString(item.condition) + ')'

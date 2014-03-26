@@ -17,6 +17,9 @@ module.exports = {
 	// contains the PHP tokenizer
 	parser: null,
 
+	// retro-PHP-compatibility layer
+	compat: require('./compat'),
+
 	// gets the current parser or load the default php parser
 	getParser: function() {
 		if (!this.parser) {

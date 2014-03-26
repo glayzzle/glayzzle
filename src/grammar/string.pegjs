@@ -1,9 +1,9 @@
 StringLiteral "string"
   = '"' chars:DoubleStringCharacter* '"' {
-      return { type: "Literal", value: chars.join("") };
+      return ['"', chars.join(""),'"'];
     }
   / "'" chars:SingleStringCharacter* "'" {
-      return { type: "Literal", value: chars.join("") };
+      return  ["'", chars.join(""), "'"];
     }
 
 DoubleStringCharacter
