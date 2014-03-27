@@ -44,14 +44,14 @@ Test & Rebuild :
 
 You can update the parser, or show AST and generated code :
 
-You will need pegjs library :
-```
-npm install pegjs
-```
-
 Show some debug (the debug parameter is the nesting level on AST output) :
 ```
 ../magma/bin $ node php --debug 5 ../test/fibo.php
+```
+
+If you want to try the server mode
+```
+../magma/bin $ node php -S 127.0.0.1:8080 ../test/index.php
 ```
 
 If you want to test some updates on lexer just use the build flag
@@ -59,10 +59,17 @@ If you want to test some updates on lexer just use the build flag
 ../magma/bin $ node php --build ../test/fibo.php
 ```
 
+You will need pegjs library :
+```
+npm install pegjs
+```
+
 NOTE : The lexer use @import keywords to use external lexer files and this feature is not supported by pegjs so the only way to generate the lexer (to src/php.js) is to use the build flag.
 
 First bench :
 =============
+
+## The famous Fibonnaci benchmark :
 
 ```
 // THE ORIGINAL CLI OUTPUT :
@@ -77,3 +84,6 @@ Hello world :
 The result is : 832040
 Run in 0.295sec
 ```
+
+NodeJS is naturally many times more rapid than PHP with it's JIT engine, 
+so that's normal that Magma keep this benefit...
