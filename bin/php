@@ -54,7 +54,12 @@ function readFiles(files, cb) {
 };
 
 /* Arguments */
-
+var options = {
+  debug: process.argv[1] == '--debug' ||  process.argv[1] == '--debug-brk' ? 10 : 0,
+  build: false,
+  filename: null,
+  server: false
+};
 var args = process.argv.slice(2); // Trim 'node' and the script path.
 
 function isOption(arg) {
@@ -64,13 +69,6 @@ function isOption(arg) {
 function nextArg() {
   args.shift();
 }
-
-var options = {
-  debug: 0,
-  build: false,
-  filename: null,
-  server: false
-};
 
 // Reading arguments
 while (args.length > 0 && isOption(args[0])) {
@@ -183,16 +181,18 @@ if ( options.build ) {
 // runs the command
 function run(options) {
   if (options.server) {
-    process.env.DEBUG = 0;
     if (cluster.isMaster) {
-      var numCPUs = require('os').cpus().length;    
       printVersion();
       console.log('Started at ' + (new Date()));
+      console.log('Listening at ' + options.server);
+    }
+    if ( process.env.DEBUG == 0 && cluster.isMaster) {
+      var numCPUs = require('os').cpus().length;
       // Fork workers.
       for (var i = 0; i < numCPUs; i++) {
         cluster.fork();
       }
-      console.log('Listening at ' + options.server + '\n');
+      console.log('Started ' + numCPUs + ' workers...\n');
       cluster.on('exit', function(worker, code, signal) {
         console.log('worker ' + worker.process.pid + ' died');
         cluster.fork();

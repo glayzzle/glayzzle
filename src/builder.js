@@ -9,8 +9,10 @@ module.exports = {
   compat: null,
   requires: [],
   functions: [],
+  serialize: {},
   filename: null,
   directory: null,
+  // initialize the specified file
   init: function(filename) {
     this.filename = filename;
     this.directory = path.dirname(filename);
@@ -18,37 +20,66 @@ module.exports = {
     this.functions = [];
     return this;
   }
+  // Require to use the specified module
   ,use: function(module, alias) {
     if ( this.requires.indexOf(module) == -1 ) {
       this.requires.push(module);
     }
-    return module.replace(/[\.\\//]+/g, '_'); 
+    if ( !alias ) alias = module.replace(/[\.\\//]+/g, '_');
+    return alias;
   }
+  // Generate file headers
   ,headers: function() {
     if (this.requires.length == 0) return '';
     var result = [];
     this.requires.forEach(function(req) {
-      result.push('var ' + req.replace(/[\.\\//]+/g, '_') + ' = require(' + JSON.stringify(req[0] == '.' ? path.resolve(__dirname, req) : req) + ')');
+      result.push(
+        'var ' 
+        + req.replace(/[\.\\//]+/g, '_') 
+        + ' = require(' 
+          + JSON.stringify(req[0] == '.' ? 
+            path.resolve(__dirname, req) : req) 
+        + ')'
+      );
     });
     return result.join(';\n');
   }
+  // Gets the PHP compatibility layer
   ,getCompat: function() {
     if (!this.compat) {
       this.compat = require('./compat');
     }
     return this.compat;
   }
+  , globalCall: function(name, args) {
+    return this.use('./php')+'.globals.__call(' + JSON.stringify(name) + ', ' + this.transcriptNode({type: 'common.T_ARGS', args: args}) + ')';  
+  }
+  // Execute the right transcription on the specified AST node
+  ,transcriptNode: function(node) {
+    // lazy loads serialisation module
+    if (!this.serialize.hasOwnProperty(node.type)) {
+      var mod = node.type.split('.');
+      var transcriptor = require('./transcriptors/' + mod[0]);
+      var entries = transcriptor.init(this);
+      this.serialize[mod[0]] = {};
+      for(var f in entries) {
+        this.serialize[mod[0] + '.' + f] =  entries[f];
+        this.serialize[mod[0]][f] =  entries[f];
+      }
+    }
+    return this.serialize[node.type](node);
+  }
   // Builds a PHP AST to JavaScript
   ,toString: function(ast) {
     if (!ast) return '';
     if (ast.type) {
-      return this[ast.type](ast);
+      return this.transcriptNode(ast);
     } else {
       var result = [];
       for(var i = 0; i < ast.length; i++) {
         if (ast[i] == null) continue;
         if (ast[i].type) {
-          result.push(this[ast[i].type](ast[i]));
+          result.push(this.transcriptNode(ast[i]));
         } else if(Array.isArray(ast[i])) {
           result.push(this.toString(ast[i]));
         } else {
@@ -58,115 +89,5 @@ module.exports = {
       }
       return result.join('');
     }
-  }
-  // The T_ECHO equivalent
-  ,output: function(item) {
-    return '__output.write(' + JSON.stringify(item.data) + ');\n';
-  }
-  ,php: function(item) {
-    return this.toString(item.data);
-  }
-  // SERIALIZE A GLOBAL FUNCTION
-  ,php_function: function(item) {
-    var params = [];
-    if (item.parameters) {
-      item.parameters.forEach(function(param) {
-        if (param && param.name) params.push(param.name);
-      });
-    }
-    this.functions.push(
-      item.name + ': function(' + params.join(', ') + ') {\n\t\t' 
-      + this.toString(item.body)
-      + '\n\t}'
-    );
-    return '';
-  }
-  ,php_class: function(item) {
-    console.log(item);
-    return '/* todo */';
-  }
-  ,php_variable: function(item) {
-    return item.name;
-  }
-  ,php_string: function(item) {
-    var output = JSON.stringify(item.data);
-    return item.char + output.substring(1, output.length - 1) + item.char;
-  }
-  ,php_T_ECHO: function(item) {
-    return '__output.write(String(' + this.toString(item.statements) + '));\n';
-  }
-  // PROXY for functions
-  ,php_FUNCTION_CALL: function(item) {
-    var ret = this.getCompat().checkFunction(item.name, item.args[1].args);
-    if (ret === false) {
-      if (require('./compat').hasOwnProperty(item.name)) {
-        // global function
-        return  builder.use('./compat') + '.' + item.name + this.toString(item.args);
-      } else {
-        // local scope function
-        return 'this.' + item.name + this.toString(item.args);
-      }
-    } else return ret;
-  }
-  // Serialize arguments for a function call
-  ,php_args: function(item) {
-    var result = [];
-    var module = this;
-    item.args.forEach(function(i) {
-      if (Array.isArray(i)) {
-        result.push(module.toString(i));
-      } else {
-        result.push(i);
-      }
-    });
-    return result.join(', ');
-  }
-  , php_T_INCLUDE: function(item) {
-    return  this.use('./php') 
-      + '.include(' 
-      + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
-      + ', ' + (item.ignore ? 'true' : 'false')
-      + ', __output'
-    +')';
-  }
-  , php_T_INCLUDE_ONCE: function(item) {
-    return  this.use('./php') 
-      + '.include_once(' 
-      + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
-      + ', ' + (item.ignore ? 'true' : 'false')
-      + ', __output'
-    +')';
-  }
-  , php_T_REQUIRE: function(item) {
-    return  this.use('./php') 
-      + '.require(' 
-      + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
-      + ', ' + (item.ignore ? 'true' : 'false')
-      + ', __output'
-    +')';
-  }
-  , php_T_REQUIRE_ONCE: function(item) {
-    return  this.use('./php') 
-      + '.require_once(' 
-      + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
-      + ', ' + (item.ignore ? 'true' : 'false')
-      + ', __output'
-    +')';
-  }
-  ,php_if: function(item) {
-    return 'if (' +  this.toString(item.condition) + ')'
-       + this.toString(item.statement) 
-       + this.toString(item._elseif) 
-       + this.toString(item._else)
-    ; 
-  }
-  ,php_statements: function(item) {
-    return '{\n' +  this.toString(item.data) + '\n}\n';
-  }
-  ,php_else: function(item) {
-    return ' else ' +  this.toString(item.data);
-  }
-  ,php_elseif: function(item) {
-    return ' elseif(' + this.toString(item.condition) + ')' +  this.toString(item.statement);
   }
 };

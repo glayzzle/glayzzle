@@ -97,11 +97,11 @@ inner_statement
 
 statement
     = '{' __ statements:inner_statement_list __ '}' {
-      return { type: "php_statements", data: statements };
+      return { type: "common.T_STATEMENTS", data: statements };
     }
     / T_IF __ condition:parentheses_expr __ statement:statement __ _elseif:elseif* _else:else_single? {
       return {
-        type: "php_if"
+        type: "common.T_IF"
         , condition: condition
         , statement: statement
         , _elseif: _elseif
@@ -122,7 +122,7 @@ statement
     / yield_expr ';'
     / T_GLOBAL global_var_list ';'
     / T_STATIC static_var_list ';'
-    / __ T_ECHO __ tokens:expr_list __ ';'		{ return { type: 'php_T_ECHO', statements: tokens }; }
+    / __ T_ECHO __ tokens:expr_list __ ';'		{ return { type: 'internal.T_ECHO', statements: tokens }; }
     / T_INLINE_HTML
     / __ expr:expr __ ';' __
     / T_UNSET '(' variables_list ')' ';'
@@ -152,20 +152,20 @@ optional_ref
   = __ ref:'&'?                                   { return ref ? true : false; }
 
 function_declaration_statement
-    = phpdoc:__ T_FUNCTION  optional_ref name:T_STRING __ '(' parameters:parameter_list ')' __ '{' __ statements:inner_statement_list __ '}' {
+    = phpdoc:__ T_FUNCTION  optional_ref n:T_STRING __ '(' p:parameter_list ')' __ '{' __ s:inner_statement_list __ '}' {
       return {
-        type: 'php_function',
+        type: 'function.T_DECLARE',
         meta: phpdoc,
-        name: name,
-        parameters: parameters,
-        body: statements
+        name: n,
+        parameters: p,
+        body: s
       };
     }
 
 class_declaration_statement
-  = f:(T_ABSTRACT / T_FINAL)? T_CLASS __ n:T_STRING __ e:extends_from? __ i:implements_list? __ '{' __ b:class_statement_list __ '}' {
+  = f:(T_ABSTRACT / T_FINAL)? __ T_CLASS __ n:T_STRING __ e:extends_from? __ i:implements_list? __ '{' __ b:class_statement_list __ '}' {
     return {
-      type: 'php_class',
+      type: 'class.T_DECLARE',
       flag: f,
       name: n,
       extends: e,
@@ -230,11 +230,11 @@ while_statement
 
 elseif
   = T_ELSEIF __ c:parentheses_expr __ s:statement {
-    return { type: "php_elseif", condition: c, statement: s };
+    return { type: "common.T_ELSEIF", condition: c, statement: s };
   }
 
 else_single
-  = T_ELSE __ s:statement { return { type: 'php_else', data: s }; }
+  = T_ELSE __ s:statement { return { type: 'common.T_ELSE', data: s }; }
 
 foreach_variable
   = variable
@@ -248,8 +248,15 @@ non_empty_parameter_list
   = parameter (',' parameter)*
 
 parameter
-  = __ type:class_type? ref:optional_ref __ param:T_VARIABLE                                    { return { type: 'php_parameter', name: param.name, ref: ref, class: type }; }
-  / __ type:class_type? ref:optional_ref __ param:T_VARIABLE __ '=' __ value:static_scalar      { return { type: 'php_parameter', name: param.name, ref: ref, class: type, default: value }; }
+  = __ t:class_type? r:optional_ref __ v:T_VARIABLE (__ '=' __ v:static_scalar) ? {
+    return { 
+      type: 'function.T_PARAMETER', 
+      name: v.name, 
+      ref: r, 
+      class: t?
+      value: typeof v == 'undefined' ? null : v
+    };
+  }
 
 class_type
   = name
@@ -257,7 +264,7 @@ class_type
   / T_CALLABLE
 
 argument_list
-  = '(' ')'                                                     { return ['(', [], ')']; }
+  = '(' ')'  { return ['(', [], ')']; }
   / '(' __ arg1:argument argList:( __ ',' __ argument )* __ ')' {
     var args = [arg1[3] ? arg1 : arg1[1]];
     if (argList) for(var i = 0; i<argList.length; i++) {
@@ -268,7 +275,7 @@ argument_list
       }
     }
     return ['(', {
-      type: 'php_args', args: args
+      type: 'common.T_ARGS', args: args
     }, ')']; 
   }
   /* todo '(' yield_expr ')'  */
@@ -298,20 +305,20 @@ class_statement_list
 class_statement
   = __ m:variable_modifiers __ p:property_declaration_list __ ';' {
     return {
-      type: 'php_property',
+      type: 'class.T_PROPERTY',
       modifiers: m,
       properties: p
     };
   }
   / __ T_CONST __ c:constant_declaration_list __ ';' {
     return {
-      type: 'php_constant',
+      type: 'class.T_CONST',
       items: c
     };
   }
   / __ m:method_modifiers __ T_FUNCTION __ optional_ref n:T_STRING __ '(' __ p:parameter_list __ ')' __ b:method_body {
     return {
-      type: 'php_method',
+      type: 'class.T_METHOD',
       modifiers: m,
       name: n,
       parameters: p,
@@ -384,7 +391,19 @@ boolean_expr
   / 'false' { return false; }
 
 expr
-  = __ variable __ expr?
+  /** SPECIAL PHP FUNCTIONS : **/
+  = T_ISSET __ '(' __ v:variables_list __ ')'
+  / T_EMPTY __ '(' __ e:expr __ ')'
+  / __ i:'@'? T_INCLUDE_ONCE __ ('(' __)? t:expr (__ ')')?      { return { type: 'internal.T_INCLUDE', target: t, ignore: i, once: true }; }
+  / __ i:'@'? T_INCLUDE __ '('? __  t:expr __')'?               { return { type: 'internal.T_INCLUDE', target: t, ignore: i, once: false }; }
+  / __ T_REQUIRE_ONCE  __ '('? __ t:expr __')'?                 { return { type: 'internal.T_REQUIRE', target: t, once: true }; }
+  / __ T_REQUIRE  __ '('? __ t:expr __')'?                      { return { type: 'internal.T_REQUIRE', target: t, once: false }; }
+  / T_EVAL parentheses_expr
+  / T_EXIT exit_expr?
+  / T_PRINT expr
+
+  /** **/
+  / __ variable __ expr?
   / __ boolean_expr __ expr?
   / __ list_expr __ '=' expr
   / __ variable __ '=' expr
@@ -392,6 +411,7 @@ expr
   / __ variable '=' '&' new_expr
   / __ new_expr
   / __ T_CLONE expr
+  / __ T_OBJECT_OPERATOR expr
   / __ variable __ (
     T_PLUS_EQUAL
     / T_MINUS_EQUAL
@@ -429,16 +449,10 @@ expr
   / nexpr '?' nexpr ':' nexpr
   / nexpr '?' ':' nexpr
   ---*/
+
   / __ parentheses_expr __
   /* we need a separate '(' new_expr ')' rule to avoid problems caused by a s/r conflict */
   / '(' __ new_expr __ ')'
-  / T_ISSET '(' variables_list ')'
-  / T_EMPTY '(' expr ')'
-  / __ i:'@'? T_INCLUDE __ target:expr					{ return { type: 'php_T_INCLUDE', target: target, ignore: i }; }
-  / __ i:'@'? T_INCLUDE_ONCE __ target:expr			{ return { type: 'php_T_INCLUDE_ONCE', target: target, ignore: i }; }
-  / T_EVAL parentheses_expr
-  / __ T_REQUIRE __ target:expr					{ return { type: 'php_T_REQUIRE', target: target }; }
-  / __ T_REQUIRE_ONCE __ target:expr			{ return { type: 'php_T_REQUIRE_ONCE', target: target }; }
   / T_INT_CAST expr
   / T_DOUBLE_CAST expr
   / T_STRING_CAST expr
@@ -446,13 +460,11 @@ expr
   / T_OBJECT_CAST expr
   / T_BOOL_CAST expr
   / T_UNSET_CAST expr
-  / T_EXIT exit_expr?
   / '@' expr
   / __ scalar __ expr?
   / __ array_expr
   / __ scalar_dereference
   / '`' backticks_expr? '`'
-  / T_PRINT expr
   / T_YIELD
   / T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
   / T_STATIC T_FUNCTION optional_ref '(' parameter_list ')' lexical_vars? '{' inner_statement_list '}'
@@ -491,13 +503,13 @@ lexical_var_list
 lexical_var
   = optional_ref T_VARIABLE
 
-function_call
+function_call "T_FUNCTION_CALL"
   = function_call_expr
   / function_call_expr '[' dim_offset ']'
   /* alternative array syntax missing intentionally */
 
 function_call_expr
-  = name:name args:argument_list	{ return { type: 'php_FUNCTION_CALL', name: name, args: args }; }
+  = n:name a:argument_list	                                                     { return { type: 'function.T_CALL', name: n, args: a }; }
   / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM T_STRING argument_list
   / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM '{' expr '}' argument_list
   / static_property argument_list
@@ -531,7 +543,7 @@ object_access_for_dcnr
   / object_access_for_dcnr_expr '{' expr '}'
 
 object_access_for_dcnr_expr
-  = base_variable T_OBJECT_OPERATOR object_property
+  = base_variable __ T_OBJECT_OPERATOR __ object_property
 
 exit_expr
   = '(' ')'
@@ -591,12 +603,6 @@ static_array_pair
   = static_scalar T_DOUBLE_ARROW static_scalar
   / static_scalar
 
-IdentifierStart
-  = '$'+
-
-Identifier
-  = IdentifierStart name:T_STRING                       { return { type: 'php_variable', name: name }; }
-
 variable
   = base_variable /** @todo LR object_access **/
   / function_call
@@ -626,7 +632,7 @@ variable_or_new_expr
 
 variable_without_objects
   = reference_variable
-  / Identifier
+  / T_STRING_VARNAME
 
 base_variable
   = variable_without_objects
@@ -651,7 +657,7 @@ reference_variable
   / reference_variable_var
 
 reference_variable_var
-  = Identifier
+  = T_STRING_VARNAME
   / '$' '{' expr '}'
 
 dim_offset

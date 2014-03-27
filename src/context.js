@@ -171,7 +171,7 @@ module.exports = {
         if ( c == '<') {
           if (String.fromCharCode(data[i+1]) == '?') {
             if (buffer) {
-              results.push({ type: 'output', data: buffer});
+              results.push({ type: 'doc.T_HTML', data: buffer});
             }
             var offset = 2;
             if (String.fromCharCode(data[i+2]) == '=') {
@@ -181,7 +181,7 @@ module.exports = {
             }
             var next = data.indexOf("?>", i);
             results.push({ 
-              type: 'php'
+              type: 'doc.T_PHP'
               , data: this.getParser().parse(
                   data.toString('utf8', i + offset, next > i ? next: data.length)
               )
