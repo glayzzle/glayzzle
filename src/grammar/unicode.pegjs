@@ -63,6 +63,7 @@ UnicodeLetter
   / Lm
   / Lo
   / Nl
+  / '_'
 
 UnicodeCombiningMark
   = Mn

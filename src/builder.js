@@ -81,6 +81,10 @@ module.exports = {
 		);
 		return '';
 	}
+  ,php_class: function(item) {
+    console.log(item);
+    return '/* todo */';
+  }
 	,php_variable: function(item) {
 		return item.name;
 	}

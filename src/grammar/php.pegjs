@@ -2,6 +2,15 @@
   function makeInteger(o) {
     return parseInt(o.join(""), 10);
   }
+  function makeList(a1, al) {
+    var result = [a1];
+    if (al && al.length > 0) {
+      al.forEach(function(a) {
+        result.push(a[3]);
+      });
+    }
+    return result;
+  }
 }
 
 start
@@ -67,10 +76,15 @@ use_const_declaration
   / T_NS_SEPARATOR namespace_name T_AS T_STRING
 
 constant_declaration_list
-  = constant_declaration (',' constant_declaration)*
+  = a1:constant_declaration al:( __ ',' __ constant_declaration)* { return makeList(a1, al); }
 
 constant_declaration
-  = T_STRING '=' static_scalar
+  = n:T_STRING __ '=' __ v:static_scalar {
+    return {
+      name: n,
+      value: v
+    };
+  }
 
 inner_statement_list
   = inner_statement*
@@ -149,26 +163,31 @@ function_declaration_statement
     }
 
 class_declaration_statement
-  = class_entry_type T_STRING extends_from? implements_list? '{' class_statement_list '}'
+  = f:(T_ABSTRACT / T_FINAL)? T_CLASS __ n:T_STRING __ e:extends_from? __ i:implements_list? __ '{' __ b:class_statement_list __ '}' {
+    return {
+      type: 'php_class',
+      flag: f,
+      name: n,
+      extends: e,
+      implements: i,
+      body: b
+    };
+  }
   / T_INTERFACE T_STRING interface_extends_list? '{' class_statement_list '}'
   / T_TRAIT T_STRING '{' class_statement_list '}'
 
-class_entry_type
-  = T_CLASS
-  / T_ABSTRACT T_CLASS
-  / T_FINAL T_CLASS
 
 extends_from
-  = T_EXTENDS name
+  = T_EXTENDS n:name            { return n; }
 
 interface_extends_list
-  = T_EXTENDS name_list
+  = T_EXTENDS n:name_list       { return n; }
 
 implements_list
-  = T_IMPLEMENTS name_list
+  = T_IMPLEMENTS n:name_list    { return n; }
 
 name_list
-  = name (',' name)*
+  = a1:name al:( __ ',' __ name)*     { return makeList(a1, al) }
 
 for_statement
   = statement
@@ -210,12 +229,12 @@ while_statement
   / ':' inner_statement_list T_ENDWHILE ';'
 
 elseif
-  = T_ELSEIF __ condition:parentheses_expr __ statement:statement {
-    return { type: "php_elseif", condition: condition, statement: statement };
+  = T_ELSEIF __ c:parentheses_expr __ s:statement {
+    return { type: "php_elseif", condition: c, statement: s };
   }
 
 else_single
-  = T_ELSE __ statement:statement { return { type: 'php_else', data: statement }; }
+  = T_ELSE __ s:statement { return { type: 'php_else', data: s }; }
 
 foreach_variable
   = variable
@@ -277,10 +296,29 @@ class_statement_list
   = class_statement*
 
 class_statement
-  = variable_modifiers property_declaration_list ';'
-  / T_CONST constant_declaration_list ';'
-  / method_modifiers T_FUNCTION optional_ref T_STRING '(' parameter_list ')' method_body
-  / T_USE name_list trait_adaptations
+  = __ m:variable_modifiers __ p:property_declaration_list __ ';' {
+    return {
+      type: 'php_property',
+      modifiers: m,
+      properties: p
+    };
+  }
+  / __ T_CONST __ c:constant_declaration_list __ ';' {
+    return {
+      type: 'php_constant',
+      items: c
+    };
+  }
+  / __ m:method_modifiers __ T_FUNCTION __ optional_ref n:T_STRING __ '(' __ p:parameter_list __ ')' __ b:method_body {
+    return {
+      type: 'php_method',
+      modifiers: m,
+      name: n,
+      parameters: p,
+      body: b
+    };
+  }
+  / __ T_USE __ name_list __ trait_adaptations
 
 trait_adaptations
   = ';'
@@ -308,7 +346,7 @@ method_body
 
 variable_modifiers
   = non_empty_member_modifiers
-  / T_VAR
+  / T_VAR   { return [1]; }
 
 method_modifiers
   = non_empty_member_modifiers
@@ -317,19 +355,23 @@ non_empty_member_modifiers
   = member_modifier+
 
 member_modifier
-  = T_PUBLIC
-  / T_PROTECTED
-  / T_PRIVATE
-  / T_STATIC
-  / T_ABSTRACT
-  / T_FINAL
+  = T_PUBLIC __         { return 1; }
+  / T_PROTECTED __      { return 2; }
+  / T_PRIVATE __        { return 4; }
+  / T_STATIC __         { return 8; }
+  / T_ABSTRACT __       { return 16; }
+  / T_FINAL __          { return 32; }
 
 property_declaration_list
-  = property_declaration (',' property_declaration)*
+  = a1:property_declaration al:( __ ',' __ property_declaration)* { return makeList(a1, al) }
 
 property_declaration
-  = T_VARIABLE
-  / T_VARIABLE '=' static_scalar
+  = n:T_VARIABLE __ ('=' __ d:static_scalar)? {
+    return {
+      name: n.name,
+      default: typeof d !== 'undefined' ? d : null
+    };
+  }
 
 expr_list
   = expr __ (',' __ expr __)*
@@ -350,21 +392,23 @@ expr
   / __ variable '=' '&' new_expr
   / __ new_expr
   / __ T_CLONE expr
-  / __ variable __ T_PLUS_EQUAL __ expr
-  / __ variable __ T_MINUS_EQUAL __ expr
-  / __ variable __ T_MUL_EQUAL __ expr
-  / __ variable __ T_DIV_EQUAL __ expr
-  / __ variable __ T_CONCAT_EQUAL __ expr
-  / __ variable __ T_MOD_EQUAL __ expr
-  / __ variable __ T_AND_EQUAL __ expr
-  / __ variable __ T_OR_EQUAL __ expr
-  / __ variable __ T_XOR_EQUAL __ expr
-  / __ variable __ T_SL_EQUAL __ expr
-  / __ variable __ T_SR_EQUAL __ expr
-  / __ variable __ T_INC
-  / __ T_INC variable __
-  / __ variable T_DEC __
-  / __ T_DEC variable __
+  / __ variable __ (
+    T_PLUS_EQUAL
+    / T_MINUS_EQUAL
+    / T_MUL_EQUAL
+    / T_DIV_EQUAL
+    / T_CONCAT_EQUAL
+    / T_MOD_EQUAL
+    / T_AND_EQUAL
+    / T_OR_EQUAL
+    / T_XOR_EQUAL
+    / T_SL_EQUAL
+    / T_SR_EQUAL
+  ) __ expr
+  / __ variable __ T_INC __ expr?
+  / __ T_INC __ variable __ expr?
+  / __ variable __ T_DEC __ expr?
+  / __ T_DEC variable __ expr?
   / __ MathOperators __ expr
   / __ RelationalOperator __ expr
   /* ---- LEFT RECURSION
@@ -464,9 +508,9 @@ class_name
   / name
 
 name
-  = namespace_name_parts								{ return text(); }
-  / T_NS_SEPARATOR namespace_name_parts					{ return text(); }
-  / T_NAMESPACE T_NS_SEPARATOR namespace_name_parts		{ return text(); }
+  = namespace_name_parts                              { return text(); }
+  / T_NS_SEPARATOR namespace_name_parts               { return text(); }
+  / T_NAMESPACE T_NS_SEPARATOR namespace_name_parts   { return text(); }
 
 class_name_reference
   = class_name
@@ -519,15 +563,15 @@ common_scalar
 static_scalar
   /* compile-time evaluated scalars */
   = common_scalar
-  / class_name T_PAAMAYIM_NEKUDOTAYIM class_const_name
-  / __ '+' __ static_scalar
-  / __ '-' __ static_scalar
-  / T_ARRAY '(' static_array_pair_list? ')'
-  / '[' static_array_pair_list? ']'
+  / class_name __ T_PAAMAYIM_NEKUDOTAYIM __ class_const_name
+  / '+' __ static_scalar
+  / '-' __ static_scalar
+  / T_ARRAY __ '(' static_array_pair_list? ')'
+  / '[' __ static_array_pair_list? __ ']'
 
 scalar "Scalar Value"
   = common_scalar
-  / class_name_or_var T_PAAMAYIM_NEKUDOTAYIM class_const_name
+  / class_name_or_var __ T_PAAMAYIM_NEKUDOTAYIM __ class_const_name
   / '"' encaps_list '"'
   / T_START_HEREDOC encaps_list T_END_HEREDOC
 
