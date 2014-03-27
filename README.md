@@ -28,8 +28,9 @@ Here's the todo list :
 * Migrate common PHP functions to be compliant with php
 * Migrate most used PHP modules
 
-If you want to contribute, fell free to contact me from github - the coding rules
-are simple : use tabs, unix line ends, UTF8, fork, pull & have fun...
+If you want to contribute, fell free to contact me from github.
+
+Coding rules are here : http://nodeguide.com/style.html
 
 Install & Run :
 ===============
