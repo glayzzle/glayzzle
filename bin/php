@@ -12,44 +12,44 @@ var http = require('http');
 var cluster = require('cluster');
 
 function printVersion() {
-	util.puts('Magma version ' + PHP.VERSION);
+  util.puts('Magma version ' + PHP.VERSION);
 }
 
 function printHelp() {
-	util.puts("Usage: php [options] [-f] <file>");
-	util.puts("");
-	util.puts("  --build                            rebuilds the parser before executing the request");
-	util.puts("  --debug [0-9]+                     enables debug ouput (with a specific level)");
-	util.puts("  -f <file>                          parse and execute file");
-	util.puts("  -v, --version                      print version information and exit");
-	util.puts("  -h, --help                         print help and exit");
+  util.puts("Usage: php [options] [-f] <file>");
+  util.puts("");
+  util.puts("  --build                            rebuilds the parser before executing the request");
+  util.puts("  --debug [0-9]+                     enables debug ouput (with a specific level)");
+  util.puts("  -f <file>                          parse and execute file");
+  util.puts("  -v, --version                      print version information and exit");
+  util.puts("  -h, --help                         print help and exit");
 }
 
 // aborts the execution with the specified error message
 function abort(message) {
-	util.error(message);
-	process.exit(1);
+  util.error(message);
+  process.exit(1);
 }
 
 // Reads a list of files and executes the specified callback
 function readFiles(files, cb) {
-	var counter = files.length;
-	var result = { files: {}, errors: []};
-	if (!files || files.length == 0) {
-		cb(result);
-	} else {
-		files.forEach(function (file){
-			fs.readFile(file, 'utf8', function(err,data) {
-				if (err) {
-					result.errors.push(err);
-				} else {
-					result.files[file] = data;
-				}
-				counter --;
-				if (counter == 0) cb(result);
-			});
-		});
-	}
+  var counter = files.length;
+  var result = { files: {}, errors: []};
+  if (!files || files.length == 0) {
+    cb(result);
+  } else {
+    files.forEach(function (file){
+      fs.readFile(file, 'utf8', function(err,data) {
+        if (err) {
+          result.errors.push(err);
+        } else {
+          result.files[file] = data;
+        }
+        counter --;
+        if (counter == 0) cb(result);
+      });
+    });
+  }
 };
 
 /* Arguments */
@@ -57,71 +57,71 @@ function readFiles(files, cb) {
 var args = process.argv.slice(2); // Trim "node" and the script path.
 
 function isOption(arg) {
-	return (/^-/).test(arg);
+  return (/^-/).test(arg);
 }
 
 function nextArg() {
-	args.shift();
+  args.shift();
 }
 
 var options = {
-	debug: 0,
-	build: false,
-	filename: null,
-	server: false
+  debug: 0,
+  build: false,
+  filename: null,
+  server: false
 };
 
 // Reading arguments
 while (args.length > 0 && isOption(args[0])) {
-	switch(args[0]) {
-		case "-f":
-			nextArg();
-			options.filename = args[0];
-			break;
+  switch(args[0]) {
+    case "-f":
+      nextArg();
+      options.filename = args[0];
+      break;
 
-		case "--debug":
-			nextArg();
-			options.debug = args[0];
-			break;
+    case "--debug":
+      nextArg();
+      options.debug = args[0];
+      break;
 
-		case "--build":
-			options.build = true;
-			break;
+    case "--build":
+      options.build = true;
+      break;
 
-		case "-v":
-		case "--version":
-			printVersion();
-			process.exit(0);
-			break;
+    case "-v":
+    case "--version":
+      printVersion();
+      process.exit(0);
+      break;
 
-		case "-S":
-			nextArg();
-			options.server = args[0];
-			break;
+    case "-S":
+      nextArg();
+      options.server = args[0];
+      break;
 
-		case "-h":
-		case "--help":
-			printHelp();
-			process.exit(0);
-			break;
+    case "-h":
+    case "--help":
+      printHelp();
+      process.exit(0);
+      break;
 
-		default:
-			abort("Unknown option: " + args[0] + ".");
-	}
-	nextArg();
+    default:
+      abort("Unknown option: " + args[0] + ".");
+  }
+  nextArg();
 }
 
 // Checking last parameters
 if ( args.length > 0 ) {
-	if ( args.length == 1 && !options.filename ) {
-		options.filename = args[0];
-	} else {
-		abort("Too many arguments.");
-	}
+  if ( args.length == 1 && !options.filename ) {
+    options.filename = args[0];
+  } else {
+    abort("Too many arguments.");
+  }
 }
 
 if ( !options.filename ) {
-	abort("Expecting a filename.");
+  abort("Expecting a filename.");
 }
 
 if (options.debug) console.log("*** DEBUG MODE ***");
@@ -129,91 +129,91 @@ process.env.DEBUG = options.debug;
 
 // Handling the parser build
 if ( options.build ) {
-	var PEG = require("pegjs");
-	var GRAMMAR_PATH = '../src/grammar/';
-	if (options.debug) console.log("> Read parsing rules");
-	fs.readFile(GRAMMAR_PATH + 'php.pegjs', 'utf8', function(err, data) {
-		if (err) return abort(err);
-		if (options.debug) console.log("> Build parser");
-		var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
-		var files = [];
-		match = importRegex.exec(data);
-		while (match != null) {
-			files.push(match[1]);
-			match = importRegex.exec(data);
-		}
-		if (files && files.length > 0) {
-			for(var i = 0; i < files.length; i++) {
-				files[i] = GRAMMAR_PATH + files[i];
-			}
-		} else {
-			files = [];
-		}
-		readFiles(files, function(imports) {
-			try {
-				data = data.replace(
-					importRegex,
-					function(match, file) {
-						return imports.files[GRAMMAR_PATH + file];
-					}
-				);
-				fs.writeFileSync(
-					'../src/parser.js'
-					, 'module.exports = ' 
-					+ PEG.buildParser(data, {
-						cache:    false,
-						output:   "source",
-						optimize: "speed",
-						plugins:  []
-					})
-					+ ';\n'
-				);
-			} catch(e) {
-				PHP.context.parseError(e, data);
-			}
-			if (options.debug) console.log("*** BUILD DONE ***");
-			run(options);
-		});
-	});
+  var PEG = require("pegjs");
+  var GRAMMAR_PATH = '../src/grammar/';
+  if (options.debug) console.log("> Read parsing rules");
+  fs.readFile(GRAMMAR_PATH + 'php.pegjs', 'utf8', function(err, data) {
+    if (err) return abort(err);
+    if (options.debug) console.log("> Build parser");
+    var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
+    var files = [];
+    match = importRegex.exec(data);
+    while (match != null) {
+      files.push(match[1]);
+      match = importRegex.exec(data);
+    }
+    if (files && files.length > 0) {
+      for(var i = 0; i < files.length; i++) {
+        files[i] = GRAMMAR_PATH + files[i];
+      }
+    } else {
+      files = [];
+    }
+    readFiles(files, function(imports) {
+      try {
+        data = data.replace(
+          importRegex,
+          function(match, file) {
+            return imports.files[GRAMMAR_PATH + file];
+          }
+        );
+        fs.writeFileSync(
+          '../src/parser.js'
+          , 'module.exports = ' 
+          + PEG.buildParser(data, {
+            cache:    false,
+            output:   "source",
+            optimize: "speed",
+            plugins:  []
+          })
+          + ';\n'
+        );
+      } catch(e) {
+        PHP.context.parseError(e, data);
+      }
+      if (options.debug) console.log("*** BUILD DONE ***");
+      run(options);
+    });
+  });
 } else {
-	run(options);
+  run(options);
 }
 
 // runs the command
 function run(options) {
-	if (options.server) {
-		process.env.DEBUG = 0;
-		if (cluster.isMaster) {
-			var numCPUs = require('os').cpus().length;		
-			printVersion();
-			console.log('Started at ' + (new Date()));
-			// Fork workers.
-			for (var i = 0; i < numCPUs; i++) {
-				cluster.fork();
-			}
-			console.log('Listening at ' + options.server + '\n');
-			cluster.on('exit', function(worker, code, signal) {
-				console.log('worker ' + worker.process.pid + ' died');
-				cluster.fork();
-			});
-		} else {
-			var endpoint = options.server.split(':');
-			http.createServer(function(req, res) {
-				if (options.debug) {
-					var now = new Date();
-					console.log(now.getHours()+':'+now.getMinutes()+':'+now.getSeconds() + '\t' + req.method + ' ' + req.url);
-				}
-				try {
-					PHP.include(options.filename, false, res);
-					res.end();
-				} catch(e) {
-					util.error(e);
-					res.end('Error : ' + e.message);
-				}
-			}).listen(parseInt(endpoint[1]), endpoint[0]);
-		}
-	} else {
-		// RUNS THE SPECIFIED SCRIPT
-		PHP.include(options.filename);
-	}
+  if (options.server) {
+    process.env.DEBUG = 0;
+    if (cluster.isMaster) {
+      var numCPUs = require('os').cpus().length;    
+      printVersion();
+      console.log('Started at ' + (new Date()));
+      // Fork workers.
+      for (var i = 0; i < numCPUs; i++) {
+        cluster.fork();
+      }
+      console.log('Listening at ' + options.server + '\n');
+      cluster.on('exit', function(worker, code, signal) {
+        console.log('worker ' + worker.process.pid + ' died');
+        cluster.fork();
+      });
+    } else {
+      var endpoint = options.server.split(':');
+      http.createServer(function(req, res) {
+        if (options.debug) {
+          var now = new Date();
+          console.log(now.getHours()+':'+now.getMinutes()+':'+now.getSeconds() + '\t' + req.method + ' ' + req.url);
+        }
+        try {
+          PHP.include(options.filename, false, res);
+          res.end();
+        } catch(e) {
+          util.error(e);
+          res.end('Error : ' + e.message);
+        }
+      }).listen(parseInt(endpoint[1]), endpoint[0]);
+    }
+  } else {
+    // RUNS THE SPECIFIED SCRIPT
+    PHP.include(options.filename);
+  }
 }
