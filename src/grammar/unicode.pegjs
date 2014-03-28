@@ -1,26 +1,8 @@
 /*
  * Unicode Character Categories
- *
  * Extracted from the following Unicode Character Database file:
- *
  *   http://www.unicode.org/Public/6.3.0/ucd/extracted/DerivedGeneralCategory.txt
  *
- * Unix magic used:
- *
- *   grep "; $CATEGORY" DerivedGeneralCategory.txt |   # Filter characters
- *     cut -f1 -d " " |                                # Extract code points
- *     grep -v '[0-9a-fA-F]\{5\}' |                    # Exclude non-BMP characters
- *     sed -e 's/\.\./-/' |                            # Adjust formatting
- *     sed -e 's/\([0-9a-fA-F]\{4\}\)/\\u\1/g' |       # Adjust formatting
- *     tr -d '\n'                                      # Join lines
- *
- * ECMA-262 allows using Unicode 3.0 or later, version 6.3.0 was the latest one
- * at the time of writing.
- *
- * Non-BMP characters are completely ignored to avoid surrogate pair handling
- * (detecting surrogate pairs isn't possible with a simple character class and
- * other methods would degrade performance). I don't consider it a big deal as
- * even parsers in JavaScript engines of common browsers seem to ignore them.
  */
 
 // Letter, Lowercase
@@ -50,12 +32,6 @@ Nd = [\u0030-\u0039\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u
 // Number, Letter
 Nl = [\u16EE-\u16F0\u2160-\u2182\u2185-\u2188\u3007\u3021-\u3029\u3038-\u303A\uA6E6-\uA6EF]
 
-// Punctuation, Connector
-Pc = [\u005F\u203F-\u2040\u2054\uFE33-\uFE34\uFE4D-\uFE4F\uFF3F]
-
-// Separator, Space
-Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
-
 UnicodeLetter
   = Lu
   / Ll
@@ -64,62 +40,3 @@ UnicodeLetter
   / Lo
   / Nl
   / '_'
-
-UnicodeCombiningMark
-  = Mn
-  / Mc
-
-UnicodeDigit
-  = Nd
-
-UnicodeConnectorPunctuation
-  = Pc
-
-/* LEXER */
-SourceCharacter
-  = .
-
-WhiteSpace "whitespace"
-  = "\t"
-  / "\v"
-  / "\f"
-  / " "
-  / "\u00A0"
-  / "\uFEFF"
-  / Zs
-
-LineTerminator
-  = [\n\r\u2028\u2029]
-
-LineTerminatorSequence "end of line"
-  = "\n"
-  / "\r\n"
-  / "\r"
-  / "\u2028"
-  / "\u2029"
-
-Comment "comment"
-  = MultiLineComment
-  / SingleLineComment
-
-MultiLineComment
-  = "/*" (!"*/" SourceCharacter)* "*/"
-
-MultiLineCommentNoLineTerminator
-  = "/*" (!("*/" / LineTerminator) SourceCharacter)* "*/"
-
-SingleLineComment "SingleLineComment"
-  = "//" (!LineTerminator SourceCharacter)*
-/* EXTRA */
-
-EOF
-  = !.
-
-__
-  = (WhiteSpace / LineTerminatorSequence / Comment)*
-
-_
-  = (WhiteSpace / MultiLineCommentNoLineTerminator)*
-
-name
-  = letters:UnicodeLetter+              { return letters.join(''); }

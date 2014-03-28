@@ -7,17 +7,12 @@ StringLiteral "string"
     }
 
 DoubleStringCharacter
-  = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
-  / LineContinuation
+  = !('"' / "\\") . { return text(); }
+  / "\\" s:EscapeSequence { return s; }
 
 SingleStringCharacter
-  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
-  / "\\" sequence:EscapeSequence { return sequence; }
-  / LineContinuation
-
-LineContinuation
-  = "\\" LineTerminatorSequence { return ""; }
+  = !("'" / "\\") . { return text(); }
+  / "\\" s:EscapeSequence { return s; }
 
 EscapeSequence
   = CharacterEscapeSequence
@@ -41,7 +36,7 @@ SingleEscapeCharacter
   / "v"  { return "\x0B"; }   // IE does not recognize "\v".
 
 NonEscapeCharacter
-  = !(EscapeCharacter / LineTerminator) SourceCharacter { return text(); }
+  = !(EscapeCharacter / T_EOL) . { return text(); }
 
 EscapeCharacter
   = SingleEscapeCharacter
