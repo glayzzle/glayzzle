@@ -35,13 +35,36 @@ module.exports = {
   globals: require('./compat'),
 
   // current execution context
-  context: require('./context'),
-
+  context: require('./context').init(this),
+  
+  // cleans actual context
+  clean: function() {
+    this.globals = require('./compat');
+    this.context = require('./context').init(this);
+    return this;
+  }
+  // run a eval over PHP code
+  ,eval: function(code, ignore, output) {
+    try {
+      var exec = this.context.eval(code);
+      return exec.__main(
+        output ? output : process.stdout
+      );
+    } catch(e) {
+      if (!ignore) {
+        util.error(
+          'Warning : ' + (e.stack || e.message)
+        );
+      }
+      return null;
+    }
+  }
   /**
    * Includes a PHP script
    */
-  include: function(filename, ignore, output) {
+  ,include: function(filename, ignore, output) {
     filename = path.resolve(filename);
+    // @todo : improve speed by avoid fs access
     if (ignore || fs.existsSync(filename)) {
       try {
         var code = this.context.get(filename);

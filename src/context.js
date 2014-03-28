@@ -9,7 +9,6 @@ var builder = require('./builder');
 var path = require('path');
 var util = require('util');
 
-
 // Searching helper for a Buffer
 // From : https://groups.google.com/forum/#!topic/nodejs/fHiHwJZc6b4
 if ( !Buffer.prototype.indexOf ) {
@@ -57,8 +56,16 @@ module.exports = {
   // detects each script changes
   watchers: {},
 
+  // PHP engine
+  php: null,
+
+  // initialize the current context with specified PHP engine
+  init: function(php) {
+    this.php = php;
+    return this;
+  }
   // gets the current parser or load the default php parser
-  getParser: function() {
+  ,getParser: function() {
     if (!this.parser) {
       this.parser = require('./parser');
     }
@@ -76,7 +83,7 @@ module.exports = {
   parseError: function(e, file) {
     if(e.line) {
       util.error(
-        "\n! Parse Error : " + e.message + "\n"
+        "\nParse Error : " + e.message + "\n"
         + "At line " + e.line + ', ' + e.column
       );
       if ( file ) {
@@ -112,12 +119,17 @@ module.exports = {
           console.log( curLine + '. ' + loc );
           pend = pnext + 1;
         }
+        if (process.env.DEBUG > 0) {
+          if (!e.stack) {
+            e.stack = (new Error(e.message)).stack;
+          }
+          console.log('\n' + e.stack);
+        }
         process.exit(1);
       }
     } else {
       util.error(e);
     }
-    console.log(e.stack);
   }
   // Converts a filename to a cache filename 
   ,getCacheFile: function(filename) {
@@ -149,14 +161,37 @@ module.exports = {
   // registers the specified file
   , register: function(filename, cache) {
     this.includes[filename] = require(cache);
-    var PHP = require('./php');
     // registers each function globally
     for(var name in this.includes[filename]) {
       // @fixme show not allow to override an existing function
-      PHP.globals[name] = this.includes[filename][name];
+      this.php.globals[name] = this.includes[filename][name];
     }
     this.files.push(filename);
     return this;
+  }
+  // evaluates the specified code and returns its function
+  , eval: function(code) {
+    try {
+      var AST = this.getParser().parse(code);
+      var source = builder.init('evald code').toString(AST);
+    } catch(e) {
+      console.log(this.parser);
+      this.parseError(e, code);
+    }
+    builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
+    source = builder.headers() + '\n'
+      + 'exec = {\n\t'
+        + builder.functions.join('\n\t,')
+      + '};'
+    ;
+    var exec = null;
+    eval(source);
+    // registers each function globally
+    for(var name in exec) {
+      // @fixme show not allow to override an existing function
+      this.php.globals[name] = exec[name];
+    }
+    return exec;
   }
   // parse and build file cache
   , refresh: function(event, filename) {
