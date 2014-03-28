@@ -32,27 +32,6 @@ function abort(message) {
   process.exit(1);
 }
 
-// Reads a list of files and executes the specified callback
-function readFiles(files, cb) {
-  var counter = files.length;
-  var result = { files: {}, errors: []};
-  if (!files || files.length == 0) {
-    cb(result);
-  } else {
-    files.forEach(function (file){
-      fs.readFile(file, 'utf8', function(err,data) {
-        if (err) {
-          result.errors.push(err);
-        } else {
-          result.files[file] = data;
-        }
-        counter --;
-        if (counter == 0) cb(result);
-      });
-    });
-  }
-};
-
 /* Arguments */
 var options = {
   debug: process.argv[1] == '--debug' ||  process.argv[1] == '--debug-brk' ? 10 : 0,
@@ -128,52 +107,14 @@ process.env.DEBUG = options.debug;
 
 // Handling the parser build
 if ( options.build ) {
-  var PEG = require('pegjs');
-  var GRAMMAR_PATH = '../src/grammar/';
-  if (options.debug) console.log('> Read parsing rules');
-  fs.readFile(GRAMMAR_PATH + 'php.pegjs', 'utf8', function(err, data) {
-    if (err) return abort(err);
-    if (options.debug) console.log('> Build parser');
-    var importRegex = /^@import\s+'([A-Za-z0-9\-_.]*)'$/mg;
-    var files = [];
-    match = importRegex.exec(data);
-    while (match != null) {
-      files.push(match[1]);
-      match = importRegex.exec(data);
-    }
-    if (files && files.length > 0) {
-      for(var i = 0; i < files.length; i++) {
-        files[i] = GRAMMAR_PATH + files[i];
-      }
-    } else {
-      files = [];
-    }
-    readFiles(files, function(imports) {
-      try {
-        data = data.replace(
-          importRegex,
-          function(match, file) {
-            return imports.files[GRAMMAR_PATH + file];
-          }
-        );
-        fs.writeFileSync(
-          '../src/parser.js'
-          , 'module.exports = ' 
-          + PEG.buildParser(data, {
-            cache:    false,
-            output:   'source',
-            optimize: 'speed',
-            plugins:  []
-          })
-          + ';\n'
-        );
-      } catch(e) {
-        PHP.context.parseError(e, data);
-      }
-      if (options.debug) console.log('*** BUILD DONE ***');
+  require('../src/builder').compile(
+    function() {
       run(options);
-    });
-  });
+    }
+    , function(err) {
+      abort(err);
+    }
+  );
 } else {
   run(options);
 }
