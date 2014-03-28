@@ -46,7 +46,7 @@ module.exports = {
   // run a eval over PHP code
   ,eval: function(code, ignore, output) {
     try {
-      var exec = this.context.eval(code);
+      var exec = this.context.eval(code, ignore);
       return exec.__main(
         output ? output : process.stdout
       );

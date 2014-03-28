@@ -170,13 +170,12 @@ module.exports = {
     return this;
   }
   // evaluates the specified code and returns its function
-  , eval: function(code) {
+  , eval: function(code, ignore) {
     try {
       var AST = this.getParser().parse(code);
       var source = builder.init('evald code').toString(AST);
     } catch(e) {
-      console.log(this.parser);
-      this.parseError(e, code);
+      if (!ignore) this.parseError(e, code);
     }
     builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
     source = builder.headers() + '\n'
