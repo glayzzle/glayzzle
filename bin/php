@@ -121,6 +121,7 @@ if ( options.build ) {
 
 // runs the command
 function run(options) {
+  PHP.clean();
   if (options.server) {
     if (cluster.isMaster) {
       printVersion();
