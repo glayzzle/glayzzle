@@ -1,11 +1,11 @@
-class_declaration_statement "T_CLASS"
-  = f:(T_ABSTRACT / T_FINAL)? __* T_CLASS __* n:T_STRING __ e:extends_from? __ i:implements_list? __ '{' __ b:class_statement_list __ '}' {
+class_declaration_statement /*"T_CLASS" */
+  = f:(T_ABSTRACT / T_FINAL)? __* T_CLASS __* n:T_STRING e:(__* extends_from)? i:(__* implements_list)? __* '{' b:class_statement_list '}' {
     return {
       type: 'class.T_DECLARE',
       flag: f,
       name: n,
-      extends: e,
-      implements: i,
+      extends: typeof(e) == 'undefined' || !e ? false : e[1],
+      implements: typeof(i) == 'undefined' || !i ? [] : i[1],
       body: b
     };
   }
@@ -16,52 +16,51 @@ class_const_name
   = T_CLASS / T_STRING
 
 class_type
-  = T_ARRAY / T_CALLABLE / name 
+  = T_ARRAY / T_CALLABLE / T_STRING 
 
 extends_from
-  = T_EXTENDS __ n:name            { return n; }
+  = T_EXTENDS __+ n:T_STRING            { return n; }
 
 interface_extends_list
-  = T_EXTENDS __ n:name_list       { return n; }
+  = T_EXTENDS __+ n:name_list       { return n; }
 
 implements_list
-  = T_IMPLEMENTS __ n:name_list    { return n; }
+  = T_IMPLEMENTS __+ n:name_list    { return n; }
 
 class_statement_list
   = class_statement*
 
 class_statement
-  = __ m:variable_modifiers __ p:property_declaration_list __ ';' {
+  = 
+  /* @todo T_USE __ name_list __ trait_adaptations */
+  T_CONST __+ c:constant_declaration_list __* ';' {
+    return {
+      type: 'class.T_CONST',
+      items: c
+    };
+  }
+  / m:variable_modifiers p:property_declaration_list __* ';' {
     return {
       type: 'class.T_PROPERTY',
       modifiers: m,
       properties: p
     };
   }
-  / __ T_CONST __ c:constant_declaration_list __ ';' {
-    return {
-      type: 'class.T_CONST',
-      items: c
-    };
-  }
-  / __ m:method_modifiers __ T_FUNCTION __ optional_ref n:T_STRING __ '(' __ p:parameter_list __ ')' __ b:method_body {
+  / m:method_modifiers? T_FUNCTION __+ '&'? n:T_STRING __* p:function_args __* b:statements_body {
     return {
       type: 'class.T_METHOD',
-      modifiers: m,
+      modifiers: typeof(m) == 'undefined' || !m ? [] : m,
       name: n,
       parameters: p,
       body: b
     };
   }
-  / __ T_USE __ name_list __ trait_adaptations
+  / __
 
-
-method_body "T_METHOD_BODY"
-  = ';' / statements_body
 
 variable_modifiers
   = non_empty_member_modifiers
-  / T_VAR   { return [1]; }
+  / T_VAR __+   { return [1]; }
 
 method_modifiers
   = non_empty_member_modifiers
@@ -70,18 +69,18 @@ non_empty_member_modifiers
   = member_modifier+
 
 member_modifier
-  = T_PUBLIC __         { return 1; }
-  / T_PROTECTED __      { return 2; }
-  / T_PRIVATE __        { return 4; }
-  / T_STATIC __         { return 8; }
-  / T_ABSTRACT __       { return 16; }
-  / T_FINAL __          { return 32; }
+  = T_PUBLIC __+         { return 1; }
+  / T_PROTECTED __+      { return 2; }
+  / T_PRIVATE __+        { return 4; }
+  / T_STATIC __+         { return 8; }
+  / T_ABSTRACT __+       { return 16; }
+  / T_FINAL __+          { return 32; }
 
 property_declaration_list
-  = a1:property_declaration al:( __ ',' __ property_declaration)* { return makeList(a1, al) }
+  = a1:property_declaration al:( __* ',' __* property_declaration)* { return makeList(a1, al) }
 
 property_declaration
-  = n:T_VARIABLE __ ('=' __ d:static_scalar)? {
+  = n:T_VARIABLE ( __* '=' __* d:static_scalar)? {
     return {
       name: n.name,
       default: typeof d !== 'undefined' ? d : null

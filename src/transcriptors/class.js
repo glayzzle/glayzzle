@@ -11,6 +11,9 @@ module.exports = {
         console.log(item);
         return '/* todo */';
       }
+      ,T_METHOD: function(item) {
+      
+      }
     };
   }
 };

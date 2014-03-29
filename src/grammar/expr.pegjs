@@ -246,7 +246,7 @@ variables_list
   = v:variable l:( __* ',' __* variable)* { return makeList(v, l); }
 
 name_list
-  = n:name l:( __* ',' __* name)* { return makeList(n, l); }
+  = n:T_STRING l:( __* ',' __* T_STRING)* { return makeList(n, l); }
 
 argument_list
   = '(' ')'  { return ['(', [], ')']; }

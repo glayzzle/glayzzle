@@ -1,8 +1,8 @@
 
 top_statement
   = function_declaration_statement
-  /*/ class_declaration_statement
-  / namespace_statement
+  / class_declaration_statement
+  /*/ namespace_statement
   / statement */
   / __
 
@@ -17,7 +17,7 @@ inner_statement
   / __
 
 statements_body
-  = '{' s:inner_statement* '}' {
+  = '{' s:(__)* '}' {   //statement / __
     return { type: "common.T_STATEMENTS", data: s };
   }
 
