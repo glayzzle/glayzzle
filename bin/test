@@ -233,7 +233,7 @@ require('../src/builder').compile(
     console.log('\n*** TESTING ***\n'.yellow);
     if (options.filename) {
       if (!test(options.filename)) {
-        abort('Error'.redt + ': test FAILED !!!');
+        abort('Error: test FAILED !!!'.red);
       } else {
         console.log('Success'.green);
       }

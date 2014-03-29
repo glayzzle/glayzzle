@@ -128,7 +128,7 @@ module.exports = {
         process.exit(1);
       }
     } else {
-      util.error(e);
+      util.error(e.stack || e);
     }
   }
   // Converts a filename to a cache filename 
