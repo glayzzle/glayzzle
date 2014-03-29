@@ -4,12 +4,12 @@
  * Magma : PHP on NodeJS
  * @license BSD
  */
-
+require('colors');
 var util = require('util');
 var fs = require('fs');
-var PHP = require('../src/php');
-require('colors');
+var path = require('path');
 var jsdiff = require('diff');
+var PHP = require('../src/php');
 
 function printVersion() {
   util.puts('Magma version ' + PHP.VERSION);
@@ -107,10 +107,8 @@ if ( !options.filename && !options.path ) {
 process.env.DEBUG = options.debug;
 
 // declare a file running test with phpt format
-function test_phpt(filename) {
-  console.log(' + ' + filename);
+function test_phpt(data) {
   try {
-    var data = fs.readFileSync(filename).toString().split('\r\n');
     var test = {};
     var mode = null;
     data.forEach(function(line) {
@@ -148,13 +146,93 @@ function test_phpt(filename) {
   }
 }
 
+function test_parser(data) {
+  try {
+    console.log('   >> Start test : ' + data.shift());
+    var test = {
+      buffer: '',
+      mode: ''
+    };
+    var tests =  [];
+    data.forEach(function(line) {
+      if (line.substring(0, 2) == '--') {
+        if (test.mode != '') tests.push(test);
+        test = {
+          buffer: '', mode: line.substring(2, line.length - 2)
+        };
+      } else {
+        test.buffer += line + '\r\n';
+      }
+    });
+    if (test) tests.push(test);
+    var writer;
+    var ok;
+    for(var i = 0; i < tests.length; i++) {
+      test=tests[i];
+      writer = {
+        buffer: '',
+        write: function(output) {
+          this.buffer += output;
+        }
+      };
+      console.log('   mode : ' + test.mode);
+      if (test.mode.substring(0, 4) == 'FAIL') {
+        ok = false;
+        try {
+          PHP.clean().eval(test.buffer, false, writer);
+          ok = true;
+        } catch(e) {
+          ok = false;
+        }
+        if (ok) {
+          throw new Error('Test should fail to parse : \n>> ' + test.buffer);
+        }
+      } else {
+        try {
+          PHP.clean().eval(test.buffer, false, writer);
+        } catch(e) {
+          e.source = test.buffer;
+          throw e;
+        }
+      }
+    }
+    return true;
+  } catch(e) {
+    PHP.context.parseError(e, e.source);
+    return false;
+  }
+}
+function getExtension(filename) {
+    var i = filename.lastIndexOf('.');
+    return (i < 0) ? '' : filename.substr(i);
+}
+function test(filename) {
+  console.log(' + ' + filename);
+  try {
+    var data = fs.readFileSync(filename).toString().split('\r\n');
+    switch(getExtension(filename)) {
+      case '.phpt':
+        return test_phpt(data);
+        break;
+      case '.parser':
+        return test_parser(data);
+        break;
+      default:
+        abort('\nUnrecognized extension "'+getExtension(filename)+'" for ' + filename + ', expected a phpt or parse file');
+    }
+  } catch(e) {
+    util.error( (e.stack || e) + '\n' );
+    return false;
+  }
+}
+
 // rebuilds the parser
 console.log('\nRefresh parser...\n');
 require('../src/builder').compile(
   function() {
     console.log('\n*** TESTING ***\n'.yellow);
     if (options.filename) {
-      if (!test_phpt(options.filename)) {
+      if (!test(options.filename)) {
         abort('Error'.redt + ': test FAILED !!!');
       } else {
         console.log('Success'.green);
@@ -166,6 +244,3 @@ require('../src/builder').compile(
     abort(err);
   }
 );
-
-
-
