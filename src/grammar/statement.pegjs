@@ -2,8 +2,8 @@
 top_statement
   = function_declaration_statement
   / class_declaration_statement
-  /*/ namespace_statement
-  / statement */
+  / namespace_statement
+  /* / statement */
   / __
 
 inner_statement

@@ -180,6 +180,7 @@ module.exports = {
       + '};'
     ;
     var exec = null;
+    console.log(source);
     eval(source);
     // registers each function globally
     for(var name in exec) {

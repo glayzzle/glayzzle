@@ -1,0 +1,16 @@
+Test namespaces
+--PASS--
+/**
+ * Document comment
+ */
+namespace MyNameSpace\SubNameSpace;
+--PASS--
+namespace \MyNameSpace\SubNameSpace;
+--PASS--
+namespace \MyNameSpace\SubNameSpace {
+}
+namespace \MyNameSpace\OtherNameSpace {
+}
+--PASS--
+use \framwork\Class;
+use framwork\Class as Alias;

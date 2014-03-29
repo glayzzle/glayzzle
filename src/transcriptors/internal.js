@@ -25,6 +25,16 @@ module.exports = {
           + ', __output'
         +')';
       }
+      // @todo
+      ,T_USE: function(item) {
+        console.log(item);
+        return '';
+      }
+      // @todo
+      ,T_NAMESPACE: function(item) {
+        console.log(item);
+        return '';
+      }
     };
   }
 };

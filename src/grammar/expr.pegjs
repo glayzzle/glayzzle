@@ -138,10 +138,8 @@ pre_expr
 optional_parentheses_expr 
   = '('? __* t:expr __* ')'? { return t; }
 
-name "T_NAME_EXPR"
-  = namespace_name_parts                              { return text(); }
-  / T_NS_SEPARATOR namespace_name_parts               { return text(); }
-  / T_NAMESPACE T_NS_SEPARATOR namespace_name_parts   { return text(); }
+name "T_CLASS_NAME"
+  = namespace_name
 
 parentheses_expr
   = '(' __* ')' { return ['()']; }
