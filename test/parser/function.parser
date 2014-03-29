@@ -5,8 +5,20 @@ function aa();
 function aa() {};
 --FAIL--
 function aa($b;) {}
+--FAIL--
+function $aa($b) {}
+--FAIL--
+function 123__aa() { }
+--PASS--
+function _123aa() { }
+--PASS--
+function _3aa() { }
 --PASS--
 function aa() { }
+--PASS--
+function a123a() { }
+--PASS--
+function __aa() { }
 --PASS--
 function aa(){
 }
