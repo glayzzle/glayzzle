@@ -14,10 +14,12 @@ module.exports = {
       // Serialize arguments for a function call
       ,T_ARGS: function(item) {
         var result = [];
-        var module = this;
-        item.args.forEach(function(i) {
-          result.push(builder.toString(i));
-        });
+        console.log(item);
+        for(var i = 0; i < item.args.length; i++) {
+          var arg = builder.toString(item.args[i]);
+          if (arg && arg.length > 0) result.push(arg);
+        }
+        console.log(result);
         return result.join(', ');
       }
       // Outputs a string object
@@ -28,20 +30,20 @@ module.exports = {
       }
       // Generates a list of statements 
       ,T_STATEMENTS: function(item) {
-        return '{\n' +  builder.toString(item.data) + '\n}\n';
+        return ' {\n' +  builder.toString(item.data) + '\n}\n';
       }
       ,T_IF: function(item) {
-        return 'if (' +  builder.toString(item.condition) + ')'
-           + builder.toString(item.statement) 
-           + builder.toString(item._elseif) 
-           + builder.toString(item._else)
+        return 'if ' + builder.toString(item.condition) 
+          + builder.toString(item.statement)
+          + builder.toString(item._elseif) 
+          + builder.toString(item._else)
         ; 
       }
       ,T_ELSE: function(item) {
         return ' else ' +  builder.toString(item.data);
       }
       ,T_ELSEIF: function(item) {
-        return ' elseif(' + builder.toString(item.condition) + ')' +  builder.toString(item.statement);
+        return ' elseif' + builder.toString(item.condition) +  builder.toString(item.statement);
       }
     };
   }

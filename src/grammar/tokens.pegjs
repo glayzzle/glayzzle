@@ -136,4 +136,6 @@ T_ELLIPSIS                  ="..."
 T_POW                       ="**"
 T_POW_EQUAL                 ="**="
 
-__ = T_WHITESPACE / T_COMMENT / T_DOC_COMMENT
+__ = (T_WHITESPACE / T_COMMENT / T_DOC_COMMENT) {
+  return text();
+}
