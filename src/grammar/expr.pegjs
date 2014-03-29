@@ -74,8 +74,7 @@ expr /* "T_EXPR" */
   / scalar_dereference
   / '`' backticks_expr? '`'
   / T_YIELD
-  / T_FUNCTION __* '&'? '(' __* parameter_list __ *')' lexical_vars? statements_body
-  / T_STATIC __ T_FUNCTION __ optional_ref '(' __ parameter_list __ ')' lexical_vars? statements_body
+  / pre_expr __* (T_STATIC __*)? T_FUNCTION __* '&'? function_args lexical_vars? statements_body
 
 expr_list
   = __* expr __* expr_list
@@ -134,8 +133,6 @@ pre_expr
   / scalar_dereference
   / '`' backticks_expr? '`'
   / T_YIELD
-  / T_FUNCTION __* '&'? '(' __* parameter_list __ *')' lexical_vars? statements_body
-  / T_STATIC __ T_FUNCTION __ optional_ref '(' __ parameter_list __ ')' lexical_vars? statements_body
 
 
 optional_parentheses_expr 
