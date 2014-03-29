@@ -46,17 +46,11 @@ module.exports = {
   // run a eval over PHP code
   ,eval: function(code, ignore, output) {
     try {
-      var exec = this.context.eval(code, ignore);
-      return exec.__main(
+      return this.context.eval(code).__main(
         output ? output : process.stdout
       );
     } catch(e) {
-      if (!ignore) {
-        util.error(
-          'Warning : ' + (e.stack || e.message)
-        );
-      }
-      return null;
+      if (!ignore) throw e;
     }
   }
   /**
