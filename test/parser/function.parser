@@ -1,0 +1,39 @@
+Test function parser
+--FAIL--
+function aa();
+--FAIL--
+function aa() {};
+--FAIL--
+function aa($b;) {}
+--PASS--
+function aa() { }
+--PASS--
+function aa(){
+}
+--PASS--
+/**
+ * This is a comment
+ */
+function aa( /** here another comment **/ ){
+  // here is another comment
+}
+
+--PASS--
+function &aa() { }
+--PASS--
+function aa($a) { }
+--PASS--
+function aa(&$a) { }
+--PASS--
+function aa(
+  &$a, $b
+) {
+
+}
+
+--PASS--
+function aa(&$a, $b = 5) { }
+function aa(&$a, $b = null) { }
+function aa(&$a, $b = true) { }
+function aa(&$a, $b = "aa") { }
+function aa(&$a, $b = array('a' => 'b')) { }
