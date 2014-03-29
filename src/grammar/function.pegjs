@@ -1,5 +1,5 @@
 function_declaration_statement
-    = T_FUNCTION __* '&'? n:T_STRING __* '(' __* p:parameter_list __* ')' __* s:statements_body {
+    = T_FUNCTION __* '&'? n:T_STRING __* p:function_args __* s:statements_body {
       console.log('T_FUNCTION');
       return {
         type: 'function.T_DECLARE',
@@ -8,6 +8,11 @@ function_declaration_statement
         body: s
       };
     }
+
+function_args
+  = '(' __* (p:parameter_list __*)? ')' {
+    return typeof(p) == 'undefined' ? [] : p;
+  }
 
 function_call "T_FUNCTION_CALL"
   = function_call_expr

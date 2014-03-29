@@ -121,8 +121,8 @@ T_CLOSE_TAG                             "T_CLOSE_TAG"                           
 T_WHITESPACE                            "T_WHITESPACE"                          =(T_SPACE / T_EOL)
 T_SPACE                                                                         ="\t" / "\v" / "\f" / " " / "\u00A0" / "\uFEFF"
 T_EOL                                                                           ="\n" / "\r" / "\u2028" / "\u2029"
-T_COMMENT                               "T_COMMENT"                             = ("//" / "#") !T_EOL*
-T_DOC_COMMENT                           "T_DOC_COMMENT"                         = "/*" !"*/"* "*/"
+T_COMMENT                               "T_COMMENT"                             = ("//" / "#") (!T_EOL.)*
+T_DOC_COMMENT                           "T_DOC_COMMENT"                         = "/*" (!"*/".)* "*/"
 
 T_START_HEREDOC             ="heredoc start (T_START_HEREDOC)"
 T_END_HEREDOC               ="heredoc end (T_END_HEREDOC)"

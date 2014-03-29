@@ -3,13 +3,11 @@ array_expr
   / '[' array_pair_list? ']'
 
 static_scalar
-  /* compile-time evaluated scalars */
-  = common_scalar
-  / class_name __ T_PAAMAYIM_NEKUDOTAYIM __ class_const_name
-  / '+' __ static_scalar
-  / '-' __ static_scalar
-  / T_ARRAY __ '(' static_array_pair_list? ')'
-  / '[' __ static_array_pair_list? __ ']'
+  = ('+' / '-') static_scalar
+  / '[' a:static_array_pair_list? ']' { return typeof(a) == 'undefined' ? []: a; }
+  / T_ARRAY '(' a:static_array_pair_list? ')' { return typeof(a) == 'undefined' ? []: a; }
+  / class_name T_PAAMAYIM_NEKUDOTAYIM class_const_name
+  / common_scalar
 
 scalar "T_SCALAR"
   = class_name_or_var __* T_PAAMAYIM_NEKUDOTAYIM __* class_const_name
@@ -34,13 +32,10 @@ common_scalar "T_COMMON_SCALAR"
   / name
 
 static_array_pair_list
-  = non_empty_static_array_pair_list ','?
-
-non_empty_static_array_pair_list
-  = static_array_pair (',' static_array_pair)*
+  = e:static_array_pair l:(__* ',' __* static_array_pair)* __* ','? { return makeList(e, l); }
 
 static_array_pair
-  = static_scalar T_DOUBLE_ARROW static_scalar
+  = static_scalar __* T_DOUBLE_ARROW __* static_scalar
   / static_scalar
 
 

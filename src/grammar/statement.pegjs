@@ -1,9 +1,9 @@
 
 top_statement
   = function_declaration_statement
-  / class_declaration_statement
+  /*/ class_declaration_statement
   / namespace_statement
-  / statement
+  / statement */
   / __
 
 inner_statement
@@ -12,8 +12,8 @@ inner_statement
 /**
  * @todo THIS PART SHOULD BE VERIFIED AT SERIALISATION
  * T_HALT_COMPILER { throw new Error('__HALT_COMPILER() can only be used from the outermost scope'); } 
- */
   / statement
+ */
   / __
 
 statements_body
