@@ -160,11 +160,11 @@ module.exports = {
   }
   // registers the specified file
   , register: function(filename, cache) {
-    this.includes[filename] = require(cache);
+    var module = this.includes[filename] = require(cache);
     // registers each function globally
-    for(var name in this.includes[filename]) {
+    for(var name in module) {
       // @fixme show not allow to override an existing function
-      this.php.globals[name] = this.includes[filename][name];
+      this.php.globals[name] = module;
     }
     this.files.push(filename);
     return this;
@@ -180,7 +180,7 @@ module.exports = {
       + '};'
     ;
     var exec = null;
-    console.log(source);
+    if (process.env.DEBUG > 9) console.log(source);
     eval(source);
     // registers each function globally
     for(var name in exec) {

@@ -1,0 +1,5 @@
+Test statements
+--PASS--
+if ( true ) {
+  echo 'Hello';
+}

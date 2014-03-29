@@ -126,10 +126,17 @@ module.exports = {
     return this.compat;
   }
   , globalCall: function(name, args) {
-    return this.use('./php')+'.globals.__call(' + JSON.stringify(name) + ', ' + this.transcriptNode({type: 'common.T_ARGS', args: args}) + ')';  
+    name = JSON.stringify(name);
+    if ( args && args.length > 0) {
+      args.unshift(name);
+      return this.use('./php')+'.globals.__call('  + this.transcriptNode({type: 'common.T_ARGS', args: args }) + ')';
+    } else {
+      return this.use('./php')+'.globals.__call('  + name + ')';
+    }
   }
   // Execute the right transcription on the specified AST node
   ,transcriptNode: function(node) {
+    if (!node || !node.type) return '';
     // lazy loads serialisation module
     if (!this.serialize.hasOwnProperty(node.type)) {
       var mod = node.type.split('.');

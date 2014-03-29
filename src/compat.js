@@ -46,7 +46,7 @@ module.exports = {
   ,__checkFunction: function(name, args) {
     var func = this.__getCompatFunction(name);
     if (func) {
-      return func(this, args, name);
+      return func(builder, args, name);
     } else {
       return false;
     }
