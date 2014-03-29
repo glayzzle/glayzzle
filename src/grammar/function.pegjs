@@ -1,6 +1,5 @@
 function_declaration_statement
     = T_FUNCTION __* '&'? n:T_STRING __* p:function_args __* s:statements_body {
-      console.log('T_FUNCTION');
       return {
         type: 'function.T_DECLARE',
         name: n,

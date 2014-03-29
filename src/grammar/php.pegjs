@@ -7,7 +7,6 @@ start
 
 @import 'number.pegjs'
 @import 'string.pegjs'
-@import 'unicode.pegjs'
 @import 'maths.pegjs'
 @import 'tokens.pegjs'
 @import 'statement.pegjs'
