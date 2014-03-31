@@ -9,20 +9,20 @@ module.exports = {
   init: function(builder) {
     return {
       T_ECHO: function(item) {
-        return '__output.write(String(' + builder.toString(item.statements) + '));\n';
+        return 'this.__output.write(String(' + builder.toString(item.statements) + '));\n';
       }
       ,T_INCLUDE: function(item) {
-        return  this.use('./php') 
+        return  builder.use('./php') 
           + '.include'+(item.once ? '_once' : '' )+'(' 
-          + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+          + builder.use('path') + '.resolve(' + JSON.stringify(builder.directory) + ', ' + builder.toString(item.target) + ')'
           + ', ' + (item.ignore ? 'true' : 'false')
           + ', __output'
         +')';
       }
       ,T_REQUIRE: function(item) {
-        return  this.use('./php') 
+        return  builder.use('./php') 
           + '.require'+(item.once ? '_once' : '' )+'(' 
-          + this.use('path') + '.resolve(' + JSON.stringify(this.directory) + ', ' + this.toString(item.target) + ')'
+          + builder.use('path') + '.resolve(' + JSON.stringify(builder.directory) + ', ' + builder.toString(item.target) + ')'
           + ', ' + (item.ignore ? 'true' : 'false')
           + ', __output'
         +')';

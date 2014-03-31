@@ -29,16 +29,16 @@ var fs = require('fs');
  */
 module.exports = {
   // Current version
-  VERSION: '0.0.1',
+  VERSION: '0.0.3',
 
   // contains the PHP tokenizer
   parser: null,
 
   // retro-PHP-compatibility layer
-  globals: require('./compat'),
+  globals: false,
 
   // current execution context
-  context: require('./context').init(this),
+  context: false,
   
   // cleans actual context
   clean: function() {
@@ -114,3 +114,5 @@ module.exports = {
     }
   }
 };
+if (typeof(process.env.DEBUG) == 'undefined') process.env.DEBUG = 0;
+module.exports.clean();

@@ -167,7 +167,7 @@ module.exports = {
     // registers each function globally
     for(var name in module) {
       // @fixme show not allow to override an existing function
-      this.php.globals[name] = module;
+      this.php.globals[name] = module[name];
     }
     this.files.push(filename);
     return this;
@@ -176,9 +176,10 @@ module.exports = {
   , eval: function(code) {
     var AST = this.getParser().parse(code);
     var source = builder.init('evald code').toString(AST);
-    builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
+    builder.functions.push('__main: function( __output ) {\n\t\tthis.__output = __output;\n\t\t' + source + '\n\t}');
     source = builder.headers() + '\n'
       + 'exec = {\n\t'
+        + '__output: process.stdout,\n\t'
         + builder.functions.join('\n\t,')
       + '};'
     ;
@@ -230,10 +231,11 @@ module.exports = {
         buffer += c;
       }
       var source = builder.init(filename).toString(results);
-      builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
+      builder.functions.push('__main: function( __output ) {\n\t\tthis.__output = __output;\n\t\t' + source + '\n\t}');
       source = '/** GLAYZZLE GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
         + builder.headers() + '\n'
         + 'module.exports = {\n\t'
+          + '__output: process.stdout,\n\t'
           + builder.functions.join('\n\t,')
         + '};'
       ;

@@ -139,6 +139,12 @@ function test_phpt(data) {
   }
 }
 
+// runs the specified filename
+function test_php(filename) {
+  return (PHP.clean().require(filename) !== false);
+}
+
+// runs a parser file : test parsing behaviours
 function test_parser(data) {
   try {
     console.log('   >> Start test : ' + data.shift());
@@ -196,23 +202,32 @@ function test_parser(data) {
     return false;
   }
 }
+
+// gets the extension of the specified filename
 function getExtension(filename) {
     var i = filename.lastIndexOf('.');
     return (i < 0) ? '' : filename.substr(i);
 }
+
+// run a test over the specified file
 function test(filename) {
   console.log(' + ' + filename);
   try {
-    var data = fs.readFileSync(filename).toString().split('\r\n');
-    switch(getExtension(filename)) {
-      case '.phpt':
-        return test_phpt(data);
-        break;
-      case '.parser':
-        return test_parser(data);
-        break;
-      default:
-        abort('\nUnrecognized extension "'+getExtension(filename)+'" for ' + filename + ', expected a phpt or parse file');
+    var extension = getExtension(filename);
+    if (extension == '.php') {
+      return test_php(filename);
+    } else {
+      var data = fs.readFileSync(filename).toString().split('\r\n');
+      switch(extension) {
+        case '.phpt':
+          return test_phpt(data);
+          break;
+        case '.parser':
+          return test_parser(data);
+          break;
+        default:
+          abort('\nUnrecognized extension "'+getExtension(filename)+'" for ' + filename + ', expected a phpt or parse file');
+      }
     }
   } catch(e) {
     util.error( (e.stack || e) + '\n' );
