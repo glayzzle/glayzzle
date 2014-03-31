@@ -1,10 +1,11 @@
 {
-  "name": "magma",
+  "name": "glayzzle",
   "version": "0.0.1",
+  "homepage": "http://glayzzle.com",
   "description": "A NodeJS engine that converts on-fly the php into JS and execute it.",
-  "main": "magma.js",
+  "main": "src/php.js",
   "bin": {
-    "magma": "build_parser.js"
+    "php": "php"
   },
   "directories": {
     "test": "test"
@@ -14,15 +15,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ichiriac/magma.git"
+    "url": "https://github.com/ichiriac/glayzzle.git"
   },
-  "keywords": [
-    "php"
-  ],
+  "keywords": [ "php" ],
   "author": "Ioan Chiriac",
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/ichiriac/magma/issues"
+    "url": "https://github.com/ichiriac/glayzzle/issues"
   },
   "dependencies": {
     "pegjs": "~0.8.0"
