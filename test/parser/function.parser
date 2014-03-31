@@ -1,7 +1,7 @@
 Test function parser
 --FAIL--
 function aa();
---FAIL--
+--PASS ??--
 function aa() {};
 --FAIL--
 function aa($b;) {}
