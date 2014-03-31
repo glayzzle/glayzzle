@@ -1,5 +1,5 @@
-Magma
-=====
+Glayzzle - PHP under NodeJS
+===========================
 
 The main idea of this projet is to enable a developper to run a plain PHP script
 dirrectly from a NodeJS environement, without using the PHP engine.
@@ -36,7 +36,7 @@ Install & Run :
 ===============
 
 ```
-../magma/bin $ node php ../test/fibo.php
+../glayzzle/bin $ node php ../test/fibo.php
 ```
 
 
@@ -47,7 +47,7 @@ You can update the parser, or show AST and generated code :
 
 Show some debug (the debug parameter is the nesting level on AST output) :
 ```
-../magma/bin $ node php --debug 5 ../test/fibo.php
+../glayzzle/bin $ node php --debug 5 ../test/fibo.php
 ```
 
 If you want to try the server mode
@@ -57,7 +57,7 @@ If you want to try the server mode
 
 If you want to test some updates on lexer just use the build flag
 ```
-../magma/bin $ node php --build ../test/fibo.php
+../glayzzle/bin $ node php --build ../test/fibo.php
 ```
 
 You will need pegjs library :
@@ -80,11 +80,11 @@ The result is : 832040
 Run in 1.872sec
 
 // THE NODEJS OUTPUT
-../magma/bin $ node php -f ../test/fibo.php
+../glayzzle/bin $ node php -f ../test/fibo.php
 Hello world :
 The result is : 832040
 Run in 0.295sec
 ```
 
 NodeJS is naturally many times more rapid than PHP with it's JIT engine, 
-so that's normal that Magma keep this benefit...
+so that's normal that Glayzzle keep this benefit...
