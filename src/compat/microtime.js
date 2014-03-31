@@ -1,8 +1,9 @@
 /**
- * Magma : PHP on NodeJS
- * @license BSD
+ * Glayzzle : PHP on NodeJS
+ * @url http://glayzzle.com
+ * @author Ioan CHIRIAC
+ * @license BSD-3-Clause
  */
-
 
 module.exports = {
 

@@ -52,7 +52,7 @@ Show some debug (the debug parameter is the nesting level on AST output) :
 
 If you want to try the server mode
 ```
-../magma/bin $ node php -S 127.0.0.1:8080 ../test/index.php
+../glayzzle/bin $ node php -S 127.0.0.1:8080 ../test/index.php
 ```
 
 If you want to test some updates on lexer just use the build flag

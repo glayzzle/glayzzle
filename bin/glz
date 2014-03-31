@@ -18,7 +18,7 @@ function printVersion() {
 }
 
 function printHelp() {
-  util.puts('Usage: php [options] [-f] <file>');
+  util.puts('Usage: glz [options] [-f] <file>');
   util.puts('');
   util.puts('  --build                        Rebuilds the parser');
   util.puts('  --debug [0-9]+                 Enables debug ouput (with a specific level)');

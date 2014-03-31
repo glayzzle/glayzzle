@@ -18,7 +18,7 @@ module.exports = (function() {
     this.offset   = offset;
     this.line     = line;
     this.column   = column;
-    this.stack    = (new Error(message)).stack;
+
     this.name     = "SyntaxError";
   }
 

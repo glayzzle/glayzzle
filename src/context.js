@@ -1,7 +1,10 @@
 /**
- * Magma : PHP on NodeJS
- * @license BSD
+ * Glayzzle : PHP on NodeJS
+ * @url http://glayzzle.com
+ * @author Ioan CHIRIAC
+ * @license BSD-3-Clause
  */
+
 var fs = require('fs');
 var os = require('os');
 var crypto = require('crypto');
@@ -133,7 +136,7 @@ module.exports = {
   }
   // Converts a filename to a cache filename 
   ,getCacheFile: function(filename) {
-    var result = this.tmp + '/magma.' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
+    var result = this.tmp + '/glayzzle.' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
     return result;
   }
   // (parse if not cached or updated) and returns the specified file structure
@@ -228,7 +231,7 @@ module.exports = {
       }
       var source = builder.init(filename).toString(results);
       builder.functions.push('__main: function( __output ) {\n\t\t' + source + '\n\t}');
-      source = '/** MAGMA GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
+      source = '/** GLAYZZLE GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
         + builder.headers() + '\n'
         + 'module.exports = {\n\t'
           + builder.functions.join('\n\t,')
