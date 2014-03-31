@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Magma : PHP on NodeJS
- * @license BSD
+ * Glayzzle : PHP on NodeJS
+ * @url http://glayzzle.com
+ * @author Ioan CHIRIAC
+ * @license BSD-3-Clause
  */
-require('colors');
+
 var util = require('util');
 var fs = require('fs');
 var path = require('path');
-var jsdiff = require('diff');
 var PHP = require('../src/php');
 
 function printVersion() {
-  util.puts('Magma version ' + PHP.VERSION);
+  util.puts('Glayzzle version ' + PHP.VERSION);
 }
 
 function printHelp() {
@@ -130,14 +131,6 @@ function test_phpt(data) {
     if (test['EXPECTF-'] != writer.buffer) {
       console.log('Expected : ' + JSON.stringify(test['EXPECTF-']));
       console.log('Found : ' + JSON.stringify(writer.buffer));
-      var diff = jsdiff.diffChars(test['EXPECTF-'], writer.buffer);
-      diff.forEach(function(part){
-        // green for additions, red for deletions
-        // grey for common parts
-        var color = part.added ? 'green' :
-          part.removed ? 'red' : 'grey';
-        process.stderr.write(part.value[color]);
-      });
       return false;
     } else return true;
   } catch(e) {
@@ -231,12 +224,12 @@ function test(filename) {
 console.log('\nRefresh parser...\n');
 require('../src/builder').compile(
   function() {
-    console.log('\n*** TESTING ***\n'.yellow);
+    console.log('\n*** TESTING ***\n');
     if (options.filename) {
       if (!test(options.filename)) {
-        abort('Error: test FAILED !!!'.red);
+        abort('Error: test FAILED !!!');
       } else {
-        console.log('Success'.green);
+        console.log('Success');
       }
       // fs.readdir()
     }
