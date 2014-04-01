@@ -50,9 +50,6 @@ module.exports = {
   // defines the default temporary path
   tmp: os.tmpdir(),
 
-  // list of included files
-  files: [],
-
   // list of included buffers
   includes: {},
 
@@ -73,17 +70,12 @@ module.exports = {
       this.parser = require('./parser');
     }
     return this.parser;
-  },
-
-  // check if the specified was never called
-  once: function(filename) {
-    return this.files.indexOf(filename) == -1;
-  },
+  }
 
   /**
    * Shows a parsing error message and outputs the source at the specified line
    */
-  parseError: function(e, file) {
+  ,parseError: function(e, file) {
     if(e.line) {
       util.error(
         "\nParse Error : " + e.message + "\n"
@@ -133,44 +125,55 @@ module.exports = {
     } else {
       util.error(e.stack || e);
     }
+    return false;
   }
   // Converts a filename to a cache filename 
   ,getCacheFile: function(filename) {
-    var result = this.tmp + '/glayzzle.' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
+    var result = this.tmp + path.sep + 'glayzzle.' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
     return result;
   }
   // (parse if not cached or updated) and returns the specified file structure
   ,get: function(filename) {
     // check memory cache
-    if (!this.once(filename)) return this.includes[filename];
-    // check files cache
-    if (process.env.DEBUG == 0) {
-      var cache = this.getCacheFile(filename);
-      try {
-        var filenameStat = fs.statSync(filename);
-        var cacheStat = fs.statSync(cache); 
-        if ( cacheStat.mtime > filenameStat.mtime ) {
-          this.register(filename, cache);
-          return this.includes[filename];
-        }
-      } catch(e) { }
+    var once = this.includes.hasOwnProperty(filename);
+    var now = Date.now();
+    // check memory status
+    if (once && now - this.includes[filename].time < 2000) {
+      return this.includes[filename].module;
     }
-    // parse and build file cache
-    if (process.env.DEBUG > 0) console.log("-> PHP INCLUDE " + filename);
-    this.refresh('include', filename);
-    //this.watchers[filename] = fs.watch(filename, this.refresh);
-    return this.includes[filename];
+    // check files cache
+    var cache = this.getCacheFile(filename);
+    try {
+      var cacheStat = fs.statSync(cache); 
+      var filenameStat = fs.statSync(filename);
+      if ( cacheStat.mtime > filenameStat.mtime ) {
+        if (!once) {
+          // include the cache file for the first time
+          return this.register(filename, cache);
+        }
+        this.includes[filename].time = now;
+        return this.includes[filename].module;
+      }
+    } catch(e) {
+      // original file not found ?
+      if (cacheStat && !filenameStat) return false;
+    }
+    // parse the php file
+    return this.refresh(filename, cache);
   }
   // registers the specified file
   , register: function(filename, cache) {
-    var module = this.includes[filename] = require(cache);
+    delete require.cache[cache];
+    var include = this.includes[filename] = {
+      module: require(cache)
+      , time: Date.now()
+    };
     // registers each function globally
-    for(var name in module) {
+    for(var name in include.module) {
       // @fixme show not allow to override an existing function
-      this.php.globals[name] = module[name];
+      this.php.globals[name] = include.module[name];
     }
-    this.files.push(filename);
-    return this;
+    return include.module;
   }
   // evaluates the specified code and returns its function
   , eval: function(code) {
@@ -194,8 +197,7 @@ module.exports = {
     return exec;
   }
   // parse and build file cache
-  , refresh: function(event, filename) {
-    var cache = this.getCacheFile(filename);
+  , refresh: function(filename, cache) {
     var data = fs.readFileSync(filename);
     if (process.env.DEBUG > 0) console.log("-> Parse " + filename);
     try {
@@ -248,20 +250,9 @@ module.exports = {
       fs.writeFileSync(cache, source, {
         flag: 'w+'
       });
-      this.register(filename, cache);
+      return this.register(filename, cache);
     } catch(e) {
-      if ( event == 'include' ) {
-        this.parseError(e, data);
-      } else {
-        // check and remove file from cache entry : parse error found
-        var offset = this.files.indexOf(filename);
-        if (offset > -1) {
-          this.files = this.files.slice(0, offset - 1).concat(
-            this.files.slice(offset + 1)
-          );
-          console.log(this.files);
-        }
-      }
+      return this.parseError(e, data);
     }
   }
 };

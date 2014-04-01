@@ -29,7 +29,7 @@ var fs = require('fs');
  */
 module.exports = {
   // Current version
-  VERSION: '0.0.3',
+  VERSION: '0.0.4',
 
   // contains the PHP tokenizer
   parser: null,
@@ -59,48 +59,43 @@ module.exports = {
   /**
    * Includes a PHP script
    */
-  ,include: function(filename, ignore, output) {
+  ,include: function(filename, ignore, output, once) {
     filename = path.resolve(filename);
-    // @todo : improve speed by avoid fs access
-    if (ignore || fs.existsSync(filename)) {
-      try {
-        var code = this.context.get(filename);
-      } catch(e) {
-        if (!ignore) {
-          return util.error(
-            'Warning : T_INCLUDE error on ' + filename + '\nCaused by : \n' 
-            + e.message
-            + '\n\nStack : '
-            + e.stack
-          );
-        }
-      }
-      if (code) {
-        return code.__main(
-          output ? output : process.stdout
-        );
-      }
-    } else {
+    if (once && this.context.includes.hasOwnProperty(filename)) {
+      return;
+    }
+    try {
+      var code = this.context.get(filename);
+    } catch(e) {
       if (!ignore) {
         return util.error(
+          'Warning : T_INCLUDE error on ' + filename + '\nCaused by : \n' 
+          + e.message
+          + '\n\nStack : '
+          + e.stack
+        );
+      }
+    }
+    if ( code === false ) {
+      if (!ignore) {
+        util.error(
           'Warning : T_INCLUDE error on ' + filename
         );
       }
+      return false;
+    } else {
+      return code.__main(
+        output ? output : process.stdout
+      );
     }
   }
   // includes the specified script only one time
   , include_once: function(filename, ignore, output) {
-    filename = path.resolve(filename);
-    if (!this.context.once(filename)) {
-      return this.include(filename, ignore, output);
-    }
+    return this.include(filename, ignore, output, true);
   }
   // requires the specified script and throws an error if its not found
-  , require: function(filename, output) {
-    filename = path.resolve(filename);
-    if (fs.existsSync(filename)) {
-      return this.include(filename, true, output);
-    } else {
+  , require: function(filename, output, once) {
+    if (this.include(filename, true, output, once) === false) {
       throw new Error(
         "Error : Required file " + filename + " does not exists"
       );
@@ -108,10 +103,7 @@ module.exports = {
   }
   // require_once
   , require_once: function(filename, output) {
-    filename = path.resolve(filename);
-    if (!this.context.once(filename)) {
-      return this.require(filename, output);
-    }
+    return this.require(filename, output, true);
   }
 };
 if (typeof(process.env.DEBUG) == 'undefined') process.env.DEBUG = 0;

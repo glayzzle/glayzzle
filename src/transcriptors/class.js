@@ -10,6 +10,7 @@ module.exports = {
     return {
       // SERIALIZE A CLASS
       T_DECLARE: function(item) {
+        console.log(item);
         // console.log(item);
         return '/* todo */';
       }
