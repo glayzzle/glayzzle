@@ -53,8 +53,11 @@ module.exports = {
   // list of included buffers
   includes: {},
 
-  // detects each script changes
-  watchers: {},
+  // list of reflection entries
+  relection: {
+    functions: {},
+    classes: {}
+  },
 
   // PHP engine
   php: null,
@@ -129,7 +132,7 @@ module.exports = {
   }
   // Converts a filename to a cache filename 
   ,getCacheFile: function(filename) {
-    var result = this.tmp + path.sep + 'glayzzle.' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
+    var result = this.tmp + path.sep + 'glayzzle.' + this.php.VERSION + crypto.createHash('md5').update(filename).digest('hex') + '.js';
     return result;
   }
   // (parse if not cached or updated) and returns the specified file structure
@@ -149,7 +152,7 @@ module.exports = {
       if ( cacheStat.mtime > filenameStat.mtime ) {
         if (!once) {
           // include the cache file for the first time
-          return this.register(filename, cache);
+          return this.register(filename, cache, !once);
         }
         this.includes[filename].time = now;
         return this.includes[filename].module;
@@ -159,10 +162,10 @@ module.exports = {
       if (cacheStat && !filenameStat) return false;
     }
     // parse the php file
-    return this.refresh(filename, cache);
+    return this.refresh(filename, cache, !once);
   }
   // registers the specified file
-  , register: function(filename, cache) {
+  , register: function(filename, cache, refresh) {
     delete require.cache[cache];
     var include = this.includes[filename] = {
       module: require(cache)
@@ -170,8 +173,17 @@ module.exports = {
     };
     // registers each function globally
     for(var name in include.module) {
-      // @fixme show not allow to override an existing function
+      if (!refresh && this.relection.functions.hasOwnProperty(name)) {
+        throw new Error(
+          'Can not re-declare function "'+name
+          +'", already defined in '
+          +this.relection.functions[name].filename+' !'
+        )
+      }
       this.php.globals[name] = include.module[name];
+      this.relection.functions[name] = {
+        filename: filename
+      };
     }
     return include.module;
   }
@@ -191,13 +203,19 @@ module.exports = {
     eval(source);
     // registers each function globally
     for(var name in exec) {
-      // @fixme show not allow to override an existing function
+      if (this.relection.functions.hasOwnProperty(name)) {
+        throw new Error(
+          'Can not re-declare function "'+name
+          +'", already defined in '
+          +this.relection.functions[name].filename+' !'
+        )
+      }
       this.php.globals[name] = exec[name];
     }
     return exec;
   }
   // parse and build file cache
-  , refresh: function(filename, cache) {
+  , refresh: function(filename, cache, refresh) {
     var data = fs.readFileSync(filename);
     if (process.env.DEBUG > 0) console.log("-> Parse " + filename);
     try {
@@ -250,7 +268,7 @@ module.exports = {
       fs.writeFileSync(cache, source, {
         flag: 'w+'
       });
-      return this.register(filename, cache);
+      return this.register(filename, cache, refresh);
     } catch(e) {
       return this.parseError(e, data);
     }
