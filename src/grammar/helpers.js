@@ -1,6 +1,6 @@
 {
   var nestedSpaces = 0;
-  
+  var builder = require('./builder');
   function makeList(a1, al) {
     var result = [a1];
     if (al && al.length > 0) {

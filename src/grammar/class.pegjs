@@ -1,13 +1,39 @@
 class_declaration_statement /*"T_CLASS" */
   = f:(T_ABSTRACT / T_FINAL)? __* T_CLASS __* n:T_STRING e:(__* extends_from)? i:(__* implements_list)? __* '{' b:class_statement_list '}' {
-    return {
+    var result = {
       type: 'class.T_DECLARE',
       flag: f,
       name: n,
       extends: typeof(e) == 'undefined' || !e ? false : e[1],
       implements: typeof(i) == 'undefined' || !i ? [] : i[1],
-      body: b
+      properties: [],
+      constants: [],
+      methods: []
     };
+    var lastDoc = null;
+    for(var i = 0; i < b.length; i++) {
+      var tok = b[i];
+      if ( typeof(tok) == 'object' && tok.type) {
+        if (lastDoc) tok.doc = lastDoc;
+        switch(tok.type) {
+          case 'class.T_CONST':
+            result.constants.push(tok);
+            break;
+          case 'class.T_PROPERTY':
+            result.properties.push(tok);
+            break;
+          case 'class.T_METHOD':
+            result.methods.push(tok);
+            break;
+          default:
+            throw new Error('Unexpected token ' + tok.type);
+        }
+        lastDoc = null;
+      } else if ( tok.substring(0, 3) === '/**' ) {
+        lastDoc = tok;
+      }
+    }
+    return result;
   }
   / T_INTERFACE T_STRING interface_extends_list? '{' class_statement_list '}'
   / T_TRAIT T_STRING '{' class_statement_list '}'
@@ -69,12 +95,12 @@ non_empty_member_modifiers
   = member_modifier+
 
 member_modifier
-  = T_PUBLIC __+         { return 1; }
-  / T_PROTECTED __+      { return 2; }
-  / T_PRIVATE __+        { return 4; }
-  / T_STATIC __+         { return 8; }
-  / T_ABSTRACT __+       { return 16; }
-  / T_FINAL __+          { return 32; }
+  = T_PUBLIC __+         { return builder.T_PUBLIC; }
+  / T_PROTECTED __+      { return builder.T_PROTECTED; }
+  / T_PRIVATE __+        { return builder.T_PRIVATE; }
+  / T_STATIC __+         { return builder.T_STATIC; }
+  / T_ABSTRACT __+       { return builder.T_ABSTRACT; }
+  / T_FINAL __+          { return builder.T_FINAL; }
 
 property_declaration_list
   = a1:property_declaration al:( __* ',' __* property_declaration)* { return makeList(a1, al) }

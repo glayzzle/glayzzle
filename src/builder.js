@@ -9,6 +9,14 @@ var util = require('util');
 var path = require('path');
 
 module.exports = {
+  /** MODIFIERS CONSTANTS **/
+  T_PUBLIC:     1,
+  T_PROTECTED:  2,
+  T_PRIVATE:    4,
+  T_STATIC:     8,
+  T_ABSTRACT:   16,
+  T_FINAL:      32,
+  
   compat: null,
   requires: [],
   functions: [],
@@ -95,6 +103,7 @@ module.exports = {
     this.directory = path.dirname(filename);
     this.requires = [];
     this.functions = [];
+    this.classes = [];
     return this;
   }
   // Require to use the specified module
