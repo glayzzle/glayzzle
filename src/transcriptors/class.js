@@ -10,7 +10,17 @@ module.exports = {
     return {
       // SERIALIZE A CLASS
       T_DECLARE: function(item) {
-        console.log(item);
+        console.log(item.properties);
+        var buffer = [];
+        // handling properties
+        if(item.properties) {
+          for(var i = 0; i < item.properties.length; i++) {
+            var property = item.properties[i];
+            if ( property.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+              
+            }
+          }
+        }
         // console.log(item);
         return '/* todo */';
       }

@@ -630,14 +630,40 @@ module.exports = (function() {
             };
           },
         peg$c501 = function(f, n, e, i, b) {
-            return {
+            var result = {
               type: 'class.T_DECLARE',
               flag: f,
               name: n,
               extends: typeof(e) == 'undefined' || !e ? false : e[1],
               implements: typeof(i) == 'undefined' || !i ? [] : i[1],
-              body: b
+              properties: [],
+              constants: [],
+              methods: []
             };
+            var lastDoc = null;
+            for(var i = 0; i < b.length; i++) {
+              var tok = b[i];
+              if ( typeof(tok) == 'object' && tok.type) {
+                if (lastDoc) tok.doc = lastDoc;
+                switch(tok.type) {
+                  case 'class.T_CONST':
+                    result.constants.push(tok);
+                    break;
+                  case 'class.T_PROPERTY':
+                    result.properties.push(tok);
+                    break;
+                  case 'class.T_METHOD':
+                    result.methods.push(tok);
+                    break;
+                  default:
+                    throw new Error('Unexpected token ' + tok.type);
+                }
+                lastDoc = null;
+              } else if ( tok.substring(0, 3) === '/**' ) {
+                lastDoc = tok;
+              }
+            }
+            return result;
           },
         peg$c502 = function(n) { return n; },
         peg$c503 = function(c) {
@@ -663,12 +689,12 @@ module.exports = (function() {
             };
           },
         peg$c506 = function() { return [1]; },
-        peg$c507 = function() { return 1; },
-        peg$c508 = function() { return 2; },
-        peg$c509 = function() { return 4; },
-        peg$c510 = function() { return 8; },
-        peg$c511 = function() { return 16; },
-        peg$c512 = function() { return 32; },
+        peg$c507 = function() { return builder.T_PUBLIC; },
+        peg$c508 = function() { return builder.T_PROTECTED; },
+        peg$c509 = function() { return builder.T_PRIVATE; },
+        peg$c510 = function() { return builder.T_STATIC; },
+        peg$c511 = function() { return builder.T_ABSTRACT; },
+        peg$c512 = function() { return builder.T_FINAL; },
         peg$c513 = function(a1, al) { return makeList(a1, al) },
         peg$c514 = function(n) {
             return {
@@ -14252,7 +14278,7 @@ module.exports = (function() {
 
 
       var nestedSpaces = 0;
-      
+      var builder = require('./builder');
       function makeList(a1, al) {
         var result = [a1];
         if (al && al.length > 0) {
