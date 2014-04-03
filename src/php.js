@@ -29,7 +29,7 @@ var fs = require('fs');
  */
 module.exports = {
   // Current version
-  VERSION: '0.0.4',
+  VERSION: '0.0.5',
 
   // contains the PHP tokenizer
   parser: null,

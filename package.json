@@ -1,6 +1,6 @@
 {
   "name": "glayzzle",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "http://glayzzle.com",
   "description": "A NodeJS engine that converts on-fly the php into JS and execute it.",
   "main": "./src/php.js",
