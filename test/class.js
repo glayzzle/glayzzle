@@ -14,7 +14,7 @@ var bar = (function() {
   var parent = Class.prototype;
 
   // class declaration
-  var that = Class.__extends({
+  var self = Class.__extends({
     name: 'bar'
     , final: false
     , abstract: false
@@ -22,7 +22,7 @@ var bar = (function() {
     , protected: {
       var1: 'protected-var-bar',
       yop: function() {
-        console.log(that.protected.yop);
+        console.log(self.yop);
       }
     }
   }, {
@@ -46,7 +46,7 @@ var bar = (function() {
       this.bar();
     }
   });
-  return that.handler;
+  return self.__class;
 }());
 
 // static public vars
@@ -83,7 +83,7 @@ var foo = (function() {
   var parent = bar.prototype;
 
   // class declaration
-  var that = bar.__extends({
+  var self = bar.__extends({
     name: 'foo'
     , final: true
     , abstract: false
@@ -99,10 +99,10 @@ var foo = (function() {
       parent.bar();
     },
     getYop: function() {
-      return that.protected.var1;
+      return self.var1;
     }
   });
-  return that.handler;
+  return self.__class;
 }());
 
 var i2 = new foo('test-foo');
@@ -154,7 +154,7 @@ var POJO = function() {
 var POPO = (function() {
   return Class.__extends({ name: 'POPO' }, {
     // empty body
-  }).handler;
+  }).__class;
 }());
 
 console.log('=> constructor test over 1M calls');

@@ -17,34 +17,35 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 // The base Class implementation (does nothing)
 var Class = function(){};
 
-// Create a new Class that inherits from this class
-Class.protected = {
+// private protected container
+var protected = {
   stdClass: {}
 };
+
+// Create a new Class that inherits from this class
 Class.__extends = function(options, prop) {
   // Instantiate a base class (but only create the instance,
   // don't run the constructor)
   initializing = true;
-  var that = this;
   var parentName = this.prototype.constructor.toString();
+  var that = this;
   var proto = new that();
   initializing = false;
-  
-  // declare protected static vars
-  Class.protected[options.name] =  Class.protected[parentName];
-  for(var name in options.protected) {
-    Class.protected[options.name][name] = options.protected[name];
-  }
 
-  // Declare the object prototype
-  for (var name in prop) {
-    if (typeof prop[name] === 'function') {
-      proto[name] = prop[name];
-    }
+  // declare protected static elements
+  protected[options.name] = {};
+  var self = protected[options.name];
+  // clone protected static element from parent
+  for(var i in protected[parentName]) {
+    self[i] = protected[parentName][i];
+  }
+  // override protected static elements
+  for(var name in options.protected) {
+    self[name] = options.protected[name];
   }
 
   // The dummy class constructor
-  function result() {
+  self['__class'] = function() {
     // All construction is actually done in the __construct method
     if ( !initializing) {
       // Copy the properties over onto the new prototype
@@ -56,34 +57,38 @@ Class.__extends = function(options, prop) {
       // loads the constructor
       if (this.__construct) this.__construct.apply(this, arguments);
     }
-  }
- 
-  // Populate our constructed prototype object
-  result.prototype = proto;
+  };
 
-  // Copy static vars & generic functions
+  // Declare the object prototype
+  for (var name in prop) {
+    if (typeof prop[name] === 'function') {
+      proto[name] = prop[name];
+    }
+  }
+
+  // Populate our constructed prototype object
+  self['__class'].prototype = proto;
+
+  // Copy public static elements
   for (var name in that) {
-    result[name] = that[name];
+    self['__class'][name] = that[name];
   }
 
   // Enforce the constructor to be what we expect
-  result.prototype.constructor = result;
-  result.prototype.constructor.toString = function() {
+  self['__class'].prototype.constructor = self['__class'];
+  self['__class'].prototype.constructor.toString = function() {
     return options.name ? options.name : 'stdClass';
   };
-  
+
   // makes it extensible if is not a final class
-  if (options.final) result.__extends = function(options) {
+  if (options.final) self['__class'].__extends = function(options) {
     throw new Error(
       'Class ' +  options.name 
       + ' may not inherit from final class (' 
       + this + ')'
     );
   };
-  return {
-    protected: Class.protected[options.name],
-    handler: result
-  };
+  return self;
 };
 Class.prototype.constructor.toString = function() { return 'stdClass'; }
 module.exports = Class;
