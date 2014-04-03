@@ -4,19 +4,27 @@ var Class = require('../src/compat/class');
 
 // declare the bar class
 var bar = (function() {
-  // private vars with no collision
+  // private static vars
   var this_var1 = 'bar';
-  // a private function (costs memory alloc for every object)
+  // a private static function (costs memory alloc for every object)
   function privateFunction() {
     console.log('You call a private function from bar !');
   }
   // define the parent handler
   var parent = Class.prototype;
+
   // class declaration
-  return Class.__extends({
+  var that = Class.__extends({
     name: 'bar'
     , final: false
     , abstract: false
+    // declare static propected properties
+    , protected: {
+      var1: 'protected-var-bar',
+      yop: function() {
+        console.log(that.protected.yop);
+      }
+    }
   }, {
     // declare a public var
     arg: null,
@@ -25,6 +33,7 @@ var bar = (function() {
     __construct: function(arg1) {
       // constructor code
       this.arg = arg1;
+      this_var1 += ' : ' + arg1;
     },
     // public function
     bar: function() {
@@ -37,6 +46,7 @@ var bar = (function() {
       this.bar();
     }
   });
+  return that.handler;
 }());
 
 // static public vars
@@ -48,8 +58,13 @@ bar.getInstance = function() {
 };
 
 console.log('*** TEST BEHAVIOUR WITH BAR ***');
+
 var i1 = new bar('azerty');
 i1.bar();
+
+var i1_1 = new bar('azerty123');
+i1_1.bar();
+
 console.log(i1);
 console.log(i1 instanceof bar);
 console.log(bar);
@@ -58,19 +73,22 @@ console.log(bar.getInstance());
 /** TEST EXTENDS **/
 console.log('*** TEST EXTENSION WITH FOO ***');
 var foo = (function() {
-  // private vars with no collision
+  // private static vars with no collision
   var this_var1 = 'foo';
-  // a private function (costs memory alloc for every object)
+  // a private static function (costs memory alloc for every object)
   function privateFunction() {
     console.log('You call a private function from foo !');
   }
   // define the parent handler
   var parent = bar.prototype;
+
   // class declaration
-  return bar.__extends({
+  var that = bar.__extends({
     name: 'foo'
     , final: true
     , abstract: false
+    , protected: {
+    }
   }, {
     // declare a public var
     var2: 'public-foo',
@@ -79,8 +97,12 @@ var foo = (function() {
       privateFunction();
       console.log('I am the public FOO function : '+this_var1+' !');
       parent.bar();
+    },
+    getYop: function() {
+      return that.protected.var1;
     }
   });
+  return that.handler;
 }());
 
 var i2 = new foo('test-foo');
@@ -119,20 +141,23 @@ try {
   console.log('Expected error : ' + e.message);
 }
 
-/** **/
+/** TEST PROTECTED VALUES **/
+console.log('*** TEST PROTECTED ***');
+console.log(i1.yop);       // expect to be undefined
+console.log(i2.getYop());
 
 /** BENCHMARKS **/
 console.log('*** RUNNING SOME PERF TESTS ***');
 var POJO = function() {
   // empty proto
 };
-
 var POPO = (function() {
   return Class.__extends({ name: 'POPO' }, {
     // empty body
-  });
+  }).handler;
 }());
 
+console.log('=> constructor test over 1M calls');
 function runPOJO_Tests(out) {
   if (out) console.log('--- start POJO bench : ');
   var start = Date.now();

@@ -18,13 +18,23 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 var Class = function(){};
 
 // Create a new Class that inherits from this class
+Class.protected = {
+  stdClass: {}
+};
 Class.__extends = function(options, prop) {
   // Instantiate a base class (but only create the instance,
   // don't run the constructor)
   initializing = true;
   var that = this;
+  var parentName = this.prototype.constructor.toString();
   var proto = new that();
   initializing = false;
+  
+  // declare protected static vars
+  Class.protected[options.name] =  Class.protected[parentName];
+  for(var name in options.protected) {
+    Class.protected[options.name][name] = options.protected[name];
+  }
 
   // Declare the object prototype
   for (var name in prop) {
@@ -70,7 +80,10 @@ Class.__extends = function(options, prop) {
       + this + ')'
     );
   };
-
-  return result;
+  return {
+    protected: Class.protected[options.name],
+    handler: result
+  };
 };
+Class.prototype.constructor.toString = function() { return 'stdClass'; }
 module.exports = Class;
