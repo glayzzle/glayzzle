@@ -6,10 +6,18 @@ var Class = require('../src/compat/class');
 var bar = (function() {
   // private vars with no collision
   var this_var1 = 'bar';
+  // a private function (costs memory alloc for every object)
+  function privateFunction() {
+    console.log('You call a private function from bar !');
+  }
   // define the parent handler
   var parent = Class.prototype;
   // class declaration
   return Class.__extends({
+    name: 'bar'
+    , final: false
+    , abstract: false
+  }, {
     // declare a public var
     arg: null,
     var2: 'public-bar',
@@ -21,6 +29,12 @@ var bar = (function() {
     // public function
     bar: function() {
       console.log('I am the public BAR function : '+this_var1+' !');
+    },
+    // try to check this scope
+    doSomething: function() {
+      console.log('Do something on current scope : ');
+      privateFunction();
+      this.bar();
     }
   });
 }());
@@ -46,14 +60,23 @@ console.log('*** TEST EXTENSION WITH FOO ***');
 var foo = (function() {
   // private vars with no collision
   var this_var1 = 'foo';
+  // a private function (costs memory alloc for every object)
+  function privateFunction() {
+    console.log('You call a private function from foo !');
+  }
   // define the parent handler
   var parent = bar.prototype;
   // class declaration
   return bar.__extends({
+    name: 'foo'
+    , final: true
+    , abstract: false
+  }, {
     // declare a public var
     var2: 'public-foo',
     // public function
     bar: function() {
+      privateFunction();
       console.log('I am the public FOO function : '+this_var1+' !');
       parent.bar();
     }
@@ -64,3 +87,10 @@ var i2 = new foo('test-foo');
 i2.bar();
 console.log(i2);
 console.log(i2 instanceof bar);
+i2.doSomething();
+
+/** TEST STATIC OVERRIDES **/
+console.log('*** TEST STATIC EXTENSION WITH FOO ***');
+console.log(foo);
+foo.static_var2 = 'var2-from-foo';
+console.log(foo.getInstance());

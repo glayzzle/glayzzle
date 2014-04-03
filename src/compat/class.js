@@ -16,16 +16,16 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 var Class = function(){};
 
 // Create a new Class that inherits from this class
-Class.__extends = function(prop) {
+Class.__extends = function(options, prop) {
   // Instantiate a base class (but only create the instance,
   // don't run the init constructor)
   initializing = true;
-  var prototype = new this();
+  var proto = new this();
   initializing = false;
  
   // Copy the properties over onto the new prototype
   for (var name in prop) {
-    prototype[name] = prop[name];
+    proto[name] = prop[name];
   }
 
   // The dummy class constructor
@@ -44,14 +44,21 @@ Class.__extends = function(prop) {
   }
  
   // Populate our constructed prototype object
-  result.prototype = prototype;
- 
+  result.prototype = proto;
+
+  // Copy static vars & generic functions
+  for (var name in this.prototype) {
+    result.prototype[name] = this.prototype[name];
+  }
+
   // Enforce the constructor to be what we expect
   result.prototype.constructor = result;
-
-  // And make this class extendable
-  result.__extends = Class.__extends;
- 
+  result.prototype.constructor.toString = function() {
+    return options.name ? options.name : 'stdClass';
+  };
+  
+  // makes it extensible
+  if (!options.final) result.__extends = Class.__extends;
   return result;
 };
 module.exports = Class;
