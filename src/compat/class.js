@@ -20,19 +20,22 @@ Class.__extends = function(options, prop) {
   // Instantiate a base class (but only create the instance,
   // don't run the init constructor)
   initializing = true;
-  var proto = new this();
+  var that = this;
+  var proto = new that();
   initializing = false;
- 
-  // Copy the properties over onto the new prototype
+
+  // Declare the object prototype
   for (var name in prop) {
-    proto[name] = prop[name];
+    if (typeof prop[name] === 'function') {
+      proto[name] = prop[name];
+    }
   }
 
   // The dummy class constructor
   function result() {
     // All construction is actually done in the __construct method
     if ( !initializing) {
-      // define defaut properties
+      // Copy the properties over onto the new prototype
       for (var name in prop) {
         if (typeof prop[name] !== 'function') {
           this[name] = prop[name];
@@ -47,8 +50,8 @@ Class.__extends = function(options, prop) {
   result.prototype = proto;
 
   // Copy static vars & generic functions
-  for (var name in this.prototype) {
-    result.prototype[name] = this.prototype[name];
+  for (var name in that) {
+    result[name] = that[name];
   }
 
   // Enforce the constructor to be what we expect
@@ -57,8 +60,15 @@ Class.__extends = function(options, prop) {
     return options.name ? options.name : 'stdClass';
   };
   
-  // makes it extensible
-  if (!options.final) result.__extends = Class.__extends;
+  // makes it extensible if is not a final class
+  if (options.final) result.__extends = function(options) {
+    throw new Error(
+      'Class ' +  options.name 
+      + ' may not inherit from final class (' 
+      + this + ')'
+    );
+  };
+
   return result;
 };
 module.exports = Class;

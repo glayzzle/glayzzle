@@ -91,6 +91,26 @@ i2.doSomething();
 
 /** TEST STATIC OVERRIDES **/
 console.log('*** TEST STATIC EXTENSION WITH FOO ***');
-console.log(foo);
 foo.static_var2 = 'var2-from-foo';
+console.log(foo);
 console.log(foo.getInstance());
+// static public method
+foo.getInstance = function() {
+  // this == static
+  return this.static_var2;
+};
+console.log(foo.getInstance());
+
+
+/** TEST FINAL **/
+console.log('*** TEST FINAL OPTION WITH OUPS ***');
+var oups = (function() {
+  // define the parent handler
+  var parent = foo.prototype;
+  // class declaration
+  return foo.__extends({
+    name: 'oups'
+  }, {
+    // empty class body ...
+  });
+}());
