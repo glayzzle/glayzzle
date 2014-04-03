@@ -1,5 +1,7 @@
 
-/* Simple JavaScript Inheritance
+/**
+ * Inspired by :
+ * Simple JavaScript Inheritance
  * By John Resig http://ejohn.org/
  * MIT Licensed.
  * --------------------------------------------- 
@@ -18,7 +20,7 @@ var Class = function(){};
 // Create a new Class that inherits from this class
 Class.__extends = function(options, prop) {
   // Instantiate a base class (but only create the instance,
-  // don't run the init constructor)
+  // don't run the constructor)
   initializing = true;
   var that = this;
   var proto = new that();

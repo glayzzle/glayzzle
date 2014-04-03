@@ -104,13 +104,58 @@ console.log(foo.getInstance());
 
 /** TEST FINAL **/
 console.log('*** TEST FINAL OPTION WITH OUPS ***');
-var oups = (function() {
+try {
+  var oups = (function() {
   // define the parent handler
   var parent = foo.prototype;
   // class declaration
   return foo.__extends({
-    name: 'oups'
-  }, {
-    // empty class body ...
+      name: 'oups'
+    }, {
+      // empty class body ...
+    });
+  }());
+} catch(e) {
+  console.log('Expected error : ' + e.message);
+}
+
+/** **/
+
+/** BENCHMARKS **/
+console.log('*** RUNNING SOME PERF TESTS ***');
+var POJO = function() {
+  // empty proto
+};
+
+var POPO = (function() {
+  return Class.__extends({ name: 'POPO' }, {
+    // empty body
   });
 }());
+
+function runPOJO_Tests(out) {
+  if (out) console.log('--- start POJO bench : ');
+  var start = Date.now();
+  var items = [];
+  
+  for(var i = 0; i < 1000000; i++) {
+    items.push(new POJO());
+  }
+  
+  if (out) console.log('POJO Duration : ' + (Date.now() - start) + ' msec');
+}
+
+function runPOPO_Tests(out) {
+  if (out) console.log('--- start POPO bench : ');
+  var start = Date.now();
+  var items = [];
+  
+  for(var i = 0; i < 1000000; i++) {
+    items.push(new POPO());
+  }
+  
+  if (out) console.log('POPO Duration : ' + (Date.now() - start) + ' msec');
+}
+
+runPOPO_Tests(true); 
+runPOJO_Tests(true);
