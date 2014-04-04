@@ -34,15 +34,14 @@ module.exports = function(name) {
    * Extends the specified prototype
    */
   reflection.prototype.extends = function(parent) {
-    if (parent instanceof reflection) {
+    if (typeof parent.getClass === 'function') {
+      // passed a class object instance, so retrieve its reflection object
+      this._extends = parent.getClass();
       // stores the reflection object
-      if ( parent._final ) {
+      if ( this._extends._final ) {
+        this._extends = null;
         throw new Error('Could not inherit from a final class !');
       }
-      this._extends = parent;
-    } else if (typeof parent.getClass === 'function') {
-      // passed a class object instance, so retrieve its reflection object
-      return this.extends(parent.getClass());
     } else {
       throw new Error('Could not extend from the specified object, expects a class declaration interface !');
     }
@@ -148,22 +147,28 @@ module.exports = function(name) {
       var reflection = this;
       this._proto = function() {
         // use the public constructor
-        if (reflection.public.hasOwnProperty('__construct')) {
+        if (reflection._public.hasOwnProperty('__construct')) {
           this.__construct.apply(this, arguments);
         }
       };
       this._proto.toString = function() {
         return reflection._name ? reflection._name : 'stdClass';
       };
-      var __self = this._extends ? this._extends : {};
+      var __self = {};
+      // handle inheritance
+      if (this._extends) {
+        // declare public elements
+        for(var i in this._extends._public) {
+          __self[i] = this._extends._public[i];
+        }
+        // declare static elements
+        for(var i in this._extends._static.public) {
+          this._proto[i] = this._extends._static.public[i];
+        }
+      }
       // declare public elements
       for(var i in this._public) {
-        Object.defineProperty(__self, i, {
-          value: this._public[i],
-          enumerable: true,
-          configurable: false,
-          writable: true
-        });
+        __self[i] = this._public[i];
       }
       // declare protected elements
       for(var i in this._protected) {
@@ -174,7 +179,7 @@ module.exports = function(name) {
           writable: true
         });
       }
-      // declare static functions
+      // declare static elements
       for(var i in this._static.public) {
         this._proto[i] = this._static.public[i];
       }
