@@ -11,7 +11,7 @@
     "src": "test"
   },
   "scripts": {
-    "test": "cd bin && node ./test -f ../test/parser/function.parser"
+    "test": "echo \"See https://github.com/Glayzzle/tests\" && exit 0"
   },
   "repository": {
     "type": "git",
