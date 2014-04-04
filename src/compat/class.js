@@ -1,94 +1,191 @@
-
 /**
- * Inspired by :
- * Simple JavaScript Inheritance
- * By John Resig http://ejohn.org/
- * MIT Licensed.
- * --------------------------------------------- 
  * Glayzzle : PHP on NodeJS
  * @url http://glayzzle.com
  * @author Ioan CHIRIAC
  * @license BSD-3-Clause
  */
 
-// Inspired by base2 and Prototype
-var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+"use strict";
 
-// The base Class implementation (does nothing)
-var Class = function(){};
-
-// private protected container
-var protected = {
-  stdClass: {}
-};
-
-// Create a new Class that inherits from this class
-Class.__extends = function(options, prop) {
-  // Instantiate a base class (but only create the instance,
-  // don't run the constructor)
-  initializing = true;
-  var parentName = this.prototype.constructor.toString();
-  var that = this;
-  var proto = new that();
-  initializing = false;
-
-  // declare protected static elements
-  protected[options.name] = {};
-  var self = protected[options.name];
-  // clone protected static element from parent
-  for(var i in protected[parentName]) {
-    self[i] = protected[parentName][i];
-  }
-  // override protected static elements
-  for(var name in options.protected) {
-    self[name] = options.protected[name];
-  }
-
-  // The dummy class constructor
-  self['__class'] = function() {
-    // All construction is actually done in the __construct method
-    if ( !initializing) {
-      // Copy the properties over onto the new prototype
-      for (var name in prop) {
-        if (typeof prop[name] !== 'function') {
-          this[name] = prop[name];
-        }
+module.exports = function(name) {
+  var reflection = function(name) {
+    this._name = name;
+  };
+  /**
+   * Define the reflection wrapper
+   */
+  reflection.prototype._name = 'stdClass';
+  reflection.prototype._abstract = false;
+  reflection.prototype._final = false;
+  reflection.prototype._implements = [];
+  reflection.prototype._extends = null;
+  reflection.prototype._proto = null;
+  /** STORE DEFAULT PROPERTIES (WITH THEIR SCOPE) **/
+  reflection.prototype._public = {};
+  reflection.prototype._protected = {};
+  reflection.prototype._private = {};
+  reflection.prototype._static = {
+    public: {},
+    protected: {},
+    private: {},
+    const: {}
+  };
+  /**
+   * Extends the specified prototype
+   */
+  reflection.prototype.extends = function(parent) {
+    if (parent instanceof reflection) {
+      // stores the reflection object
+      if ( parent._final ) {
+        throw new Error('Could not inherit from a final class !');
       }
-      // loads the constructor
-      if (this.__construct) this.__construct.apply(this, arguments);
+      this._extends = parent;
+    } else if (typeof parent.getClass === 'function') {
+      // passed a class object instance, so retrieve its reflection object
+      return this.extends(parent.getClass());
+    } else {
+      throw new Error('Could not extend from the specified object, expects a class declaration interface !');
     }
+    return this;
   };
-
-  // Declare the object prototype
-  for (var name in prop) {
-    if (typeof prop[name] === 'function') {
-      proto[name] = prop[name];
+  /**
+   * This class is final
+   * => Cannont be extended
+   */
+  reflection.prototype.final = function() {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    if (arguments.length == 1) {
+      this._final = arguments[0];
+    } else this._final = true;
+    if ( this._final && this._abstract ) {
+      this._final = false;
+      throw new Error('A class could not be both final and abstract !');
+    } 
+    return this;
+  };
+  /**
+   * This class is an abstract class
+   * => Cannot be dirrectly instanciated
+   */
+  reflection.prototype.abstract = function() {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    if (arguments.length == 1) {
+      this._abstract = arguments[0];
+    } else this._abstract = true;
+    if ( this._final && this._abstract ) {
+      this._abstract = false;
+      throw new Error('A class could not be both final and abstract !');
+    } 
+    return this;
+  };
+  /**
+   * Defines the class interface
+   */
+  reflection.prototype.static = function(properties) {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    if (properties.hasOwnProperty('public')) {
+      for(var i in properties.public) {
+        this._static.public[i] = properties.public[i];
+      }
     }
-  }
-
-  // Populate our constructed prototype object
-  self['__class'].prototype = proto;
-
-  // Copy public static elements
-  for (var name in that) {
-    self['__class'][name] = that[name];
-  }
-
-  // Enforce the constructor to be what we expect
-  self['__class'].prototype.constructor = self['__class'];
-  self['__class'].prototype.constructor.toString = function() {
-    return options.name ? options.name : 'stdClass';
+    if (properties.hasOwnProperty('protected')) {
+      for(var i in properties.protected) {
+        this._static.protected[i] = properties.protected[i];
+      }
+    }
+    if (properties.hasOwnProperty('private')) {
+      for(var i in properties.private) {
+        this._static.private[i] = properties.private[i];
+      }
+    }
+    return this;
   };
-
-  // makes it extensible if is not a final class
-  if (options.final) self['__class'].__extends = function(options) {
-    throw new Error(
-      'Class ' +  options.name 
-      + ' may not inherit from final class (' 
-      + this + ')'
-    );
+  /**
+   * Define some constants
+   */
+  reflection.prototype.const = function(properties) {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    for(var i in properties) {
+      this._static.const[i] = properties[i];
+    }
+    return this;
   };
-  return self;
+  /**
+   * Define public functions and properties
+   */
+  reflection.prototype.public = function(properties) {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    for(var i in properties) {
+      this._public[i] = properties[i];
+    }
+    return this;
+  };
+  /**
+   * Define protected functions and properties
+   */
+  reflection.prototype.protected = function(properties) {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    for(var i in properties) {
+      this._protected[i] = properties[i];
+    }
+    return this;
+  };
+  /**
+   * Define private functions and properties
+   */
+  reflection.prototype.private = function(properties) {
+    if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
+    for(var i in properties) {
+      this._private[i] = properties[i];
+    }
+    return this;
+  };
+  /**
+   * Makes the prototype
+   */
+  reflection.prototype.getPrototype = function() {
+    if (!this._proto) {
+      var reflection = this;
+      this._proto = function() {
+        // use the public constructor
+        if (reflection.public.hasOwnProperty('__construct')) {
+          this.__construct.apply(this, arguments);
+        }
+      };
+      this._proto.toString = function() {
+        return reflection._name ? reflection._name : 'stdClass';
+      };
+      var __self = this._extends ? this._extends : {};
+      // declare public elements
+      for(var i in this._public) {
+        Object.defineProperty(__self, i, {
+          value: this._public[i],
+          enumerable: true,
+          configurable: false,
+          writable: true
+        });
+      }
+      // declare protected elements
+      for(var i in this._protected) {
+        Object.defineProperty(__self, i, {
+          value: this._public[i],
+          enumerable: false,
+          configurable: false,
+          writable: true
+        });
+      }
+      // declare static functions
+      for(var i in this._static.public) {
+        this._proto[i] = this._static.public[i];
+      }
+      // reflection handler, like the java getClass helper
+      this._proto.getClass = __self.getClass = function() {
+        return reflection;
+      };
+      this._proto.prototype = __self;
+      this._proto.prototype.constructor = this._proto;
+    }
+    return this._proto;
+  };
+  return new reflection(name);
 };
-Class.prototype.constructor.toString = function() { return 'stdClass'; }
-module.exports = Class;
