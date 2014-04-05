@@ -178,24 +178,31 @@ module.exports = {
   }
   // Builds a PHP AST to JavaScript
   ,toString: function(ast) {
-    if (!ast) return '';
-    if (ast.type) {
-      return this.transcriptNode(ast);
-    } else if(Array.isArray(ast)) {
-      var result = [];
-      for(var i = 0; i < ast.length; i++) {
-        if (ast[i] == null) continue;
-        if (ast[i].type) {
-          result.push(this.transcriptNode(ast[i]));
-        } else if(Array.isArray(ast[i])) {
-          result.push(this.toString(ast[i]));
-        } else {
-          result.push(ast[i]);
+    if (ast === null) return 'null';
+    var t = typeof ast;
+    if (t === 'object') {
+      if (ast.type) {
+        return this.transcriptNode(ast);
+      } else {
+        var result = [];
+        for(var i = 0; i < ast.length; i++) {
+          if (ast[i] == null) continue;
+          if (ast[i].type) {
+            result.push(this.transcriptNode(ast[i]));
+          } else if(Array.isArray(ast[i])) {
+            result.push(this.toString(ast[i]));
+          } else {
+            result.push(ast[i]);
+          }
         }
+        return result.join('');
       }
-      return result.join('');
     } else {
-      return ast;
+      if ( t === 'undefined' ) {
+        return 'null';
+      } else if (t === 'string' ) {
+        return JSON.stringify(ast);
+      } else return ast;
     }
   }
 };
