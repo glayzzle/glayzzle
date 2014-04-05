@@ -28,7 +28,7 @@ module.exports = function(name) {
     public: {},
     protected: {},
     private: {},
-    const: {}
+    constant: {}
   };
   /**
    * Extends the specified prototype
@@ -102,10 +102,10 @@ module.exports = function(name) {
   /**
    * Define some constants
    */
-  reflection.prototype.const = function(properties) {
+  reflection.prototype.constants = function(properties) {
     if (this._proto) throw new Error('ILLEGAL operation, class prototype is already defined !');
     for(var i in properties) {
-      this._static.const[i] = properties[i];
+      this._static.constant[i] = properties[i];
     }
     return this;
   };
@@ -182,6 +182,10 @@ module.exports = function(name) {
       // declare static elements
       for(var i in this._static.public) {
         this._proto[i] = this._static.public[i];
+      }
+      // declare static constants
+      for(var i in this._static.constant) {
+        this._proto[i] = this._static.constant[i];
       }
       // reflection handler, like the java getClass helper
       this._proto.getClass = __self.getClass = function() {
