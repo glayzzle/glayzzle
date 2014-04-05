@@ -67,12 +67,12 @@ Here's the todo list :
 
 | TASK                                                      | STATUS           |
 |-----------------------------------------------------------|------------------|
-| Finish the lexer                                          | [progress...40%] |
-| Convert back the AST to JS                                | [progress...20%] | 
+| Finish the lexer                                          | [progress...10%] |
+| Convert back the AST to JS                                | [progress...30%] | 
 | Make some benchmarks                                      | [progress...20%] |
 | Create a framework for packaging the PHP code             | [progress...50%] |
-| Create a cache system to improve interpretation speeds    | [progress...60%] |
-| Migrate common PHP functions to be compliant with php     |                  |
+| Create a cache system to improve interpretation speeds    | [progress...70%] |
+| Migrate common PHP functions to be compliant with php     | [progress...05%] |
 | Migrate most used PHP modules                             |                  |
 
 If you want to contribute, fell free to contact me from my website http://glayzzle.com or from github.
