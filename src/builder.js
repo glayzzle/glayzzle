@@ -181,7 +181,7 @@ module.exports = {
     if (!ast) return '';
     if (ast.type) {
       return this.transcriptNode(ast);
-    } else {
+    } else if(Array.isArray(ast)) {
       var result = [];
       for(var i = 0; i < ast.length; i++) {
         if (ast[i] == null) continue;
@@ -194,6 +194,8 @@ module.exports = {
         }
       }
       return result.join('');
+    } else {
+      return ast;
     }
   }
 };
