@@ -36,13 +36,85 @@ module.exports = {
         }
         // handling properties
         if(item.properties.length > 0) {
+          var list = {
+            static: {
+              public: [],
+              protected: [],
+              private: []
+            },
+            public: [],
+            protected: [],
+            private: []
+          };
           for(var i = 0; i < item.properties.length; i++) {
-            var property = item.properties[i];
-            if (property.modifiers.indexOf(builder.T_STATIC) != -1 ) {
-              if ( property.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
-                
+            var decl = item.properties[i];
+            // scan static
+            if (decl.modifiers.indexOf(builder.T_STATIC) != -1 ) {
+              if ( decl.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.static.private.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
+              }
+              if ( decl.modifiers.indexOf(builder.T_PROTECTED) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.static.protected.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
+              }
+              if ( decl.modifiers.indexOf(builder.T_PUBLIC) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.static.public.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
+              }
+            } else {
+              // instance scope declarations
+              if ( decl.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.private.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
+              }
+              if ( decl.modifiers.indexOf(builder.T_PROTECTED) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.protected.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
+              }
+              if ( decl.modifiers.indexOf(builder.T_PUBLIC) != -1 ) {
+                for(var p = 0; p < decl.properties.length; p++) {
+                  list.public.push(
+                    decl.properties[p].name + ': ' + builder.toString(decl.properties[p].default)
+                  );
+                }
               }
             }
+          }
+          if (
+            list.static.public.length > 0
+            || list.static.protected.length > 0
+            || list.static.private.length > 0
+          ) {
+            buffer.push('.static({\n\t\t\t'
+              + (list.static.public.length > 0 ? 'public: {\n\t\t\t\t' + list.static.public.join(',\n\t\t\t\t') + '\n\t\t\t},' : '')
+              + (list.static.protected.length > 0 ? 'protected: {\n\t\t\t\t' + list.static.protected.join(',\n\t\t\t\t') + '\n\t\t\t},' : '')
+              + (list.static.private.length > 0 ? 'private: {\n\t\t\t\t' + list.static.private.join(',\n\t\t\t\t') + '\n\t\t\t}' : '')
+            + '\n\t\t})');
+          }
+          if (list.public.length > 0) {
+            buffer.push('.public({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
+          }
+          if (list.protected.length > 0) {
+            buffer.push('.protected({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
+          }
+          if (list.private.length > 0) {
+            buffer.push('.private({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
           }
         }
         // handling methods
@@ -59,9 +131,6 @@ module.exports = {
         }
         builder.classes[item.name] += '.getPrototype()';
         return '';
-      }
-      ,T_METHOD: function(item) {
-      
       }
     };
   }
