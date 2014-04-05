@@ -190,9 +190,9 @@ module.exports = {
   // evaluates the specified code and returns its function
   , eval: function(code) {
     var AST = this.getParser().parse(code);
-    var source = builder.init('evald code').toString(AST);
-    builder.functions.push('__main: function( __output ) {\n\t\tthis.__output = __output;\n\t\t' + source + '\n\t}');
-    source = builder.headers() + '\n'
+    builder.init('evald code');
+    builder.functions.push(builder.getMainFunction(AST));
+    var source = builder.headers() + '\n'
       + 'exec = {\n\t'
         + '__output: process.stdout,\n\t'
         + builder.functions.join('\n\t,')
@@ -250,8 +250,8 @@ module.exports = {
         }
         buffer += c;
       }
-      var source = builder.init(filename).toString(results);
-      builder.functions.push('__main: function( __output ) {\n\t\tthis.__output = __output;\n\t\t' + source + '\n\t}');
+      builder.init(filename);
+      builder.functions.push(builder.getMainFunction(results));
       source = '/** GLAYZZLE GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
         + builder.headers() + '\n'
         + 'module.exports = {\n\t'

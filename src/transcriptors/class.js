@@ -25,13 +25,22 @@ module.exports = {
         if(item.properties) {
           for(var i = 0; i < item.properties.length; i++) {
             var property = item.properties[i];
-            if ( property.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+            if (property.modifiers.indexOf(builder.T_PRIVATE) != -1 )
+            if ( 
+              property.modifiers.indexOf(builder.T_PRIVATE) != -1 
+            ) {
               
             }
           }
         }
-        buffer.push('.getPrototype()');
         builder.functions.push(buffer.join('\n\t\t'));
+        builder.classes[item.name] = '';
+        if (item.extends) {
+          builder.classes[item.name] += '.extends('
+            + builder.use('./php') + '.' + item.extends.replace(/\\/g, '.')
+          + ')';
+        }
+        builder.classes[item.name] += '.getPrototype()';
         return '';
       }
       ,T_METHOD: function(item) {

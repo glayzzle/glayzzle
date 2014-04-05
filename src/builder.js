@@ -20,6 +20,7 @@ module.exports = {
   compat: null,
   requires: [],
   functions: [],
+  classes: {},
   serialize: {},
   filename: null,
   directory: null,
@@ -103,7 +104,7 @@ module.exports = {
     this.directory = path.dirname(filename);
     this.requires = [];
     this.functions = [];
-    this.classes = [];
+    this.classes = {};
     return this;
   }
   // Require to use the specified module
@@ -161,6 +162,19 @@ module.exports = {
       }
     }
     return this.serialize[node.type](node);
+  }
+  // Generate the main script code
+  ,getMainFunction: function(ast) {
+    var code = this.toString(ast);
+    var cls = [];
+    for(var n in this.classes) {
+      cls.push('this.' + n + ' = this.' + n + this.classes[n] + ';');
+    }
+    return '__main: function( __output ) {'
+      + '\n\t\tthis.__output = __output;'
+      + '\n\t\t' + cls.join('\n\t\t') + code 
+      + '\n\t}'
+    ;
   }
   // Builds a PHP AST to JavaScript
   ,toString: function(ast) {
