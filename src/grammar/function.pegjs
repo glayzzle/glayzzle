@@ -10,7 +10,7 @@ function_declaration_statement
 
 function_args
   = '(' __* p:(parameter_list __*)? ')' {
-    return typeof(p) == 'undefined' ? [] : p;
+    return p == null ? [] : p[0];
   }
 
 function_call "T_FUNCTION_CALL"

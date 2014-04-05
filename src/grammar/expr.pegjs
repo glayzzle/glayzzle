@@ -79,13 +79,13 @@ parentheses_expr_req
   / '(' __* e:yield_expr __* ')'                 { return ['(', e, ')']; }
 
 parameter "T_PARAMETER_EXPR"
-  = t:class_type? __* r:'&'? v:T_VARIABLE (__* '=' __* v:static_scalar) ? {
+  = t:class_type? __* r:'&'? v:T_VARIABLE d:(__* '=' __* static_scalar) ? {
     return { 
       type: 'function.T_PARAMETER', 
       name: v.name, 
       ref: r, 
-      class: t?
-      value: typeof v == 'undefined' ? null : v
+      class: t,
+      value: d == null ? null : d[3]
     };
   }
 

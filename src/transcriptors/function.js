@@ -11,13 +11,13 @@ module.exports = {
       // SERIALIZE A GLOBAL FUNCTION
       T_DECLARE: function(item) {
         var params = [];
-        if (item.parameters) {
-          item.parameters.forEach(function(param) {
-            if (param && param.name) params.push(param.name);
-          });
+        if (item.parameters.length > 0) {
+          for(var i = 0; i < item.parameters.length; i++) {
+            if (item.parameters[i]) params.push(builder.toString(item.parameters[i]));
+          }
         }
         builder.functions.push(
-          item.name + ': function(' + builder.toString(item.parameters) + ') {\n\t\t' 
+          item.name + ': function(' + params.join(', ') + ') {\n\t\t' 
           + builder.toString(item.body)
           + '\n\t}'
         );

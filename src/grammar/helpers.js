@@ -5,7 +5,7 @@
     var result = [a1];
     if (al && al.length > 0) {
       al.forEach(function(a) {
-        result.push(a[3]);
+        if (a[2]) result.push(a[2]);
       });
     }
     return result;

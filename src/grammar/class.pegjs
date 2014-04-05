@@ -91,7 +91,7 @@ class_statement
   / m:method_modifiers? T_FUNCTION __+ '&'? n:T_STRING __* p:function_args __* b:statements_body {
     return {
       type: 'class.T_METHOD',
-      modifiers: typeof(m) == 'undefined' || !m ? [] : m,
+      modifiers: m == null ? [] : m,
       name: n,
       parameters: p,
       body: b
