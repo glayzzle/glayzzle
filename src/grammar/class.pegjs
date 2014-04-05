@@ -10,6 +10,18 @@ class_declaration_statement /*"T_CLASS" */
       constants: [],
       methods: []
     };
+    if (
+      result.name == 'implements'
+      || result.extends == 'implements'
+    ) {
+      expected('class name T_STRING but T_IMPLEMENTS found');
+    }
+    if (
+      result.name == 'extends'
+      || result.extends == 'extends'
+    ) {
+      expected('class name T_STRING but T_EXTENDS found');
+    }
     var lastDoc = null;
     for(var i = 0; i < b.length; i++) {
       var tok = b[i];
