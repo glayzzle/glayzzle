@@ -10,8 +10,17 @@ module.exports = {
     return {
       // SERIALIZE A CLASS
       T_DECLARE: function(item) {
-        console.log(item.properties);
-        var buffer = [];
+        console.log(item);
+        var buffer = [
+          item.name + ': ' + builder.use('./compat/class')
+          + '(' + JSON.stringify(item.name) + ')'
+        ];
+        // handle flags
+        if (item.flag === builder.T_FINAL) {
+          buffer.push('.final()');
+        } else if (item.flag === builder.T_ABSTRACT) {
+          buffer.push('.abstract()');
+        }
         // handling properties
         if(item.properties) {
           for(var i = 0; i < item.properties.length; i++) {
@@ -21,8 +30,9 @@ module.exports = {
             }
           }
         }
-        // console.log(item);
-        return '/* todo */';
+        buffer.push('.getPrototype()');
+        builder.functions.push(buffer.join('\n\t\t'));
+        return '';
       }
       ,T_METHOD: function(item) {
       
