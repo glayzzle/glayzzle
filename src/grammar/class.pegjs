@@ -1,5 +1,5 @@
 class_declaration_statement /*"T_CLASS" */
-  = f:(T_ABSTRACT / T_FINAL)? __* T_CLASS __* n:T_STRING e:(__* extends_from)? i:(__* implements_list)? __* '{' b:class_statement_list '}' {
+  = f:class_flag? __* T_CLASS __* n:T_STRING e:(__* extends_from)? i:(__* implements_list)? __* '{' b:class_statement_list '}' {
     var result = {
       type: 'class.T_DECLARE',
       flag: f,
@@ -37,6 +37,10 @@ class_declaration_statement /*"T_CLASS" */
   }
   / T_INTERFACE T_STRING interface_extends_list? '{' class_statement_list '}'
   / T_TRAIT T_STRING '{' class_statement_list '}'
+
+class_flag
+  = T_ABSTRACT { return builder.T_ABSTRACT; }
+  / T_FINAL    { return builder.T_FINAL; }
 
 class_const_name
   = T_CLASS / T_STRING
