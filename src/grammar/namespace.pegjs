@@ -17,7 +17,7 @@ namespace_name
   = T_NS_SEPARATOR? (T_STRING T_NS_SEPARATOR)* T_STRING { return text(); }
 
 namespace_list_alias
-  = e:namespace_alias l:( __* ',' __* namespace_alias)* { return makeList(e, l); }
+  = e:namespace_alias __* l:( ',' __* namespace_alias __*)* { return makeList(e, l); }
 
 namespace_alias
   = n:namespace_name a:(__+ T_AS __+ T_STRING)? {

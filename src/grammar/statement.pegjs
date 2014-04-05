@@ -113,7 +113,7 @@ optional_finally
   = T_FINALLY statements_body
 
 constant_declaration_list
-  = e:constant_declaration l:( __* ',' __* constant_declaration)* { return makeList(e, l); }
+  = e:constant_declaration __* l:( ',' __* constant_declaration __*)* { return makeList(e, l); }
 
 constant_declaration
   = n:T_STRING __* '=' __* v:static_scalar {

@@ -17,9 +17,8 @@ module.exports = {
           }
         }
         builder.functions.push(
-          item.name + ': function(' + params.join(', ') + ') {\n\t\t' 
+          item.name + ': function(' + params.join(', ') + ')'
           + builder.toString(item.body)
-          + '\n\t}'
         );
         return '';
       }

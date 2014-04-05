@@ -158,41 +158,30 @@ backticks_expr
 /** LISTS : **/
 
 expr_list
-  = e:expr l:( __* ',' __* expr)* { return makeList(e, l); }
+  = e:expr __* l:( ',' __* expr __*)* { return makeList(e, l); }
 
 list_expr_elements
-  = e:list_expr_element l:( __* ',' __* list_expr_element)* { return makeList(e, l); }
+  = e:list_expr_element __* l:( ',' __* list_expr_element __*)* { return makeList(e, l); }
 
 lexical_var_list
-  = e:lexical_var l:( __* ',' __* lexical_var )* { return makeList(e, l); }
+  = e:lexical_var __* l:( ',' __* lexical_var __* )* { return makeList(e, l); }
 
 global_var_list
-  = g:global_var l:( __* ',' __* global_var)* { return makeList(g, l); }
+  = g:global_var __* l:( ',' __* global_var __*)* { return makeList(g, l); }
 
 parameter_list
-  = p:parameter l:( __* ',' parameter)* { return makeList(p, l); }
+  = p:parameter __* l:( ',' __* parameter __*)* { return makeList(p, l); }
 
 variables_list
-  = v:variable l:( __* ',' __* variable)* { return makeList(v, l); }
+  = v:variable __* l:( ',' __* variable  __*)* { return makeList(v, l); }
 
 name_list
-  = n:T_STRING l:( __* ',' __* T_STRING)* { return makeList(n, l); }
+  = n:T_STRING __* l:( ',' __* T_STRING __*)* { return makeList(n, l); }
 
 argument_list
   = '(' ')'  { return ['(', [], ')']; }
-  / '(' __* a:argument l:( __* ',' __* argument )* __* ')' {
-    /* return ;
-    console.log(text(), a);
-    var args = [a[2] ? a : a[0][0]];
-    if (l) for(var i = 0; i<l.length; i++) {
-      if (l[i][3][2]) {
-        args.push(l[i][2]);
-      } else {
-        args.push(l[i][3][0]);
-      }
-    }
-    console.log(args);
-    console.log('-------------------------------\n');   */
+  / '(' __* a:argument  __* l:( ',' __* argument __*)* ')' {
+
     return ['(', {
       type: 'common.T_ARGS', args: makeList(a, l)
     }, ')']; 

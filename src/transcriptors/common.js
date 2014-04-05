@@ -16,7 +16,7 @@ module.exports = {
       // Serialize arguments for a function call
       ,T_ARGS: function(item) {
         var result = [];
-        console.log(item);
+        console.log('args :', item.args);
         for(var i = 0; i < item.args.length; i++) {
           var arg = builder.toString(item.args[i]);
           if (arg && arg.length > 0) result.push(arg);

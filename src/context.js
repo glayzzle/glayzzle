@@ -132,7 +132,7 @@ module.exports = {
   }
   // Converts a filename to a cache filename 
   ,getCacheFile: function(filename) {
-    var result = this.tmp + path.sep + 'glayzzle.' + this.php.VERSION + crypto.createHash('md5').update(filename).digest('hex') + '.js';
+    var result = this.tmp + path.sep + 'glz.' + this.php.VERSION + '-' + crypto.createHash('md5').update(filename).digest('hex') + '.js';
     return result;
   }
   // (parse if not cached or updated) and returns the specified file structure

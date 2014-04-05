@@ -42,7 +42,7 @@ common_scalar "T_COMMON_SCALAR"
   / name
 
 static_array_pair_list
-  = e:static_array_pair l:(__* ',' __* static_array_pair)* __* ','? { return makeList(e, l); }
+  = e:static_array_pair __* l:( ',' __* static_array_pair __*)* ','? { return makeList(e, l); }
 
 static_array_pair
   = static_scalar __* T_DOUBLE_ARROW __* static_scalar

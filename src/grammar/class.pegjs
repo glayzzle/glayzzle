@@ -119,7 +119,7 @@ member_modifier
   / T_FINAL __+          { return builder.T_FINAL; }
 
 property_declaration_list
-  = a1:property_declaration al:( __* ',' __* property_declaration)* { return makeList(a1, al) }
+  = a1:property_declaration __* al:( ',' __* property_declaration __*)* { return makeList(a1, al) }
 
 property_declaration
   = n:T_VARIABLE d:( __* '=' __* static_scalar)? {
