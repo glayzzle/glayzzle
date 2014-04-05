@@ -10,7 +10,6 @@ module.exports = {
     return {
       // SERIALIZE A CLASS
       T_DECLARE: function(item) {
-        console.log(item);
         var buffer = [
           item.name + ': ' + builder.use('./compat/class')
           + '(' + JSON.stringify(item.name) + ')'
@@ -35,17 +34,17 @@ module.exports = {
           buffer.push('.constants({\n\t\t\t'+list.join(',\n\t\t\t')+'\n\t\t})');
         }
         // handling properties
-        if(item.properties.length > 0) {
-          var list = {
-            static: {
-              public: [],
-              protected: [],
-              private: []
-            },
+        var list = {
+          static: {
             public: [],
             protected: [],
             private: []
-          };
+          },
+          public: [],
+          protected: [],
+          private: []
+        };
+        if(item.properties.length > 0) {
           for(var i = 0; i < item.properties.length; i++) {
             var decl = item.properties[i];
             // scan static
@@ -96,28 +95,53 @@ module.exports = {
               }
             }
           }
-          if (
-            list.static.public.length > 0
-            || list.static.protected.length > 0
-            || list.static.private.length > 0
-          ) {
-            buffer.push('.static({\n\t\t\t'
-              + (list.static.public.length > 0 ? 'public: {\n\t\t\t\t' + list.static.public.join(',\n\t\t\t\t') + '\n\t\t\t},' : '')
-              + (list.static.protected.length > 0 ? 'protected: {\n\t\t\t\t' + list.static.protected.join(',\n\t\t\t\t') + '\n\t\t\t},' : '')
-              + (list.static.private.length > 0 ? 'private: {\n\t\t\t\t' + list.static.private.join(',\n\t\t\t\t') + '\n\t\t\t}' : '')
-            + '\n\t\t})');
-          }
-          if (list.public.length > 0) {
-            buffer.push('.public({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
-          }
-          if (list.protected.length > 0) {
-            buffer.push('.protected({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
-          }
-          if (list.private.length > 0) {
-            buffer.push('.private({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
-          }
         }
         // handling methods
+        if ( item.methods.length > 0 ) {
+          for(var m = 0; m < item.methods.length; m++)  {
+            var method = item.methods[m];
+            if (method.modifiers.indexOf(builder.T_STATIC) != -1 ) {
+              // static scope declarations
+              if ( method.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+                list.static.private.push(builder.toString(method));
+              } else if ( method.modifiers.indexOf(builder.T_PROTECTED) != -1 ) {
+                list.static.protected.push(builder.toString(method));
+              } else if ( method.modifiers.indexOf(builder.T_PUBLIC) != -1 ) {
+                list.static.public.push(builder.toString(method));
+              }
+            } else {
+              // instance scope declarations
+              if ( method.modifiers.indexOf(builder.T_PRIVATE) != -1 ) {
+                list.private.push(builder.toString(method));
+              } else if ( method.modifiers.indexOf(builder.T_PROTECTED) != -1 ) {
+                list.protected.push(builder.toString(method));
+              } else if ( method.modifiers.indexOf(builder.T_PUBLIC) != -1 ) {
+                list.public.push(builder.toString(method));
+              }
+            }
+          }
+        }
+        // serialize properties and functions
+        if (
+          list.static.public.length > 0
+          || list.static.protected.length > 0
+          || list.static.private.length > 0
+        ) {
+          buffer.push('.static({\n\t\t\t'
+            + (list.static.public.length > 0 ? 'public: {\n\t\t\t\t' + list.static.public.join(',\n\t\t\t\t') + '\n\t\t\t}' : '')
+            + (list.static.protected.length > 0 ? ',protected: {\n\t\t\t\t' + list.static.protected.join(',\n\t\t\t\t') + '\n\t\t\t}' : '')
+            + (list.static.private.length > 0 ? ',private: {\n\t\t\t\t' + list.static.private.join(',\n\t\t\t\t') + '\n\t\t\t}' : '')
+          + '\n\t\t})');
+        }
+        if (list.public.length > 0) {
+          buffer.push('.public({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
+        }
+        if (list.protected.length > 0) {
+          buffer.push('.protected({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
+        }
+        if (list.private.length > 0) {
+          buffer.push('.private({\n\t\t\t'+list.public.join(',\n\t\t\t')+'\n\t\t})');
+        }
         builder.functions.push(buffer.join('\n\t\t'));
         builder.classes[item.name] = '';
         if (item.extends) {
@@ -128,9 +152,21 @@ module.exports = {
             target =  builder.use('./php') + '.' + target;
           }
           builder.classes[item.name] += '.extends('+target+')';
+          // @todo handle implements
         }
         builder.classes[item.name] += '.getPrototype()';
         return '';
+      }
+      ,T_METHOD: function(item) {
+        var params = [];
+        if (item.parameters.length > 0) {
+          for(var i = 0; i < item.parameters.length; i++) {
+            if (item.parameters[i]) params.push(builder.toString(item.parameters[i]));
+          }
+        }
+        return item.name + ': function(' + params.join(', ') + ')' 
+          + builder.toString(item.body)
+        ;
       }
     };
   }
