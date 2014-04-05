@@ -79,7 +79,7 @@ module.exports = {
             }
           );
           fs.writeFileSync(
-            '../src/parser.js'
+            __dirname + '/parser.js'
             , 'module.exports = ' 
             + PEG.buildParser(data, {
               cache:    false,
