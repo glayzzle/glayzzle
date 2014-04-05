@@ -200,8 +200,6 @@ module.exports = {
     } else {
       if ( t === 'undefined' ) {
         return 'null';
-      } else if (t === 'string' ) {
-        return JSON.stringify(ast);
       } else return ast;
     }
   }
