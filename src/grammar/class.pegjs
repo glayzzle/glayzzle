@@ -122,10 +122,10 @@ property_declaration_list
   = a1:property_declaration al:( __* ',' __* property_declaration)* { return makeList(a1, al) }
 
 property_declaration
-  = n:T_VARIABLE ( __* '=' __* d:static_scalar)? {
+  = n:T_VARIABLE d:( __* '=' __* static_scalar)? {
     return {
       name: n.name,
-      default: typeof d !== 'undefined' ? d : null
+      default: d !== null ? d[3] : null
     };
   }
 

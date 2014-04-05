@@ -3,9 +3,18 @@ array_expr
   / '[' array_pair_list? ']'
 
 static_scalar
-  = ('+' / '-') static_scalar
-  / '[' a:static_array_pair_list? ']' { return typeof(a) == 'undefined' ? []: a; }
-  / T_ARRAY '(' a:static_array_pair_list? ')' { return typeof(a) == 'undefined' ? []: a; }
+  = '[' __* a:static_array_pair_list? __* ']' { 
+    return {
+      type: 'common.T_ARRAY'
+      ,items: a === null ? []: a
+    };
+  }
+  / T_ARRAY __* '(' __* a:static_array_pair_list? __* ')' { 
+    return {
+      type: 'common.T_ARRAY'
+      ,items: a === null ? []: a
+    }; 
+  }
   / class_name T_PAAMAYIM_NEKUDOTAYIM class_const_name
   / common_scalar
 
@@ -16,8 +25,9 @@ scalar "T_SCALAR"
   / common_scalar
 
 common_scalar "T_COMMON_SCALAR"
-  = T_LNUMBER
-  / T_DNUMBER
+  = ('+' / '-')? (T_LNUMBER / T_DNUMBER) {
+    return text();
+  }
   / T_CONSTANT_ENCAPSED_STRING
   / T_LINE
   / T_FILE

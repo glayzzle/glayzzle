@@ -34,6 +34,13 @@ module.exports = {
       ,T_STATEMENTS: function(item) {
         return ' {\n' +  builder.toString(item.data) + '\n}\n';
       }
+      // Generates and array definition
+      ,T_ARRAY: function(arr) {
+        // @fixme should be handled with an object and keys
+        if (arr.items.length > 0) {
+          return '[' + builder.toString(arr.items) + ']';
+        } else return '[]';
+      }
       ,T_IF: function(item) {
         return 'if ' + builder.toString(item.condition) 
           + builder.toString(item.statement)
