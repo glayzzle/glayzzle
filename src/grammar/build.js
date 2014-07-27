@@ -11,6 +11,6 @@
  * and run bin/test --build
  */
 module.exports = [
-  'scanner.l',
-  'main.y'
+  'lexer.l',
+  'parser.y'
 ];
