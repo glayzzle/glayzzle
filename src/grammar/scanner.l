@@ -2,8 +2,8 @@
 %lex
 
 %{
-  var tok = require('./grammar/tokens');
   var conf = require('./php').context.conf;
+@import 'lexer/tokens.js'
 %}
 
 %s INITIAL
@@ -23,7 +23,12 @@ ANY_CHAR            [^]
 NEWLINE             ("\r"|"\n"|"\r\n")
 
 @import 'lexer/initial.l'
-@import 'lexer/php_tokens.l'
+@import 'lexer/php_main.l'
+@import 'lexer/php_mixed.l'
+@import 'lexer/php_strings.l'
+@import 'lexer/php_numbers.l'
+@import 'lexer/php_constants.l'
+@import 'lexer/php_comments.l'
 
 /lex
 
