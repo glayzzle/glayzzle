@@ -24,6 +24,7 @@ module.exports = {
   ,serialize:   {}
   ,filename:    null
   ,directory:   null
+
   // initialize the specified file
   ,init: function(filename) {
     this.filename = filename;
@@ -33,6 +34,24 @@ module.exports = {
     this.classes = {};
     return this;
   }
+
+  // gets the current parser or load the default php parser
+  ,getParser: function() {
+    if (!this.parser) {
+      this.parser = require('./parser').parser;
+      this.parser.define_function = function() {
+        var name = arguments[0];
+        arguments.shift();
+        return {
+          type: 'function.T_CALL',
+          name: name,
+          args: arguments
+        };
+      };
+    }
+    return this.parser;
+  }
+
   // Require to use the specified module
   ,use: function(module, alias) {
     if ( this.requires.indexOf(module) == -1 ) {

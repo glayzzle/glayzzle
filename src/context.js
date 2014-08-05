@@ -48,31 +48,30 @@ if ( !Buffer.prototype.substring ) {
 module.exports = {
 
   // defines the default temporary path
-  tmp: os.tmpdir(),
+  tmp: os.tmpdir()
 
   // list of included buffers
-  includes: {},
+  ,includes: {}
 
   // list of reflection entries
-  relection: {
+  ,relection: {
     functions: {},
     classes: {}
-  },
+  }
+
+  // defines the configuration entry
+  ,conf: {
+    asp_tags: false,
+    short_tags: false
+  }
 
   // PHP engine
-  php: null,
+  ,php: null
 
   // initialize the current context with specified PHP engine
-  init: function(php) {
+  ,init: function(php) {
     this.php = php;
     return this;
-  }
-  // gets the current parser or load the default php parser
-  ,getParser: function() {
-    if (!this.parser) {
-      this.parser = require('./parser');
-    }
-    return this.parser;
   }
 
   /**
@@ -189,7 +188,7 @@ module.exports = {
   }
   // evaluates the specified code and returns its function
   , eval: function(code) {
-    var AST = this.getParser().parse(code);
+    var AST = builder.getParser().parse(code);
     builder.init('evald code');
     builder.functions.push(builder.getMainFunction(AST));
     var source = builder.headers() + '\n'
@@ -237,7 +236,7 @@ module.exports = {
             var next = data.indexOf("?>", i);
             results.push({ 
               type: 'doc.T_PHP'
-              , data: this.getParser().parse(
+              , data: builder.getParser().parse(
                   data.toString('utf8', i + offset, next > i ? next: data.length)
               )
             });
