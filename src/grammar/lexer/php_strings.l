@@ -40,33 +40,28 @@
 
 
 <ST_IN_SCRIPTING>b?["] {
-  var buffer = '';
   while(this._input.length > 0) {
     var char = this.input();
-    buffer += char;
     if (char == '\\') {
       char = this.input();
-      buffer += char;
     } else if (char == '"') {
       break;
     } else if (char == '$') {
       char = this.input();
-      buffer += char;
       if ( char == '{' || IS_LABEL_START(char)) {
         break;
-      }
+      } else this.unput(char);
     } else if (char == '{') {
       char = this.input();
-      buffer += char;
       if (char == '$') {
         break;
-      }
+      } else this.unput(char);
     }
   }
   if (char == '"') {
     return T_CONSTANT_ENCAPSED_STRING;
   } else {
-    this.unput(buffer);
+    this.less(1);
     this.begin("ST_DOUBLE_QUOTES");
     return '"';
   }

@@ -1082,33 +1082,28 @@ case 128:
 
 break;
 case 129:
-  var buffer = '';
   while(this._input.length > 0) {
     var char = this.input();
-    buffer += char;
     if (char == '\\') {
       char = this.input();
-      buffer += char;
     } else if (char == '"') {
       break;
     } else if (char == '$') {
       char = this.input();
-      buffer += char;
       if ( char == '{' || IS_LABEL_START(char)) {
         break;
-      }
+      } else this.unput(char);
     } else if (char == '{') {
       char = this.input();
-      buffer += char;
       if (char == '$') {
         break;
-      }
+      } else this.unput(char);
     }
   }
   if (char == '"') {
     return T_CONSTANT_ENCAPSED_STRING;
   } else {
-    this.unput(buffer);
+    this.less(1);
     this.begin("ST_DOUBLE_QUOTES");
     return '"';
   }
@@ -1239,7 +1234,31 @@ case 138:
 
 break;
 case 139:
-  this.popState();
+  while(this._input.length > 0) {
+    var char = this.input();
+    if (
+      char == '\n'
+      || char == '\r'
+      || char == '\r\n'
+    ) {
+      char = this.input();
+      if (IS_LABEL_START(char)) {
+        var label = char;
+        while(this._input.length > 0) {
+          char = this.input();
+          if (char == ';') {
+            break;
+          } else {
+            label += char;
+            if (label.length > this.heredoc_label.length) break;
+          }
+        }
+        if (label == this.heredoc_label) break;
+      }
+    }
+  }
+  this.less(yy_.yytext.length - this.heredoc_label.length - 1);
+  this.begin('ST_END_HEREDOC');
   return T_ENCAPSED_AND_WHITESPACE;
 
 break;
