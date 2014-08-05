@@ -88,15 +88,15 @@
 }
 
 <ST_IN_SCRIPTING>"enddeclare" {
-	return T_ENDDECLARE;
+  return T_ENDDECLARE;
 }
 
 <ST_IN_SCRIPTING>"instanceof" {
-	return T_INSTANCEOF;
+  return T_INSTANCEOF;
 }
 
 <ST_IN_SCRIPTING>"as" {
-	return T_AS;
+  return T_AS;
 }
 
 <ST_IN_SCRIPTING>"switch" {
@@ -156,16 +156,12 @@
 }
 
 <ST_IN_SCRIPTING>"->" {
-	yy_push_state(ST_LOOKING_FOR_PROPERTY TSRMLS_CC);
-	return T_OBJECT_OPERATOR;
+  this.begin('ST_LOOKING_FOR_PROPERTY');
+  return T_OBJECT_OPERATOR;
 }
 
-<ST_IN_SCRIPTING,ST_LOOKING_FOR_PROPERTY>{WHITESPACE}+ {
-	zendlval->value.str.val = yytext; /* no copying - intentional */
-	zendlval->value.str.len = yyleng;
-	zendlval->type = IS_STRING;
-	HANDLE_NEWLINES(yytext, yyleng);
-	return T_WHITESPACE;
+<ST_IN_SCRIPTING>{WHITESPACE}+ {
+  return T_WHITESPACE;
 }
 
 <ST_LOOKING_FOR_PROPERTY>"->" {
@@ -173,20 +169,16 @@
 }
 
 <ST_LOOKING_FOR_PROPERTY>{LABEL} {
-	yy_pop_state(TSRMLS_C);
-	zend_copy_value(zendlval, yytext, yyleng);
-	zendlval->type = IS_STRING;
-	return T_STRING;
+  return T_STRING;
 }
 
 <ST_LOOKING_FOR_PROPERTY>{ANY_CHAR} {
-	yyless(0);
-	yy_pop_state(TSRMLS_C);
-	goto restart;
+  this.popState();
+  this.unput(yytext);
 }
 
 <ST_IN_SCRIPTING>"::" {
-	return T_PAAMAYIM_NEKUDOTAYIM;
+  return T_PAAMAYIM_NEKUDOTAYIM;
 }
 
 <ST_IN_SCRIPTING>"\\" {
@@ -429,20 +421,14 @@
 	return T_SR;
 }
 
-<ST_IN_SCRIPTING>{TOKENS} {
-	return yytext[0];
-}
-
 <ST_IN_SCRIPTING>"{" {
-	yy_push_state(ST_IN_SCRIPTING TSRMLS_CC);
+	this.begin("ST_IN_SCRIPTING");
 	return '{';
 }
 
 
 <ST_IN_SCRIPTING>"}" {
-	RESET_DOC_COMMENT();
-	if (!zend_stack_is_empty(&SCNG(state_stack))) {
-		yy_pop_state(TSRMLS_C);
-	}
+	// @todo : RESET_DOC_COMMENT();
+	this.popState();
 	return '}';
 }

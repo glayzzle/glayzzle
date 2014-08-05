@@ -1,68 +1,47 @@
 
 <ST_IN_SCRIPTING>"#"|"//" {
-	while (YYCURSOR < YYLIMIT) {
-		switch (*YYCURSOR++) {
-			case '\r':
-				if (*YYCURSOR == '\n') {
-					YYCURSOR++;
-				}
-				/* fall through */
-			case '\n':
-				CG(zend_lineno)++;
-				break;
-			case '%':
-				if (!CG(asp_tags)) {
-					continue;
-				}
-				/* fall through */
-			case '?':
-				if (*YYCURSOR == '>') {
-					YYCURSOR--;
-					break;
-				}
-				/* fall through */
-			default:
-				continue;
-		}
-
-		break;
-	}
-
-	yyleng = YYCURSOR - SCNG(yy_text);
-
-	return T_COMMENT;
+  while(this._input.length > 0) {
+    var char = this.input();
+    if (
+      char == '\r'
+      || char == '\n'
+      || char == '\r\n'
+    ) {
+      break;
+    } else if (
+      char == '?'
+      && this._input[0] == '>'
+    ) {
+      // end of PHP tag
+      this.unput(char);
+      break;
+    } else if (
+      conf.asp_tags
+      && char == '%'
+      && this._input[0] == '>'
+    ) {
+      // end of PHP(ASP-Like) tag
+      this.unput(char);
+      break;
+    }
+  }
+  return T_COMMENT;
 }
 
-<ST_IN_SCRIPTING>"/*"|"/**"{WHITESPACE} {
-	int doc_com;
-
-	if (yyleng > 2) {
-		doc_com = 1;
-		RESET_DOC_COMMENT();
-	} else {
-		doc_com = 0;
-	}
-
-	while (YYCURSOR < YYLIMIT) {
-		if (*YYCURSOR++ == '*' && *YYCURSOR == '/') {
-			break;
-		}
-	}
-
-	if (YYCURSOR < YYLIMIT) {
-		YYCURSOR++;
-	} else {
-		zend_error(E_COMPILE_WARNING, "Unterminated comment starting line %d", CG(zend_lineno));
-	}
-
-	yyleng = YYCURSOR - SCNG(yy_text);
-	HANDLE_NEWLINES(yytext, yyleng);
-
-	if (doc_com) {
-		CG(doc_comment) = estrndup(yytext, yyleng);
-		CG(doc_comment_len) = yyleng;
-		return T_DOC_COMMENT;
-	}
-
-	return T_COMMENT;
+<ST_IN_SCRIPTING>"/**"{WHITESPACE}|"/*" {
+  var type = T_COMMENT;
+  if (yytext.length > 2) {
+    type = T_DOC_COMMENT;
+  }
+  while(this._input.length > 0) {
+    var char = this.input();
+    if (
+      char == '*'
+      && this._input[0] == '/'
+    ) {
+      this.input();
+      break;
+    }
+  }
+  return type;
 }
