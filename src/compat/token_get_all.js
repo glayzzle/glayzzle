@@ -4,9 +4,20 @@
  * @author Ioan CHIRIAC
  * @license BSD-3-Clause
  */
-var tok = require('../tokenizer');
+var lexer = require('../lexer');
 module.exports = {
   execute: function(code) {
-    return tok.parseHTML(tok.createContext(code)).tokens;
+    var result = [], EOF = 1;
+    lexer.setInput(code);
+    var token = lexer.lex() || lexer.EOF;
+    while(token != lexer.EOF) {
+      if (typeof token === 'string') {
+        result.push(token);
+      } else {
+        result.push([ token, lexer.yytext, lexer.yylloc.first_line ]);
+      }
+      token = lexer.lex() || lexer.EOF;
+    }
+    return result;
   }
 };
