@@ -134,3 +134,19 @@
      T_DIR = 385,
      T_NS_SEPARATOR = 386
   ;
+
+// check if is a 
+var IS_LABEL_START = function(c) {
+  return (
+    c >= 'a' && c <= 'z'
+  ) || (
+    c >= 'A' && c <= 'Z'
+  ) || (
+    c == '_' || c >= 0x7F
+  );
+};
+
+// escapes chars
+var scan_escape_string = function(str) {
+  return str;
+};
