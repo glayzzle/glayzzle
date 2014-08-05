@@ -1,15 +1,6 @@
 /* lexical grammar, rewrite from zend_language_scanner.l (PHP 5.5) */
 %lex
 
-%{
-  var conf = require('./php').context.conf;
-@import 'lexer/tokens.js'
-%}
-
-%s INITIAL
-
-%%
-
 LNUM                [0-9]+
 DNUM                ([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
 EXPONENT_DNUM       (({LNUM}|{DNUM})[eE][+-]?{LNUM})
@@ -20,15 +11,38 @@ WHITESPACE          [ \n\r\t]+
 TABS_AND_SPACES     [ \t]*
 TOKENS              [;:,.\[\]()|^&+-\/*=%!~$<>?@]
 ANY_CHAR            [^]
-NEWLINE             ("\r"|"\n"|"\r\n")
+NEWLINE             (\r\n|\n|\r)
+
+%x ST_IN_SCRIPTING
+%x ST_VAR_OFFSET
+%x ST_VAR_OFFSET
+%x ST_LOOKING_FOR_PROPERTY
+%x ST_DOUBLE_QUOTES
+%x ST_BACKQUOTE
+%x ST_HEREDOC
+%x ST_END_HEREDOC
+%x ST_NOWDOC
+%x ST_LOOKING_FOR_VARNAME
+
+%options flex case-insensitive
+
+%%
 
 @import 'lexer/initial.l'
 @import 'lexer/php_main.l'
-@import 'lexer/php_mixed.l'
-@import 'lexer/php_strings.l'
-@import 'lexer/php_numbers.l'
 @import 'lexer/php_constants.l'
+@import 'lexer/php_strings.l'
+@import 'lexer/php_mixed.l'
+@import 'lexer/php_numbers.l'
 @import 'lexer/php_comments.l'
+
+<ST_IN_SCRIPTING>{TOKENS} {
+	return yytext;
+}
+
+<ST_IN_SCRIPTING,ST_VAR_OFFSET>{ANY_CHAR} {
+  this.reject();
+}
 
 /lex
 
