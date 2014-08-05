@@ -10,7 +10,7 @@
  * To build the parser checkout https://github.com/glayzzle/tests
  * and run bin/test --build
  */
-module.exports = [
-  'lexer.l',
-  'parser.y'
-];
+module.exports = {
+  'lexer': ['lexer.l'],
+  'parser': ['parser.y']
+};
