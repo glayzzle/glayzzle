@@ -27,8 +27,5 @@
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/glayzzle/glayzzle/issues"
-  },
-  "devDependencies": {
-    "pegjs": "~0.8.0"
   }
 }
