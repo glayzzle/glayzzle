@@ -7,42 +7,25 @@
 %% /* language grammar */
 
 start:
-  top_statement_list 
+  T_EOF { return []; }
+  | top_statement_list T_EOF { return $1 || []; }
 ;
 
 top_statement_list:
-    top_statement_list top_statement
-  | /* empty */
+    top_statement                     { $$ = [$1]; }
+  | top_statement_list top_statement  { $$ = $1; $1.push($2); }
 ;
 
 top_statement:
-    statement
-  | function_declaration_statement
-  | class_declaration_statement 
-  | T_HALT_COMPILER '(' ')' ';'     { YYACCEPT; }
-  | T_NAMESPACE namespace_name ';' top_statement_list { 
-    $$ = {
-       type: 'internal.T_NAMESPACE',
-       name: $2,
-       body: $4
-    }; 
-  }
-  | T_NAMESPACE namespace_name '{' top_statement_list '}' { 
-    $$ = {
-       type: 'internal.T_NAMESPACE',
-       name: $2,
-       body: $4
-    }; 
-  }
-  | T_NAMESPACE '{' top_statement_list '}' {
-    $$ = {
-       type: 'internal.T_NAMESPACE',
-       name: '/',
-       body: $3
-    }; 
-  }
-  | T_USE use_declarations ';' { $$ = { type: 'internal.T_USE', items: $2 }; }
-  | constant_declaration ';'
+    statement                       { $$ = $1; }
+  | function_declaration_statement  { $$ = $1; }
+  | class_declaration_statement     { $$ = $1; }
+  | T_HALT_COMPILER '(' ')' ';'     { YYACEPT }
+  | T_NAMESPACE namespace_name ';' top_statement_list     { $$ = ['namespace', $2, $4]; }
+  | T_NAMESPACE namespace_name '{' top_statement_list '}' { $$ = ['namespace', $2, $4]; }
+  | T_NAMESPACE '{' top_statement_list '}'                { $$ = ['namespace', false, $4]; }
+  | T_USE use_declarations ';'                            { $$ = ['use', $2]; }
+  | constant_declaration ';'                              { $$ = $1; }
 ;
 
 @import 'parser/mixed.y'
