@@ -8,14 +8,7 @@ unticked_function_declaration_statement:
     '(' parameter_list ')'
     '{' 
       inner_statement_list 
-    '}'                             { /* @todo */
-    $$ = {
-      type: 'function.T_DECLARE',
-      name: $3,
-      parameters: $5,
-      body: $8
-    };
-  }
+    '}'                             { $$ = ['function', $3, $5, $8]; }
 ;
 
 parameter_list:
@@ -25,14 +18,14 @@ parameter_list:
 
 
 non_empty_parameter_list:
-		optional_class_type T_VARIABLE
-	|	optional_class_type '&' T_VARIABLE
-	|	optional_class_type '&' T_VARIABLE '=' static_scalar
-	|	optional_class_type T_VARIABLE '=' static_scalar
-	|	non_empty_parameter_list ',' optional_class_type T_VARIABLE
-	|	non_empty_parameter_list ',' optional_class_type '&' T_VARIABLE
-	|	non_empty_parameter_list ',' optional_class_type '&' T_VARIABLE	 '=' static_scalar 
-	|	non_empty_parameter_list ',' optional_class_type T_VARIABLE '=' static_scalar
+		optional_class_type T_VARIABLE                                                                          { $$ = [[$1, $2, false]]; }
+	|	optional_class_type '&' T_VARIABLE                                                                      { $$ = [[$1, $3, false]]; }
+	|	optional_class_type '&' T_VARIABLE '=' static_scalar                                                    { $$ = [[$1, $3, $5]]; }
+	|	optional_class_type T_VARIABLE '=' static_scalar                                                        { $$ = [[$1, $2, $4]]; }
+	|	non_empty_parameter_list ',' optional_class_type T_VARIABLE                                             { $$ = $1, $1.push([$3, $4, false]); }
+	|	non_empty_parameter_list ',' optional_class_type '&' T_VARIABLE                                         { $$ = $1, $1.push([$3, $5, false]); }
+	|	non_empty_parameter_list ',' optional_class_type '&' T_VARIABLE	 '=' static_scalar                      { $$ = $1, $1.push([$3, $5, $7]); }
+	|	non_empty_parameter_list ',' optional_class_type T_VARIABLE '=' static_scalar                           { $$ = $1, $1.push([$3, $4, $6]); }
 ;
 
 
@@ -83,9 +76,9 @@ function_call:
 		namespace_name function_call_parameter_list
 	|	T_NAMESPACE T_NS_SEPARATOR namespace_name function_call_parameter_list
 	|	T_NS_SEPARATOR namespace_name function_call_parameter_list
-	|	class_name T_PAAMAYIM_NEKUDOTAYIM variable_name 	function_call_parameter_list
-	|	class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects function_call_parameter_list
-	|	variable_class_name T_PAAMAYIM_NEKUDOTAYIM variable_name  function_call_parameter_list
-	|	variable_class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects  function_call_parameter_list
+	|	class_name T_DOUBLE_COLON variable_name 	function_call_parameter_list
+	|	class_name T_DOUBLE_COLON variable_without_objects function_call_parameter_list
+	|	variable_class_name T_DOUBLE_COLON variable_name  function_call_parameter_list
+	|	variable_class_name T_DOUBLE_COLON variable_without_objects  function_call_parameter_list
 	|	variable_without_objects function_call_parameter_list
 ;

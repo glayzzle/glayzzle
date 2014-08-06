@@ -1,21 +1,21 @@
 
 r_variable:
-	variable
+  variable      { $$ = $1; }
 ;
 
 
 w_variable:
-	variable
+  variable      { $$ = $1; }
 ;
 
 rw_variable:
-	variable
+  variable      { $$ = $1; }
 ;
 
 variable:
-		base_variable_with_function_calls T_OBJECT_OPERATOR 
-			object_property  method_or_not variable_properties
-	|	base_variable_with_function_calls { $$ = $1; }
+  base_variable_with_function_calls T_OBJECT_OPERATOR 
+  object_property  method_or_not variable_properties
+  | base_variable_with_function_calls { $$ = $1; }
 ;
 
 variable_properties:
@@ -59,13 +59,13 @@ reference_variable:
 
 
 compound_variable:
-		T_VARIABLE			{ $$ = $1; }
-	|	'$' '{' expr '}'	{ $$ = $3; }
+    T_VARIABLE        { $$ = ['var', $1]; }
+  | '$' '{' expr '}'  { $$ = ['var', $3]; }
 ;
 
 variable_name:
-		T_STRING		{ $$ = $1; }
-	|	'{' expr '}'	{ $$ = $2; }
+    T_STRING          { $$ = $1; }
+  | '{' expr '}'      { $$ = $2; }
 ;
 
 simple_indirect_reference:

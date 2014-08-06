@@ -43,7 +43,7 @@ trait_method_reference:
 ;
 
 trait_method_reference_fully_qualified:
-	fully_qualified_class_name T_PAAMAYIM_NEKUDOTAYIM T_STRING
+	fully_qualified_class_name T_DOUBLE_COLON T_STRING
 ;
 
 trait_alias:

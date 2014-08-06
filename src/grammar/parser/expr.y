@@ -136,8 +136,8 @@ static_var_list:
 ;
 
 echo_expr_list:
-    echo_expr_list ',' expr         { $$ = [$1, $3]; }
-  | expr                            { $$ = $1; }
+     expr                            { $$ = [$1]; }
+  |  echo_expr_list ',' expr         { $$ = $1; $1.push($3); }
 ;
 
 

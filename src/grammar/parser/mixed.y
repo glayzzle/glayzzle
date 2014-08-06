@@ -1,41 +1,37 @@
 constant_declaration:
-    constant_declaration ',' T_STRING '=' static_scalar { 
-      $$ = { type: 'constants.DECLARE', name: $3, value: $5 }; 
-    }
-  | T_CONST T_STRING '=' static_scalar {
-      $$ = { type: 'constants.DECLARE', name: $2, value: $4 };
-    }
-  ;
+  T_CONST T_STRING '=' static_scalar                    { $$ = [['const', $2, $4]]; }
+  | constant_declaration ',' T_STRING '=' static_scalar { $$ = $1; $1.push(['const', $3, $5]); }
+;
 
 encaps_list:
-    encaps_list encaps_var                  { $$ = [$1, $2]; }
-  | encaps_list T_ENCAPSED_AND_WHITESPACE   { $$ = $1; }
-  | encaps_var                              { $$ = $1; }
-  | T_ENCAPSED_AND_WHITESPACE encaps_var    { $$ = $2; }
+  encaps_var                                { $$ = [$1]; }
+  | T_ENCAPSED_AND_WHITESPACE encaps_var    { $$ = [['string', $1], $2]; }
+  | encaps_list encaps_var                  { $$ = $1; $1.push($2); }
+  | encaps_list T_ENCAPSED_AND_WHITESPACE   { $$ = $1; $1.push($2); }
 ;
 
 encaps_var:
-    T_VARIABLE                                                    { $$ = $1; }
-  | T_VARIABLE '[' encaps_var_offset ']'                          { $$ = [$1, $3]; }
-  | T_VARIABLE T_OBJECT_OPERATOR T_STRING                         { $$ = [$1, $3]; }
+    T_VARIABLE                                                    { $$ = ['var', $1]; }
+  | T_VARIABLE '[' encaps_var_offset ']'                          { $$ = ['offset', $3, ['var', $1]]; }
+  | T_VARIABLE T_OBJECT_OPERATOR T_STRING                         { $$ = ['prop', $3, ['var', $1]]; }
   | T_DOLLAR_OPEN_CURLY_BRACES expr '}'                           { $$ = $2; }
-  | T_DOLLAR_OPEN_CURLY_BRACES T_STRING_VARNAME '[' expr ']' '}'  { $$ = [$2, $4]; }
-  | T_CURLY_OPEN variable '}'                                     { $$ = $2; }
+  | T_DOLLAR_OPEN_CURLY_BRACES T_STRING_VARNAME '[' expr ']' '}'  { $$ = ['offset', $4, ['var', $2]]; }
+  | T_CURLY_OPEN variable '}'                                     { $$ = ['var', $2]; }
 ;
 
 encaps_var_offset:
-    T_STRING        { $$ = $1; }
-  | T_NUM_STRING    { $$ = $1; }
-  | T_VARIABLE      { $$ = $1; }
+    T_STRING        { $$ = ['string', $1]; }
+  | T_NUM_STRING    { $$ = ['number', $1]; }
+  | T_VARIABLE      { $$ = ['var', $1]; }
 ;
 
 internal_functions_in_yacc:
-    T_ISSET '(' isset_variables ')'            { $$ = this.define_function('isset', $3); }
-  | T_EMPTY '(' variable ')'                   { $$ = this.define_function('empty', $3); }
-  | T_EMPTY '(' expr_without_variable ')'      { $$ = this.define_function('empty', $3); }
-  | T_INCLUDE expr                             { $$ = this.define_function('include', $2); }
-  | T_INCLUDE_ONCE expr                        { $$ = this.define_function('include_once', $2); }
-  | T_EVAL '(' expr ')'                        { $$ = this.define_function('eval', $3); }
-  | T_REQUIRE expr                             { $$ = this.define_function('require', $2); }
-  | T_REQUIRE_ONCE expr                        { $$ = this.define_function('require_once', $2); }
+    T_ISSET '(' isset_variables ')'            { $$ = ['call', 'isset', $3]; }
+  | T_EMPTY '(' variable ')'                   { $$ = ['call', 'empty', $3]; }
+  | T_EMPTY '(' expr_without_variable ')'      { $$ = ['call', 'empty', $3]; }
+  | T_INCLUDE expr                             { $$ = ['call', 'include', $2]; }
+  | T_INCLUDE_ONCE expr                        { $$ = ['call', 'include_once', $2]; }
+  | T_EVAL '(' expr ')'                        { $$ = ['call', 'eval', $3]; }
+  | T_REQUIRE expr                             { $$ = ['call', 'require', $2]; }
+  | T_REQUIRE_ONCE expr                        { $$ = ['call', 'require_once', $2]; }
 ;

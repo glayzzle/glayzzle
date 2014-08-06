@@ -167,8 +167,8 @@ method_or_not:
 
 
 static_member:
-		class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects
-	|	variable_class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects
+		class_name T_DOUBLE_COLON variable_without_objects
+	|	variable_class_name T_DOUBLE_COLON variable_without_objects
 
 ;
 
@@ -186,14 +186,14 @@ object_dim_list:
 
 
 class_constant:
-		class_name T_PAAMAYIM_NEKUDOTAYIM T_STRING
-	|	variable_class_name T_PAAMAYIM_NEKUDOTAYIM T_STRING
+		class_name T_DOUBLE_COLON T_STRING
+	|	variable_class_name T_DOUBLE_COLON T_STRING
 ;
 
 static_class_name_scalar:
-	class_name T_PAAMAYIM_NEKUDOTAYIM T_CLASS
+	class_name T_DOUBLE_COLON T_CLASS
 ;
 
 class_name_scalar:
-	class_name T_PAAMAYIM_NEKUDOTAYIM T_CLASS
+	class_name T_DOUBLE_COLON T_CLASS
 ;

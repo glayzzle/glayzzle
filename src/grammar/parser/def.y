@@ -152,7 +152,7 @@
 %token T_END_HEREDOC     "heredoc end (T_END_HEREDOC)"
 %token T_DOLLAR_OPEN_CURLY_BRACES "${ (T_DOLLAR_OPEN_CURLY_BRACES)"
 %token T_CURLY_OPEN      "{$ (T_CURLY_OPEN)"
-%token T_PAAMAYIM_NEKUDOTAYIM ":: (T_PAAMAYIM_NEKUDOTAYIM)"
+%token T_DOUBLE_COLON    ":: (T_DOUBLE_COLON)"
 %token T_NAMESPACE       "namespace (T_NAMESPACE)"
 %token T_NS_C            "__NAMESPACE__ (T_NS_C)"
 %token T_DIR             "__DIR__ (T_DIR)"
