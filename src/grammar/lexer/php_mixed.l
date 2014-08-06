@@ -1,13 +1,15 @@
 
 <ST_LOOKING_FOR_VARNAME>{LABEL}[[}] {
-	return T_STRING_VARNAME;
+  this.less(yyleng - 1);
+  this.popState(); 
+  this.begin('ST_IN_SCRIPTING');
+  return T_STRING_VARNAME;
 }
 
 
 <ST_LOOKING_FOR_VARNAME>{ANY_CHAR} {
   this.popState(); 
-  // @todo this.pushState("ST_IN_SCRIPTING");
-  this.reject();
+  this.less(0);
   return false;
 }
 
@@ -22,7 +24,8 @@
 
 
 <ST_VAR_OFFSET>"]" {
-	return ']';
+  this.popState();
+  return ']';
 }
 
 <ST_VAR_OFFSET>{TOKENS}|[{}"`] {
