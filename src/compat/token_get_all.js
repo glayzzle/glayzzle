@@ -8,6 +8,7 @@ var lexer = require('../lexer');
 module.exports = {
   execute: function(code) {
     var result = [], EOF = 1;
+    lexer.all_tokens = true;
     lexer.setInput(code);
     var token = lexer.lex() || lexer.EOF;
     while(token != lexer.EOF) {
