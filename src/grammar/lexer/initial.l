@@ -76,13 +76,15 @@
 }
 
 <ST_IN_SCRIPTING>("?>"|"</script"{WHITESPACE}*">"){NEWLINE}? {
-  var c = this.input();
-  if ( 
-    c != '\r\n'
-    && c != '\n'
-    && c != '\r'
-  ) {
-    this.unput(c);
+  if (this._input.length > 0) {
+    var c = this.input();
+    if ( 
+      c != '\r\n'
+      && c != '\n'
+      && c != '\r'
+    ) {
+      this.unput(c);
+    }
   }
   this.popState();
   return T_CLOSE_TAG;
