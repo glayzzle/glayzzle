@@ -1,140 +1,143 @@
 var conf = require('./php').context.conf;
-/**
- * Declare a list of PHP tokens (used from PHP 5.5)
- * Extracted from zend_language_parser.h
- */
-  var
-     END = 0,
-     T_REQUIRE_ONCE = 258,
-     T_REQUIRE = 259,
-     T_EVAL = 260,
-     T_INCLUDE_ONCE = 261,
-     T_INCLUDE = 262,
-     T_LOGICAL_OR = 263,
-     T_LOGICAL_XOR = 264,
-     T_LOGICAL_AND = 265,
-     T_PRINT = 266,
-     T_YIELD = 267,
-     T_SR_EQUAL = 268,
-     T_SL_EQUAL = 269,
-     T_XOR_EQUAL = 270,
-     T_OR_EQUAL = 271,
-     T_AND_EQUAL = 272,
-     T_MOD_EQUAL = 273,
-     T_CONCAT_EQUAL = 274,
-     T_DIV_EQUAL = 275,
-     T_MUL_EQUAL = 276,
-     T_MINUS_EQUAL = 277,
-     T_PLUS_EQUAL = 278,
-     T_BOOLEAN_OR = 279,
-     T_BOOLEAN_AND = 280,
-     T_IS_NOT_IDENTICAL = 281,
-     T_IS_IDENTICAL = 282,
-     T_IS_NOT_EQUAL = 283,
-     T_IS_EQUAL = 284,
-     T_IS_GREATER_OR_EQUAL = 285,
-     T_IS_SMALLER_OR_EQUAL = 286,
-     T_SR = 287,
-     T_SL = 288,
-     T_INSTANCEOF = 289,
-     T_UNSET_CAST = 290,
-     T_BOOL_CAST = 291,
-     T_OBJECT_CAST = 292,
-     T_ARRAY_CAST = 293,
-     T_STRING_CAST = 294,
-     T_DOUBLE_CAST = 295,
-     T_INT_CAST = 296,
-     T_DEC = 297,
-     T_INC = 298,
-     T_CLONE = 299,
-     T_NEW = 300,
-     T_EXIT = 301,
-     T_IF = 302,
-     T_ELSEIF = 303,
-     T_ELSE = 304,
-     T_ENDIF = 305,
-     T_LNUMBER = 306,
-     T_DNUMBER = 307,
-     T_STRING = 308,
-     T_STRING_VARNAME = 309,
-     T_VARIABLE = 310,
-     T_NUM_STRING = 311,
-     T_INLINE_HTML = 312,
-     T_CHARACTER = 313,
-     T_BAD_CHARACTER = 314,
-     T_ENCAPSED_AND_WHITESPACE = 315,
-     T_CONSTANT_ENCAPSED_STRING = 316,
-     T_ECHO = 317,
-     T_DO = 318,
-     T_WHILE = 319,
-     T_ENDWHILE = 320,
-     T_FOR = 321,
-     T_ENDFOR = 322,
-     T_FOREACH = 323,
-     T_ENDFOREACH = 324,
-     T_DECLARE = 325,
-     T_ENDDECLARE = 326,
-     T_AS = 327,
-     T_SWITCH = 328,
-     T_ENDSWITCH = 329,
-     T_CASE = 330,
-     T_DEFAULT = 331,
-     T_BREAK = 332,
-     T_CONTINUE = 333,
-     T_GOTO = 334,
-     T_FUNCTION = 335,
-     T_CONST = 336,
-     T_RETURN = 337,
-     T_TRY = 338,
-     T_CATCH = 339,
-     T_FINALLY = 340,
-     T_THROW = 341,
-     T_USE = 342,
-     T_INSTEADOF = 343,
-     T_GLOBAL = 344,
-     T_PUBLIC = 345,
-     T_PROTECTED = 346,
-     T_PRIVATE = 347,
-     T_FINAL = 348,
-     T_ABSTRACT = 349,
-     T_STATIC = 350,
-     T_VAR = 351,
-     T_UNSET = 352,
-     T_ISSET = 353,
-     T_EMPTY = 354,
-     T_HALT_COMPILER = 355,
-     T_CLASS = 356,
-     T_TRAIT = 357,
-     T_INTERFACE = 358,
-     T_EXTENDS = 359,
-     T_IMPLEMENTS = 360,
-     T_OBJECT_OPERATOR = 361,
-     T_DOUBLE_ARROW = 362,
-     T_LIST = 363,
-     T_ARRAY = 364,
-     T_CALLABLE = 365,
-     T_CLASS_C = 366,
-     T_TRAIT_C = 367,
-     T_METHOD_C = 368,
-     T_FUNC_C = 369,
-     T_LINE = 370,
-     T_FILE = 371,
-     T_COMMENT = 372,
-     T_DOC_COMMENT = 373,
-     T_OPEN_TAG = 374,
-     T_OPEN_TAG_WITH_ECHO = 375,
-     T_CLOSE_TAG = 376,
-     T_WHITESPACE = 377,
-     T_START_HEREDOC = 378,
-     T_END_HEREDOC = 379,
-     T_DOLLAR_OPEN_CURLY_BRACES = 380,
-     T_CURLY_OPEN = 381,
-     T_PAAMAYIM_NEKUDOTAYIM = 382,
-     T_NAMESPACE = 383,
-     T_NS_C = 384,
-     T_DIR = 385,
-     T_NS_SEPARATOR = 386
-  ;
+var 
+	T_EOF = 4,
+	T_HALT_COMPILER = 10,
+	T_NAMESPACE = 14,
+	T_USE = 18,
+	T_CONST = 21,
+	T_STRING = 22,
+	T_ENCAPSED_AND_WHITESPACE = 28,
+	T_VARIABLE = 29,
+	T_OBJECT_OPERATOR = 33,
+	T_DOLLAR_OPEN_CURLY_BRACES = 34,
+	T_STRING_VARNAME = 36,
+	T_CURLY_OPEN = 37,
+	T_NUM_STRING = 39,
+	T_ISSET = 41,
+	T_EMPTY = 43,
+	T_INCLUDE = 45,
+	T_INCLUDE_ONCE = 46,
+	T_EVAL = 47,
+	T_REQUIRE = 48,
+	T_REQUIRE_ONCE = 49,
+	T_NS_SEPARATOR = 50,
+	T_AS = 52,
+	T_IF = 57,
+	T_ENDIF = 63,
+	T_WHILE = 64,
+	T_DO = 66,
+	T_FOR = 67,
+	T_SWITCH = 70,
+	T_BREAK = 72,
+	T_CONTINUE = 73,
+	T_RETURN = 74,
+	T_GLOBAL = 76,
+	T_STATIC = 78,
+	T_ECHO = 80,
+	T_INLINE_HTML = 82,
+	T_UNSET = 83,
+	T_FOREACH = 85,
+	T_DECLARE = 89,
+	T_TRY = 92,
+	T_THROW = 95,
+	T_GOTO = 96,
+	T_CATCH = 97,
+	T_FINALLY = 100,
+	T_ENDDECLARE = 104,
+	T_LIST = 107,
+	T_NEW = 109,
+	T_CLONE = 112,
+	T_PLUS_EQUAL = 113,
+	T_MINUS_EQUAL = 114,
+	T_MUL_EQUAL = 115,
+	T_DIV_EQUAL = 117,
+	T_CONCAT_EQUAL = 118,
+	T_MOD_EQUAL = 119,
+	T_AND_EQUAL = 120,
+	T_OR_EQUAL = 121,
+	T_XOR_EQUAL = 122,
+	T_SL_EQUAL = 123,
+	T_SR_EQUAL = 124,
+	T_INC = 126,
+	T_DEC = 127,
+	T_BOOLEAN_OR = 128,
+	T_BOOLEAN_AND = 129,
+	T_LOGICAL_OR = 130,
+	T_LOGICAL_AND = 131,
+	T_LOGICAL_XOR = 132,
+	T_SL = 141,
+	T_SR = 142,
+	T_IS_IDENTICAL = 145,
+	T_IS_NOT_IDENTICAL = 146,
+	T_IS_EQUAL = 147,
+	T_IS_NOT_EQUAL = 148,
+	T_IS_SMALLER_OR_EQUAL = 150,
+	T_IS_GREATER_OR_EQUAL = 152,
+	T_INSTANCEOF = 153,
+	T_INT_CAST = 157,
+	T_DOUBLE_CAST = 158,
+	T_STRING_CAST = 159,
+	T_ARRAY_CAST = 160,
+	T_OBJECT_CAST = 161,
+	T_BOOL_CAST = 162,
+	T_UNSET_CAST = 163,
+	T_EXIT = 164,
+	T_PRINT = 172,
+	T_YIELD = 173,
+	T_DOUBLE_ARROW = 180,
+	T_FUNCTION = 196,
+	T_DOUBLE_COLON = 199,
+	T_ARRAY = 203,
+	T_CALLABLE = 204,
+	T_CLASS = 212,
+	T_ABSTRACT = 213,
+	T_TRAIT = 214,
+	T_FINAL = 215,
+	T_EXTENDS = 216,
+	T_INTERFACE = 217,
+	T_IMPLEMENTS = 219,
+	T_VAR = 228,
+	T_PUBLIC = 230,
+	T_PROTECTED = 231,
+	T_PRIVATE = 232,
+	T_INSTEADOF = 254,
+	T_ELSEIF = 258,
+	T_ELSE = 259,
+	T_ENDSWITCH = 261,
+	T_CASE = 262,
+	T_DEFAULT = 264,
+	T_ENDFOR = 265,
+	T_ENDFOREACH = 266,
+	T_ENDWHILE = 267,
+	T_CONSTANT_ENCAPSED_STRING = 275,
+	T_LNUMBER = 277,
+	T_DNUMBER = 278,
+	T_LINE = 279,
+	T_FILE = 280,
+	T_DIR = 281,
+	T_TRAIT_C = 282,
+	T_METHOD_C = 283,
+	T_FUNC_C = 284,
+	T_NS_C = 285,
+	T_START_HEREDOC = 286,
+	T_END_HEREDOC = 287,
+	T_CLASS_C = 289,
+	T_OPEN_TAG = 501,
+	T_OPEN_TAG_WITH_ECHO = 502,
+	T_CLOSE_TAG = 503,
+	T_WHITESPACE = 504,
+	T_COMMENT = 505,
+	T_DOC_COMMENT = 506;
+// DEFINE LONG SIZE
+if (process.arch == 'x64') {
+  var SIZEOF_LONG = 8;
+  var MAX_LENGTH_OF_LONG = 20;
+  var long_min_digits = "9223372036854775808";
+} else {
+  var SIZEOF_LONG = 4;
+  var MAX_LENGTH_OF_LONG = 11;
+  var long_min_digits = "2147483648";
+}
 
 // check if is a 
 var IS_LABEL_START = function(c) {
@@ -151,6 +154,36 @@ var IS_LABEL_START = function(c) {
 var scan_escape_string = function(str) {
   return str;
 };
+
+// consume the specified length on the lexer
+var consume = function(lexer, size) {
+  if (size < 1) return false;
+  var ch, i;
+  // counting lines
+  for(i = 0; i < size; i++) {
+    ch = lexer._input[i];
+    if (ch == '\n' || ch == '\r') {
+      lexer.yylineno++;
+      lexer.yylloc.last_line++;
+      lexer.yylloc.last_column = 0;
+      if (ch == '\r' && lexer._input[++i] == '\n') continue; // windows style
+    } else {
+      lexer.yylloc.last_column++;
+    }
+  }
+  // update offsets
+  if (lexer.options.ranges) lexer.yylloc.range[1] += size;
+  lexer.yyleng += size;
+  lexer.offset += size;
+  // update texts
+  ch = lexer._input.substring(0, size);
+  lexer.yytext += ch;
+  lexer.match += ch;
+  lexer.matched += ch;
+  lexer._input = lexer._input.slice(size);
+  return ch;
+};
+
 /* generated by jison-lex 0.3.4 */
 var lexer = (function(){
 var lexer = ({
@@ -560,13 +593,15 @@ case 6:
 
 break;
 case 7:
-  var c = this.input();
-  if ( 
-    c != '\r\n'
-    && c != '\n'
-    && c != '\r'
-  ) {
-    this.unput(c);
+  if (this._input.length > 0) {
+    var c = this.input();
+    if ( 
+      c != '\r\n'
+      && c != '\n'
+      && c != '\r'
+    ) {
+      this.unput(c);
+    }
   }
   this.popState();
   return T_CLOSE_TAG;
@@ -583,8 +618,8 @@ case 8:
 
 break;
 case 9:
-	//yy_push_state(ST_LOOKING_FOR_VARNAME TSRMLS_CC);
-	return T_DOLLAR_OPEN_CURLY_BRACES;
+  this.begin('ST_LOOKING_FOR_VARNAME');
+  return T_DOLLAR_OPEN_CURLY_BRACES;
 
 break;
 case 10:
@@ -594,7 +629,7 @@ case 10:
 
 break;
 case 11:
-  this.less(1);
+  this.less(yy_.yyleng - 1);
   this.pushState('ST_VAR_OFFSET');
   return T_VARIABLE;
 
@@ -604,40 +639,51 @@ case 12:
 
 break;
 case 13:
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      this.input();
+      i++;
     } else if (char == '\'') {
       break;
     }
+    i++;
   }
+  consume(this, i + 1);
   return T_CONSTANT_ENCAPSED_STRING;
 
 break;
 case 14:
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      char = this.input();
+      i++;
     } else if (char == '"') {
       break;
     } else if (char == '$') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
+      i--;
       if ( char == '{' || IS_LABEL_START(char)) {
         break;
-      } else this.unput(char);
+      }
     } else if (char == '{') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
+      i --;
       if (char == '$') {
         break;
-      } else this.unput(char);
+      }
     }
+    i++;
   }
   if (char == '"') {
+    consume(this, i + 1);
     return T_CONSTANT_ENCAPSED_STRING;
   } else {
-    this.less(1);
     this.begin("ST_DOUBLE_QUOTES");
     return '"';
   }
@@ -663,15 +709,9 @@ case 16:
 
 break;
 case 17:
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (char == ';') {
-      this.unput(char);
-      break;
-    }
-  }
   this.popState();
   this.popState();
+  consume(this, this.heredoc_label.length - 1);
   return T_END_HEREDOC;
 
 break;
@@ -692,32 +732,38 @@ case 20:
 
 break;
 case 21:
-  if (yy_.yytext == '\\') this.input();
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  if (yy_.yytext == '\\') i++;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      char = this.input();
+      i++;
     } else if (char == '"') {
-      this.unput(char);
+      i--; // exclude "
       break;
     } else if (char == '$') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
       if ( char == '{' || IS_LABEL_START(char)) {
-        this.unput('$' + char);
+        i -= 2;
         break;
-      }
+      } else continue;
     } else if (char == '{') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
       if (char == '$') {
-        this.unput('{$');
+        i -= 2;
         break;
-      }
+      } else continue;
     }
+    i++;
   }
+  consume(this, i + 1);
   return T_ENCAPSED_AND_WHITESPACE;
 
 break;
 case 22:
+  if (yy_.yytext == '\\') this.input();
   while(this._input.length > 0) {
     var char = this.input();
     if (char == '\\') {
@@ -740,59 +786,75 @@ case 22:
 
 break;
 case 23:
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (
-      char == '\n'
-      || char == '\r'
-      || char == '\r\n'
-    ) {
-      char = this.input();
-      if (IS_LABEL_START(char)) {
-        var label = char;
-        while(this._input.length > 0) {
-          char = this.input();
-          if (char == ';') {
-            break;
-          } else {
-            label += char;
-            if (label.length > this.heredoc_label.length) break;
-          }
+  var eot = this._input.length;
+  var i = 0, eol;
+  var char;
+  var lblLen = this.heredoc_label.length;
+  var found = false;
+  while(i < eot) {
+    char = this._input[i];
+    if (char == '\n' || char == '\r') {
+      if (char == '\r') {
+        char = ++i < eot && this._input[i];
+        if (!char == '\n') i--;
+      }
+      // @fixme : check if out of text limits
+      if (this._input.substring(i + 1, i + lblLen + 1) == this.heredoc_label) {
+        eol = this._input[ i + lblLen + 1];
+        if ( eol == '\n' || eol == '\r' || eol == ';') {
+          found = true;
+          break;
         }
-        if (label == this.heredoc_label) break;
       }
     }
+    else if (char == '\\') {
+      char = ++i < eot && this._input[i];
+      if (char == '\n' || char == '\r') i--;
+    }
+    else if (char == '$') {
+      char = ++i < eot && this._input[i];
+      if (char == '{' || IS_LABEL_START(char)) {
+        i -= 2;
+        break;
+      }  else continue;
+    }
+    else if (char == '{') {
+      char = ++i < eot && this._input[i];
+      if (char == '$') {
+        i -= 2;
+        break;
+      } else continue;
+    }
+    i++;
   }
-  this.less(yy_.yytext.length - this.heredoc_label.length - 1);
-  this.begin('ST_END_HEREDOC');
+  consume(this, i + 1);
+  if (found) this.begin('ST_END_HEREDOC');
   return T_ENCAPSED_AND_WHITESPACE;
 
 break;
 case 24:
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (
-      char == '\n'
-      || char == '\r'
-      || char == '\r\n'
-    ) {
-      char = this.input();
-      if (IS_LABEL_START(char)) {
-        var label = char;
-        while(this._input.length > 0) {
-          char = this.input();
-          if (char == ';') {
-            break;
-          } else {
-            label += char;
-            if (label.length > this.heredoc_label.length) break;
-          }
+  var eot = this._input.length;
+  var i = 0, eol;
+  var char;
+  var lblLen = this.heredoc_label.length;
+  while(i < eot) {
+    char = this._input[i];
+    if (char == '\n' || char == '\r') {
+      if (char == '\r') {
+        char = ++i < eot && this._input[i];
+        if (!char == '\n') i--;
+      }
+      // @fixme : check if out of text limits
+      if (this._input.substring(i + 1, i + lblLen + 1) == this.heredoc_label) {
+        eol = this._input[ i + lblLen + 1];
+        if ( eol == '\n' || eol == '\r' || eol == ';') {
+          break;
         }
-        if (label == this.heredoc_label) break;
       }
     }
+    i++;
   }
-  this.less(yy_.yytext.length - this.heredoc_label.length - 1);
+  consume(this, i + 1);
   this.begin('ST_END_HEREDOC');
   return T_ENCAPSED_AND_WHITESPACE;
 
@@ -972,12 +1034,12 @@ case 67:
 break;
 case 68:
   this.popState();
-  this.unput(yy_.yytext);
+  this.less(0);
   return false;
 
 break;
 case 69:
-  return T_PAAMAYIM_NEKUDOTAYIM;
+  return T_DOUBLE_COLON;
 
 break;
 case 70:
@@ -1226,9 +1288,9 @@ case 130:
 
 break;
 case 131:
-	// @todo : RESET_DOC_COMMENT();
-	this.popState();
-	return '}';
+  // @todo : RESET_DOC_COMMENT();
+  this.popState();
+  return '}';
 
 break;
 case 132:
@@ -1264,13 +1326,15 @@ case 139:
 
 break;
 case 140:
-	return T_STRING_VARNAME;
+  this.less(yy_.yyleng - 1);
+  this.popState(); 
+  this.begin('ST_IN_SCRIPTING');
+  return T_STRING_VARNAME;
 
 break;
 case 141:
   this.popState(); 
-  // @todo this.pushState("ST_IN_SCRIPTING");
-  this.reject();
+  this.less(0);
   return false;
 
 break;
@@ -1283,7 +1347,8 @@ case 143: /* Offset must be treated as a string */
 
 break;
 case 144:
-	return ']';
+  this.popState();
+  return ']';
 
 break;
 case 145:
@@ -1311,7 +1376,17 @@ case 150:
 
 break;
 case 151:
-  return T_LNUMBER;
+  if (yy_.yyleng < MAX_LENGTH_OF_LONG - 1) {
+    return T_LNUMBER;
+  } else {
+    if (
+      yy_.yyleng == MAX_LENGTH_OF_LONG 
+      && yy_.yytext < long_min_digits 
+    ) {
+      return T_LNUMBER;
+    }
+    return T_DNUMBER;
+  }
 
 break;
 case 152:
@@ -1369,12 +1444,56 @@ case 155:
   this.reject();
 
 break;
+case 156: return EOF; 
+break;
 }
 },
-rules: [/^(?:<script([ \n\r\t]+)+language([ \n\r\t]+)*=([ \n\r\t]+)*(php|"php"|'php')([ \n\r\t]+)*>)/i,/^(?:<%=)/i,/^(?:<\?=)/i,/^(?:<%)/i,/^(?:<\?php([ \t]|((\r\n|\n|\r))))/i,/^(?:<\?)/i,/^(?:([^]))/i,/^(?:(\?>|<\/script([ \n\r\t]+)*>)((\r\n|\n|\r))?)/i,/^(?:%>((\r\n|\n|\r))?)/i,/^(?:\$\{)/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)->[a-zA-Z_\x7f-\xff])/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\[)/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:b?['])/i,/^(?:b?["])/i,/^(?:b?<<<([ \t]*)(([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)|([']([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)['])|(["]([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)["]))((\r\n|\n|\r)))/i,/^(?:[`])/i,/^(?:([^]))/i,/^(?:\{\$)/i,/^(?:["])/i,/^(?:[`])/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:exit\b)/i,/^(?:die\b)/i,/^(?:function\b)/i,/^(?:const\b)/i,/^(?:return\b)/i,/^(?:yield\b)/i,/^(?:try\b)/i,/^(?:catch\b)/i,/^(?:finally\b)/i,/^(?:throw\b)/i,/^(?:if\b)/i,/^(?:elseif\b)/i,/^(?:endif\b)/i,/^(?:else\b)/i,/^(?:while\b)/i,/^(?:endwhile\b)/i,/^(?:do\b)/i,/^(?:for\b)/i,/^(?:endfor\b)/i,/^(?:foreach\b)/i,/^(?:endforeach\b)/i,/^(?:declare\b)/i,/^(?:enddeclare\b)/i,/^(?:instanceof\b)/i,/^(?:as\b)/i,/^(?:switch\b)/i,/^(?:endswitch\b)/i,/^(?:case\b)/i,/^(?:default\b)/i,/^(?:break\b)/i,/^(?:continue\b)/i,/^(?:goto\b)/i,/^(?:echo\b)/i,/^(?:print\b)/i,/^(?:class\b)/i,/^(?:interface\b)/i,/^(?:trait\b)/i,/^(?:extends\b)/i,/^(?:implements\b)/i,/^(?:->)/i,/^(?:([ \n\r\t]+)+)/i,/^(?:->)/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:([^]))/i,/^(?:::)/i,/^(?:\\)/i,/^(?:new\b)/i,/^(?:clone\b)/i,/^(?:var\b)/i,/^(?:\(([ \t]*)(int|integer)([ \t]*)\))/i,/^(?:\(([ \t]*)(real|double|float)([ \t]*)\))/i,/^(?:\(([ \t]*)(string|binary)([ \t]*)\))/i,/^(?:\(([ \t]*)array([ \t]*)\))/i,/^(?:\(([ \t]*)object([ \t]*)\))/i,/^(?:\(([ \t]*)(bool|boolean)([ \t]*)\))/i,/^(?:\(([ \t]*)(unset)([ \t]*)\))/i,/^(?:eval\b)/i,/^(?:include\b)/i,/^(?:include_once\b)/i,/^(?:require\b)/i,/^(?:require_once\b)/i,/^(?:namespace\b)/i,/^(?:use\b)/i,/^(?:insteadof\b)/i,/^(?:global\b)/i,/^(?:isset\b)/i,/^(?:empty\b)/i,/^(?:__halt_compiler\b)/i,/^(?:static\b)/i,/^(?:abstract\b)/i,/^(?:final\b)/i,/^(?:private\b)/i,/^(?:protected\b)/i,/^(?:public\b)/i,/^(?:unset\b)/i,/^(?:=>)/i,/^(?:list\b)/i,/^(?:array\b)/i,/^(?:callable\b)/i,/^(?:\+\+)/i,/^(?:--)/i,/^(?:===)/i,/^(?:!==)/i,/^(?:==)/i,/^(?:!=|<>)/i,/^(?:<=)/i,/^(?:>=)/i,/^(?:\+=)/i,/^(?:-=)/i,/^(?:\*=)/i,/^(?:\/=)/i,/^(?:\.=)/i,/^(?:%=)/i,/^(?:<<=)/i,/^(?:>>=)/i,/^(?:&=)/i,/^(?:\|=)/i,/^(?:\^=)/i,/^(?:\|\|)/i,/^(?:&&)/i,/^(?:OR\b)/i,/^(?:AND\b)/i,/^(?:XOR\b)/i,/^(?:<<)/i,/^(?:>>)/i,/^(?:\{)/i,/^(?:\})/i,/^(?:__CLASS__\b)/i,/^(?:__TRAIT__\b)/i,/^(?:__FUNCTION__\b)/i,/^(?:__METHOD__\b)/i,/^(?:__LINE__\b)/i,/^(?:__FILE__\b)/i,/^(?:__DIR__\b)/i,/^(?:__NAMESPACE__\b)/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[[}])/i,/^(?:([^]))/i,/^(?:[0]|([1-9][0-9]*))/i,/^(?:([0-9]+)|(0x[0-9a-fA-F]+)|(0b[01]+))/i,/^(?:\])/i,/^(?:([;:,.\[\]()|^&+-\/*=%!~$<>?@])|[{}"`])/i,/^(?:[ \n\r\t\\'#])/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:(([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*))|(((([0-9]+)|(([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)))[eE][+-]?([0-9]+))))/i,/^(?:(0b[01]+))/i,/^(?:(0x[0-9a-fA-F]+))/i,/^(?:([0-9]+))/i,/^(?:#|\/\/)/i,/^(?:\/\*\*([ \n\r\t]+)|\/\*)/i,/^(?:([;:,.\[\]()|^&+-\/*=%!~$<>?@]))/i,/^(?:([^]))/i],
-conditions: {"ST_LOOKING_FOR_VARNAME":{"rules":[140,141],"inclusive":false},"ST_NOWDOC":{"rules":[24],"inclusive":false},"ST_END_HEREDOC":{"rules":[17],"inclusive":false},"ST_HEREDOC":{"rules":[9,10,11,12,18,23],"inclusive":false},"ST_BACKQUOTE":{"rules":[9,10,11,12,18,20,22],"inclusive":false},"ST_DOUBLE_QUOTES":{"rules":[9,10,11,12,18,19,21],"inclusive":false},"ST_LOOKING_FOR_PROPERTY":{"rules":[66,67,68],"inclusive":false},"ST_VAR_OFFSET":{"rules":[12,142,143,144,145,146,147,155],"inclusive":false},"ST_IN_SCRIPTING":{"rules":[7,8,12,13,14,15,16,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,147,148,149,150,151,152,153,154,155],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,5,6],"inclusive":true}}
+rules: [/^(?:<script([ \n\r\t]+)+language([ \n\r\t]+)*=([ \n\r\t]+)*(php|"php"|'php')([ \n\r\t]+)*>)/i,/^(?:<%=)/i,/^(?:<\?=)/i,/^(?:<%)/i,/^(?:<\?php([ \t]|((\r\n|\n|\r))))/i,/^(?:<\?)/i,/^(?:([^]))/i,/^(?:(\?>|<\/script([ \n\r\t]+)*>)((\r\n|\n|\r))?)/i,/^(?:%>((\r\n|\n|\r))?)/i,/^(?:\$\{)/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)->[a-zA-Z_\x7f-\xff])/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\[)/i,/^(?:\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:b?['])/i,/^(?:b?["])/i,/^(?:b?<<<([ \t]*)(([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)|([']([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)['])|(["]([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)["]))((\r\n|\n|\r)))/i,/^(?:[`])/i,/^(?:([^]))/i,/^(?:\{\$)/i,/^(?:["])/i,/^(?:[`])/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:([^]))/i,/^(?:exit\b)/i,/^(?:die\b)/i,/^(?:function\b)/i,/^(?:const\b)/i,/^(?:return\b)/i,/^(?:yield\b)/i,/^(?:try\b)/i,/^(?:catch\b)/i,/^(?:finally\b)/i,/^(?:throw\b)/i,/^(?:if\b)/i,/^(?:elseif\b)/i,/^(?:endif\b)/i,/^(?:else\b)/i,/^(?:while\b)/i,/^(?:endwhile\b)/i,/^(?:do\b)/i,/^(?:for\b)/i,/^(?:endfor\b)/i,/^(?:foreach\b)/i,/^(?:endforeach\b)/i,/^(?:declare\b)/i,/^(?:enddeclare\b)/i,/^(?:instanceof\b)/i,/^(?:as\b)/i,/^(?:switch\b)/i,/^(?:endswitch\b)/i,/^(?:case\b)/i,/^(?:default\b)/i,/^(?:break\b)/i,/^(?:continue\b)/i,/^(?:goto\b)/i,/^(?:echo\b)/i,/^(?:print\b)/i,/^(?:class\b)/i,/^(?:interface\b)/i,/^(?:trait\b)/i,/^(?:extends\b)/i,/^(?:implements\b)/i,/^(?:->)/i,/^(?:([ \n\r\t]+)+)/i,/^(?:->)/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:([^]))/i,/^(?:::)/i,/^(?:\\)/i,/^(?:new\b)/i,/^(?:clone\b)/i,/^(?:var\b)/i,/^(?:\(([ \t]*)(int|integer)([ \t]*)\))/i,/^(?:\(([ \t]*)(real|double|float)([ \t]*)\))/i,/^(?:\(([ \t]*)(string|binary)([ \t]*)\))/i,/^(?:\(([ \t]*)array([ \t]*)\))/i,/^(?:\(([ \t]*)object([ \t]*)\))/i,/^(?:\(([ \t]*)(bool|boolean)([ \t]*)\))/i,/^(?:\(([ \t]*)(unset)([ \t]*)\))/i,/^(?:eval\b)/i,/^(?:include\b)/i,/^(?:include_once\b)/i,/^(?:require\b)/i,/^(?:require_once\b)/i,/^(?:namespace\b)/i,/^(?:use\b)/i,/^(?:insteadof\b)/i,/^(?:global\b)/i,/^(?:isset\b)/i,/^(?:empty\b)/i,/^(?:__halt_compiler\b)/i,/^(?:static\b)/i,/^(?:abstract\b)/i,/^(?:final\b)/i,/^(?:private\b)/i,/^(?:protected\b)/i,/^(?:public\b)/i,/^(?:unset\b)/i,/^(?:=>)/i,/^(?:list\b)/i,/^(?:array\b)/i,/^(?:callable\b)/i,/^(?:\+\+)/i,/^(?:--)/i,/^(?:===)/i,/^(?:!==)/i,/^(?:==)/i,/^(?:!=|<>)/i,/^(?:<=)/i,/^(?:>=)/i,/^(?:\+=)/i,/^(?:-=)/i,/^(?:\*=)/i,/^(?:\/=)/i,/^(?:\.=)/i,/^(?:%=)/i,/^(?:<<=)/i,/^(?:>>=)/i,/^(?:&=)/i,/^(?:\|=)/i,/^(?:\^=)/i,/^(?:\|\|)/i,/^(?:&&)/i,/^(?:OR\b)/i,/^(?:AND\b)/i,/^(?:XOR\b)/i,/^(?:<<)/i,/^(?:>>)/i,/^(?:\{)/i,/^(?:\})/i,/^(?:__CLASS__\b)/i,/^(?:__TRAIT__\b)/i,/^(?:__FUNCTION__\b)/i,/^(?:__METHOD__\b)/i,/^(?:__LINE__\b)/i,/^(?:__FILE__\b)/i,/^(?:__DIR__\b)/i,/^(?:__NAMESPACE__\b)/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[[}])/i,/^(?:([^]))/i,/^(?:[0]|([1-9][0-9]*))/i,/^(?:([0-9]+)|(0x[0-9a-fA-F]+)|(0b[01]+))/i,/^(?:\])/i,/^(?:([;:,.\[\]()|^&+-\/*=%!~$<>?@])|[{}"`])/i,/^(?:[ \n\r\t\\'#])/i,/^(?:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i,/^(?:(((([0-9]+)|(([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)))[eE][+-]?([0-9]+)))|(([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)))/i,/^(?:(0b[01]+))/i,/^(?:(0x[0-9a-fA-F]+))/i,/^(?:([0-9]+))/i,/^(?:#|\/\/)/i,/^(?:\/\*\*([ \n\r\t]+)|\/\*)/i,/^(?:([;:,.\[\]()|^&+-\/*=%!~$<>?@]))/i,/^(?:([^]))/i,/^(?:$)/i],
+conditions: {"ST_LOOKING_FOR_VARNAME":{"rules":[140,141],"inclusive":false},"ST_NOWDOC":{"rules":[24],"inclusive":false},"ST_END_HEREDOC":{"rules":[17],"inclusive":false},"ST_HEREDOC":{"rules":[9,10,11,12,18,23],"inclusive":false},"ST_BACKQUOTE":{"rules":[9,10,11,12,18,20,22],"inclusive":false},"ST_DOUBLE_QUOTES":{"rules":[9,10,11,12,18,19,21],"inclusive":false},"ST_LOOKING_FOR_PROPERTY":{"rules":[66,67,68],"inclusive":false},"ST_VAR_OFFSET":{"rules":[12,142,143,144,145,146,147,155],"inclusive":false},"ST_IN_SCRIPTING":{"rules":[7,8,12,13,14,15,16,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,147,148,149,150,151,152,153,154,155],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,5,6,156],"inclusive":true}}
 });
 return lexer;
 })();
+
+
+// defines if all tokens must be retrieved (used by token_get_all only)
+lexer.all_tokens = true;
+// enables the evald mode (ignore opening tags)
+lexer.mode_eval = false;
+// change lexer algorithm
+var lex = lexer.lex;
+lexer.lex = function() {
+  var token = lex.call(this);
+  if (!this.all_tokens) {
+    while(
+      token === T_WHITESPACE  // ignore white space
+      || token === T_COMMENT  // ignore single lines comments
+      || (
+        !this.mode_eval // ignore open/close tags
+        && (
+          token == T_OPEN_TAG
+          || token == T_CLOSE_TAG
+        )
+      )
+    ) {
+      token = lex.call(this);
+    }
+    if (token == this.EOF) token = T_EOF;
+    if (!this.mode_eval && token == T_OPEN_TAG_WITH_ECHO) {
+      // open tag with echo statement
+      return T_ECHO; 
+    }
+  }
+  return token;
+};
+// FORCE TO CHANGE THE INITIAL STATE IN EVAL MODE
+var setInput = lexer.setInput;
+lexer.setInput = function (input, yy) {
+  setInput.call(this, input, yy);
+  if (
+    !this.all_tokens && this.mode_eval
+  ) {
+    this.conditionStack = ['ST_IN_SCRIPTING'];
+  }
+};
 
 module.exports = lexer;
