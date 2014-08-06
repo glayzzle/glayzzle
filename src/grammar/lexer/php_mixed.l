@@ -5,10 +5,10 @@
 
 
 <ST_LOOKING_FOR_VARNAME>{ANY_CHAR} {
-  this.less(0);
-  this.popState();
-  this.pushState("ST_IN_SCRIPTING");
+  this.popState(); 
+  // @todo this.pushState("ST_IN_SCRIPTING");
   this.reject();
+  return false;
 }
 
 
@@ -30,7 +30,7 @@
 }
 
 <ST_VAR_OFFSET>[ \n\r\t\\'#] {
-	return T_ENCAPSED_AND_WHITESPACE;
+  return T_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_IN_SCRIPTING,ST_VAR_OFFSET>{LABEL} {

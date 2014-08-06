@@ -122,6 +122,7 @@
 
 
 <ST_DOUBLE_QUOTES>{ANY_CHAR} {
+  if (yytext == '\\') this.input();
   while(this._input.length > 0) {
     var char = this.input();
     if (char == '\\') {

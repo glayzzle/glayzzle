@@ -42,7 +42,6 @@
     this.begin("ST_IN_SCRIPTING");
     return T_OPEN_TAG;
   } else {
-    console.log(this);
     throw new Error('Unauth state');
     this.unput("<?");
   }

@@ -24,14 +24,14 @@ NEWLINE             (\r\n|\n|\r)
 %x ST_NOWDOC
 %x ST_LOOKING_FOR_VARNAME
 
-%options flex case-insensitive
+%options case-insensitive
 
 %%
 
 @import 'lexer/initial.l'
+@import 'lexer/php_strings.l'
 @import 'lexer/php_main.l'
 @import 'lexer/php_constants.l'
-@import 'lexer/php_strings.l'
 @import 'lexer/php_mixed.l'
 @import 'lexer/php_numbers.l'
 @import 'lexer/php_comments.l'

@@ -175,6 +175,7 @@
 <ST_LOOKING_FOR_PROPERTY>{ANY_CHAR} {
   this.popState();
   this.unput(yytext);
+  return false;
 }
 
 <ST_IN_SCRIPTING>"::" {
