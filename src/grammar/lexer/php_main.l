@@ -174,12 +174,12 @@
 
 <ST_LOOKING_FOR_PROPERTY>{ANY_CHAR} {
   this.popState();
-  this.unput(yytext);
+  this.less(0);
   return false;
 }
 
 <ST_IN_SCRIPTING>"::" {
-  return T_PAAMAYIM_NEKUDOTAYIM;
+  return T_DOUBLE_COLON;
 }
 
 <ST_IN_SCRIPTING>"\\" {
@@ -429,7 +429,7 @@
 
 
 <ST_IN_SCRIPTING>"}" {
-	// @todo : RESET_DOC_COMMENT();
-	this.popState();
-	return '}';
+  // @todo : RESET_DOC_COMMENT();
+  this.popState();
+  return '}';
 }
