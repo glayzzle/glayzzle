@@ -1,6 +1,6 @@
 <ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC>"${" {
-	//yy_push_state(ST_LOOKING_FOR_VARNAME TSRMLS_CC);
-	return T_DOLLAR_OPEN_CURLY_BRACES;
+  this.begin('ST_LOOKING_FOR_VARNAME');
+  return T_DOLLAR_OPEN_CURLY_BRACES;
 }
 
 
@@ -16,7 +16,7 @@
 /* A [ always designates a variable offset, regardless of what follows
  */
 <ST_DOUBLE_QUOTES,ST_HEREDOC,ST_BACKQUOTE>"$"{LABEL}"[" {
-  this.less(1);
+  this.less(yyleng - 1);
   this.pushState('ST_VAR_OFFSET');
   return T_VARIABLE;
 }
@@ -27,41 +27,52 @@
 
 
 <ST_IN_SCRIPTING>b?['] {
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      this.input();
+      i++;
     } else if (char == '\'') {
       break;
     }
+    i++;
   }
+  consume(this, i + 1);
   return T_CONSTANT_ENCAPSED_STRING;
 }
 
 
 <ST_IN_SCRIPTING>b?["] {
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      char = this.input();
+      i++;
     } else if (char == '"') {
       break;
     } else if (char == '$') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
+      i--;
       if ( char == '{' || IS_LABEL_START(char)) {
         break;
-      } else this.unput(char);
+      }
     } else if (char == '{') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
+      i --;
       if (char == '$') {
         break;
-      } else this.unput(char);
+      }
     }
+    i++;
   }
   if (char == '"') {
+    consume(this, i + 1);
     return T_CONSTANT_ENCAPSED_STRING;
   } else {
-    this.less(1);
     this.begin("ST_DOUBLE_QUOTES");
     return '"';
   }
@@ -90,15 +101,9 @@
 
 
 <ST_END_HEREDOC>{ANY_CHAR} {
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (char == ';') {
-      this.unput(char);
-      break;
-    }
-  }
   this.popState();
   this.popState();
+  consume(this, this.heredoc_label.length - 1);
   return T_END_HEREDOC;
 }
 
@@ -122,33 +127,39 @@
 
 
 <ST_DOUBLE_QUOTES>{ANY_CHAR} {
-  if (yytext == '\\') this.input();
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  if (yytext == '\\') i++;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '\\') {
-      char = this.input();
+      i++;
     } else if (char == '"') {
-      this.unput(char);
+      i--; // exclude "
       break;
     } else if (char == '$') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
       if ( char == '{' || IS_LABEL_START(char)) {
-        this.unput('$' + char);
+        i -= 2;
         break;
-      }
+      } else continue;
     } else if (char == '{') {
-      char = this.input();
+      char = ++i < eot && this._input[i];
       if (char == '$') {
-        this.unput('{$');
+        i -= 2;
         break;
-      }
+      } else continue;
     }
+    i++;
   }
+  consume(this, i + 1);
   return T_ENCAPSED_AND_WHITESPACE;
 }
 
 
 <ST_BACKQUOTE>{ANY_CHAR} {
+  if (yytext == '\\') this.input();
   while(this._input.length > 0) {
     var char = this.input();
     if (char == '\\') {
@@ -172,60 +183,76 @@
 
 
 <ST_HEREDOC>{ANY_CHAR} {
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (
-      char == '\n'
-      || char == '\r'
-      || char == '\r\n'
-    ) {
-      char = this.input();
-      if (IS_LABEL_START(char)) {
-        var label = char;
-        while(this._input.length > 0) {
-          char = this.input();
-          if (char == ';') {
-            break;
-          } else {
-            label += char;
-            if (label.length > this.heredoc_label.length) break;
-          }
+  var eot = this._input.length;
+  var i = 0, eol;
+  var char;
+  var lblLen = this.heredoc_label.length;
+  var found = false;
+  while(i < eot) {
+    char = this._input[i];
+    if (char == '\n' || char == '\r') {
+      if (char == '\r') {
+        char = ++i < eot && this._input[i];
+        if (!char == '\n') i--;
+      }
+      // @fixme : check if out of text limits
+      if (this._input.substring(i + 1, i + lblLen + 1) == this.heredoc_label) {
+        eol = this._input[ i + lblLen + 1];
+        if ( eol == '\n' || eol == '\r' || eol == ';') {
+          found = true;
+          break;
         }
-        if (label == this.heredoc_label) break;
       }
     }
+    else if (char == '\\') {
+      char = ++i < eot && this._input[i];
+      if (char == '\n' || char == '\r') i--;
+    }
+    else if (char == '$') {
+      char = ++i < eot && this._input[i];
+      if (char == '{' || IS_LABEL_START(char)) {
+        i -= 2;
+        break;
+      }  else continue;
+    }
+    else if (char == '{') {
+      char = ++i < eot && this._input[i];
+      if (char == '$') {
+        i -= 2;
+        break;
+      } else continue;
+    }
+    i++;
   }
-  this.less(yytext.length - this.heredoc_label.length - 1);
-  this.begin('ST_END_HEREDOC');
+  consume(this, i + 1);
+  if (found) this.begin('ST_END_HEREDOC');
   return T_ENCAPSED_AND_WHITESPACE;
 }
 
 
 <ST_NOWDOC>{ANY_CHAR} {
-  while(this._input.length > 0) {
-    var char = this.input();
-    if (
-      char == '\n'
-      || char == '\r'
-      || char == '\r\n'
-    ) {
-      char = this.input();
-      if (IS_LABEL_START(char)) {
-        var label = char;
-        while(this._input.length > 0) {
-          char = this.input();
-          if (char == ';') {
-            break;
-          } else {
-            label += char;
-            if (label.length > this.heredoc_label.length) break;
-          }
+  var eot = this._input.length;
+  var i = 0, eol;
+  var char;
+  var lblLen = this.heredoc_label.length;
+  while(i < eot) {
+    char = this._input[i];
+    if (char == '\n' || char == '\r') {
+      if (char == '\r') {
+        char = ++i < eot && this._input[i];
+        if (!char == '\n') i--;
+      }
+      // @fixme : check if out of text limits
+      if (this._input.substring(i + 1, i + lblLen + 1) == this.heredoc_label) {
+        eol = this._input[ i + lblLen + 1];
+        if ( eol == '\n' || eol == '\r' || eol == ';') {
+          break;
         }
-        if (label == this.heredoc_label) break;
       }
     }
+    i++;
   }
-  this.less(yytext.length - this.heredoc_label.length - 1);
+  consume(this, i + 1);
   this.begin('ST_END_HEREDOC');
   return T_ENCAPSED_AND_WHITESPACE;
 }
