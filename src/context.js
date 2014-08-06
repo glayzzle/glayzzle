@@ -188,7 +188,20 @@ module.exports = {
   }
   // evaluates the specified code and returns its function
   , eval: function(code) {
-    var AST = builder.getParser().parse(code);
+    var parser = builder.getParser();
+    parser.lexer.all_tokens = false;
+    parser.lexer.mode_eval = true;
+    var AST = parser.parse(code);
+    console.log(
+      util.inspect(
+        AST, { 
+          showHidden: false, 
+          depth: 10, 
+          colors: true 
+        }
+      )
+    );
+    process.exit(0);
     builder.init('evald code');
     builder.functions.push(builder.getMainFunction(AST));
     var source = builder.headers() + '\n'
@@ -215,40 +228,13 @@ module.exports = {
   }
   // parse and build file cache
   , refresh: function(filename, cache, refresh) {
+    var parser = builder.getParser();
+    parser.lexer.all_tokens = false;
+    parser.lexer.mode_eval = false;
     var data = fs.readFileSync(filename);
     if (process.env.DEBUG > 0) console.log("-> Parse " + filename);
     try {
-      var results = [];
-      var buffer = '';
-      for(var i = 0; i < data.length; i++) {
-        var c = String.fromCharCode(data[i]);
-        if ( c == '<') {
-          if (String.fromCharCode(data[i+1]) == '?') {
-            if (buffer) {
-              results.push({ type: 'doc.T_HTML', data: buffer});
-            }
-            var offset = 2;
-            if (String.fromCharCode(data[i+2]) == '=') {
-              offset ++;
-            } else if(data.toString('utf8', i + 2, i + 5).toLowerCase() == 'php') {
-              offset += 3;
-            }
-            var next = data.indexOf("?>", i);
-            results.push({ 
-              type: 'doc.T_PHP'
-              , data: builder.getParser().parse(
-                  data.toString('utf8', i + offset, next > i ? next: data.length)
-              )
-            });
-            if ( next > i ) {
-              i = next + 2;
-              buffer = '';
-              continue;
-            } else break;
-          }
-        }
-        buffer += c;
-      }
+      var results = parser.parse(data);
       builder.init(filename);
       builder.functions.push(builder.getMainFunction(results));
       source = '/** GLAYZZLE GENERATED CODE : '+filename+' ('+cache+') **/\n\n' 
