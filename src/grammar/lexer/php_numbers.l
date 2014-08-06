@@ -1,4 +1,4 @@
-<ST_IN_SCRIPTING>{DNUM}|{EXPONENT_DNUM} {
+<ST_IN_SCRIPTING>{EXPONENT_DNUM}|{DNUM} {
   return T_DNUMBER;
 }
 
@@ -11,5 +11,15 @@
 }
 
 <ST_IN_SCRIPTING>{LNUM} {
-  return T_LNUMBER;
+  if (yyleng < MAX_LENGTH_OF_LONG - 1) {
+    return T_LNUMBER;
+  } else {
+    if (
+      yyleng == MAX_LENGTH_OF_LONG 
+      && yytext < long_min_digits 
+    ) {
+      return T_LNUMBER;
+    }
+    return T_DNUMBER;
+  }
 }
