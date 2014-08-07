@@ -5,8 +5,8 @@ combined_scalar_offset:
 ;
 
 combined_scalar:
-      T_ARRAY '(' array_pair_list ')' { $$ = $3; }
-    | '[' array_pair_list ']' { $$ = $2; }
+  T_ARRAY '(' array_pair_list ')'   { $$ = ['array', $3]; }
+  | '[' array_pair_list ']'         { $$ = ['array', $2]; }
 ;
 
 common_scalar:
@@ -29,7 +29,6 @@ static_scalar: /* compile-time evaluated scalars */
 		common_scalar		{ $$ = $1; }
 	|	static_class_name_scalar	{ $$ = $1; }
 	|	namespace_name 		
-	|	T_NAMESPACE T_NS_SEPARATOR namespace_name 
 	|	T_NS_SEPARATOR namespace_name 
 	|	'+' static_scalar 
 	|	'-' static_scalar 
@@ -44,14 +43,13 @@ static_class_constant:
 ;
 
 scalar:
-		T_STRING_VARNAME        { $$ = $1; }
-	|	class_name_scalar       { $$ = $1; }
-	|	class_constant          { $$ = $1; }
-	|	namespace_name
-	|	T_NAMESPACE T_NS_SEPARATOR namespace_name
-	|	T_NS_SEPARATOR namespace_name
-	|	common_scalar
-	|	'"' encaps_list '"'                              { $$ = ['string', $2]; }
-	|	T_START_HEREDOC encaps_list T_END_HEREDOC        { $$ = ['string', $2]; }
-	|	T_CLASS_C
+    T_STRING_VARNAME                                    { $$ = $1; }
+  | class_name_scalar                                   { $$ = $1; }
+  | class_constant                                      { $$ = $1; }
+  | namespace_name                                      { $$ = $1; }
+  | T_NS_SEPARATOR namespace_name                       { $$ = $2; }
+  | common_scalar                                       { $$ = $1; }
+  | '"' encaps_list '"'                                 { $$ = ['string', $2]; }
+  | T_START_HEREDOC encaps_list T_END_HEREDOC           { $$ = ['string', $2]; }
+  | T_CLASS_C
 ;
