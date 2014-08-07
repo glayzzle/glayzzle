@@ -201,6 +201,25 @@ module.exports = {
         }
       )
     );
+    /** tokens ** /
+    var jsTok = this.php.globals.__call( 'token_get_all', '<?php ' + code );
+    for(var i = 0; i < jsTok.length; i++) {
+      if (jsTok[i] instanceof Array) {
+        jsTok[i][0] = this.php.globals.__call(
+          'token_name', jsTok[i][0]
+        );
+      }
+    }
+    console.log(
+      util.inspect(
+        jsTok, { 
+          showHidden: false, 
+          depth: 10, 
+          colors: true 
+        }
+      )
+    ); /** **/
+    return { __main: function() { return true; } };
     process.exit(0);
     builder.init('evald code');
     builder.functions.push(builder.getMainFunction(AST));
