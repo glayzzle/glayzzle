@@ -44,7 +44,5 @@ NEWLINE             (\r\n|\n|\r)
   this.reject();
 }
 
-<<EOF>> { return EOF; }
-
 /lex
 
