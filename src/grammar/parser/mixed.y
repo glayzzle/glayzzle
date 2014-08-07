@@ -11,18 +11,18 @@ encaps_list:
 ;
 
 encaps_var:
-    T_VARIABLE                                                    { $$ = ['var', $1]; }
-  | T_VARIABLE '[' encaps_var_offset ']'                          { $$ = ['offset', $3, ['var', $1]]; }
-  | T_VARIABLE T_OBJECT_OPERATOR T_STRING                         { $$ = ['prop', $3, ['var', $1]]; }
+    const_variable                                                { $$ = $1; }
+  | const_variable '[' encaps_var_offset ']'                      { $$ = ['offset', $3, $1]; }
+  | const_variable T_OBJECT_OPERATOR T_STRING                     { $$ = ['prop', $3, $1]; }
   | T_DOLLAR_OPEN_CURLY_BRACES expr '}'                           { $$ = $2; }
-  | T_DOLLAR_OPEN_CURLY_BRACES T_STRING_VARNAME '[' expr ']' '}'  { $$ = ['offset', $4, ['var', $2]]; }
+  | T_DOLLAR_OPEN_CURLY_BRACES T_STRING_VARNAME '[' expr ']' '}'  { $$ = ['offset', $4, ['var', $2]]; /** @check **/ }
   | T_CURLY_OPEN variable '}'                                     { $$ = ['var', $2]; }
 ;
 
 encaps_var_offset:
-    T_STRING        { $$ = ['string', $1]; }
-  | T_NUM_STRING    { $$ = ['number', $1]; }
-  | T_VARIABLE      { $$ = ['var', $1]; }
+    T_STRING                                  { $$ = ['const', $1]; }
+  | T_NUM_STRING                              { $$ = ['number', $1]; }
+  | const_variable                            { $$ = $1; }
 ;
 
 internal_functions_in_yacc:
