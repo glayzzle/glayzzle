@@ -43,8 +43,8 @@ non_empty_array_pair_list:
 	|	non_empty_array_pair_list ',' expr
 	|	expr T_DOUBLE_ARROW expr
 	|	expr
-	|	non_empty_array_pair_list ',' expr T_DOUBLE_ARROW '&' w_variable
-	|	non_empty_array_pair_list ',' '&' w_variable
-	|	expr T_DOUBLE_ARROW '&' w_variable
-	|	'&' w_variable
+	|	non_empty_array_pair_list ',' expr T_DOUBLE_ARROW '&' variable
+	|	non_empty_array_pair_list ',' '&' variable
+	|	expr T_DOUBLE_ARROW '&' variable
+	|	'&' variable
 ;
