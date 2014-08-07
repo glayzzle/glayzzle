@@ -1,35 +1,74 @@
 optional_class_type:
-		/* empty */
-	|	T_ARRAY
-	|	T_CALLABLE
-	|	fully_qualified_class_name
+    T_ARRAY                                     { /* optional_class_type */ $$ = ['const', $1]; }
+  | T_CALLABLE                                  { /* optional_class_type */ $$ = ['const', $1]; }
+  | fully_qualified_class_name                  { /* optional_class_type */ $$ = $1; }
 ;
 
 class_declaration_statement:
-  unticked_class_declaration_statement
+  unticked_class_declaration_statement          { $$ = $1; }
 ;
 
 unticked_class_declaration_statement:
   class_entry_type T_STRING extends_from implements_list
     '{'
       class_statement_list
-    '}'
+    '}'                                         {
+    var body = {
+      constants: {},
+      properties: {},
+      methods: {},
+      traits: []
+    };
+    for(var i in $6) {
+      switch($6[i][0]) {
+        case 'method':
+          body.methods[$6[i][2]] = {
+            flags: $6[i][1],
+            args: $6[i][3],
+            body: $6[i][4],
+          };
+          break;
+        case 'property':
+          for(var p in $6[i][2]) {
+            if ($6[i][2][p][0] == 'var') {
+              body.properties[$6[i][2][p][1][1]] = {
+                flags: $6[i][1],
+                value: []
+              };
+            } else if ($6[i][2][p][0] == 'set') {  // set mode (sets a default value)
+              body.properties[$6[i][2][p][1][1][1]] = {
+                flags: $6[i][1],
+                value: $6[i][2][p][2]
+              };
+            }
+          }
+          break;
+        case 'constant':
+          // @todo
+          break;
+        case 'use':
+          body.traits.push($6[i][1]);
+          break;
+      }
+    }
+    $$ = ['class', $2, $3, $4, body]; 
+  }
   | interface_entry T_STRING interface_extends_list
     '{'
       class_statement_list
-    '}'
+    '}'                                         { $$ = ['interface', $2, $3, false, $5]; }
 ;
 
 class_entry_type:
-    T_CLASS
-  | T_ABSTRACT T_CLASS
-  | T_TRAIT
-  | T_FINAL T_CLASS
+    T_CLASS               { /* class_entry_type */ $$ = { trait: false, abstract: false, final: false }; }
+  | T_ABSTRACT T_CLASS    { /* class_entry_type */ $$ = { trait: false, abstract: true, final: false }; }
+  | T_TRAIT               { /* class_entry_type */ $$ = { trait: true, abstract: false, final: false }; }
+  | T_FINAL T_CLASS       { /* class_entry_type */ $$ = { trait: false, abstract: false, final: true }; }
 ;
 
 extends_from:
-    /* empty */
-  | T_EXTENDS fully_qualified_class_name
+    T_EXTENDS fully_qualified_class_name    { /* extends_from */ $$ = $2; }
+  | /* empty */                             { /* extends_from */ $$ = false; }
 ;
 
 interface_entry:
@@ -37,42 +76,48 @@ interface_entry:
 ;
 
 interface_extends_list:
-    /* empty */
-  | T_EXTENDS interface_list
+    T_EXTENDS interface_list                { /* interface_extends_list */ $$ = $2; }
+  | /* empty */                             { /* interface_extends_list */ $$ = []; }
 ;
 
 implements_list:
-		/* empty */
-	|	T_IMPLEMENTS interface_list
+    T_IMPLEMENTS interface_list            { $$ = $1; }
+  | /* empty */                            { $$ = []; }
 ;
 
 interface_list:
-		fully_qualified_class_name
-	|	interface_list ',' fully_qualified_class_name
+    interface_list ',' fully_qualified_class_name     { /* interface_list */ $$ = $1; $1.push($3); }
+  | fully_qualified_class_name                        { /* interface_list */ $$ = [$1]; }
 ;
 
 
 class_statement_list:
-		class_statement_list class_statement
-	|	/* empty */
+    class_statement_list class_statement              { /* class_statement_list */ $$ = $1; $1.push($2); }
+  | class_statement                                   { /* class_statement_list */ $$ = [$1]; }
+  | /* empty */                                       { /* class_statement_list */ $$ = []; }
 ;
 
 
 class_statement:
-		variable_modifiers class_variable_declaration ';' 
-	|	class_constant_declaration ';'
-	|	trait_use_statement
-	|	method_modifiers function is_reference T_STRING  '(' parameter_list ')' 	method_body
+    variable_modifiers class_variable_declaration ';'             { $$ = ['property', $1, $2]; } 
+  | class_constant_declaration ';'                                { $$ = ['constant', $1]; }
+  | trait_use_statement                                           { $$ = ['use', $1]; }
+  | T_FUNCTION is_reference T_STRING  '(' parameter_list ')' method_body {
+    $$ = ['method', ['public'], $3, $5, $7];
+  }
+  | non_empty_member_modifiers T_FUNCTION is_reference T_STRING  '(' parameter_list ')' method_body {
+    $$ = ['method', $1, $4, $6, $8];
+  }
 ;
 
 method_body:
-		';' /* abstract method */
-	|	'{' inner_statement_list '}'
+  ';' /* abstract method */             { $$ = []; }
+  | '{' inner_statement_list '}'        { $$ = $2; }
 ;
 
 variable_modifiers:
-		non_empty_member_modifiers
-	|	T_VAR
+    non_empty_member_modifiers        { $$ = $1; }
+  | T_VAR                             { $$ = ['public']; }
 ;
 
 method_modifiers:
@@ -81,29 +126,29 @@ method_modifiers:
 ;
 
 non_empty_member_modifiers:
-		member_modifier
-	|	non_empty_member_modifiers member_modifier
+    non_empty_member_modifiers member_modifier    { $$ = $1; $1.push($2); }
+  | member_modifier                               { $$ = [$1]; }
 ;
 
 member_modifier:
-		T_PUBLIC
-	|	T_PROTECTED
-	|	T_PRIVATE
-	|	T_STATIC
-	|	T_ABSTRACT
-	|	T_FINAL
+    T_PUBLIC          { $$ = 'public'; }
+  | T_PROTECTED       { $$ = 'protected'; }
+  | T_PRIVATE         { $$ = 'private'; }
+  | T_STATIC          { $$ = 'static'; }
+  | T_ABSTRACT        { $$ = 'abstract'; }
+  | T_FINAL           { $$ = 'final'; }
 ;
 
 class_variable_declaration:
-		class_variable_declaration ',' T_VARIABLE
-	|	class_variable_declaration ',' T_VARIABLE '=' static_scalar
-	|	T_VARIABLE
-	|	T_VARIABLE '=' static_scalar
+    class_variable_declaration ',' const_variable '=' static_scalar     { $$ = $1; $1.push(['set', $3, $5]); }
+  | class_variable_declaration ',' const_variable                       { $$ = $1; $1.push($3); }
+  | const_variable '=' static_scalar                                    { $$ = [['set', $1, $3]]; }
+  | const_variable                                                      { $$ = [$1]; }
 ;
 
 class_constant_declaration:
-		class_constant_declaration ',' T_STRING '=' static_scalar
-	|	T_CONST T_STRING '=' static_scalar
+    class_constant_declaration ',' T_STRING '=' static_scalar           { $$ = $1; $1.push([$3, $5]); }
+  | T_CONST T_STRING '=' static_scalar                                  { $$ = [[$2, $4]]; }
 ;
 
 new_expr:
@@ -114,17 +159,13 @@ new_expr:
 class_name:
 		T_STATIC
 	|	namespace_name
-	|	T_NAMESPACE T_NS_SEPARATOR namespace_name
 	|	T_NS_SEPARATOR namespace_name
 ;
 
 fully_qualified_class_name:
-		namespace_name
-	|	T_NAMESPACE T_NS_SEPARATOR namespace_name
-	|	T_NS_SEPARATOR namespace_name
+    T_NS_SEPARATOR namespace_name                         { /* fully_qualified_class_name */ $$ = $2; }
+  | namespace_name                                        { /* fully_qualified_class_name */ $$ = $1; }
 ;
-
-
 
 class_name_reference:
 		class_name
@@ -150,19 +191,19 @@ dynamic_class_name_variable_property:
 
 
 ctor_arguments:
-		/* empty */
-	|	function_call_parameter_list
+    function_call_parameter_list      { $$ = $1; }
+  | /* empty */                       { $$ = false; }
 ;
 
 
 method:
-		function_call_parameter_list
+  function_call_parameter_list        { $$ = $1; }
 ;
 
 method_or_not:
-		method
-	|	array_method_dereference
-	|	/* empty */
+    method                            { $$ = $1; }
+  | array_method_dereference          { $$ = $1; }
+  | /* empty */                       { $$ = false; }
 ;
 
 
