@@ -9,8 +9,9 @@ lexer.lex = function() {
   var token = lex.call(this);
   if (!this.all_tokens) {
     while(
-      token === T_WHITESPACE  // ignore white space
-      || token === T_COMMENT  // ignore single lines comments
+      token === T_WHITESPACE      // ignore white space
+      || token === T_COMMENT      // ignore single lines comments
+      || token === T_DOC_COMMENT  // ignore doc comments
       || (
         !this.mode_eval // ignore open/close tags
         && (
