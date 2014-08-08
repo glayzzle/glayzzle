@@ -52,7 +52,7 @@ unticked_statement:
   | T_GLOBAL global_var_list ';'          { $$ = ['global', $2]; }
   | T_STATIC static_var_list ';'          { $$ = ['static', $2]; }
   | T_ECHO echo_expr_list ';'             { $$ = ['call', 'echo', $2]; }
-  | T_INLINE_HTML                         { $$ = ['call', 'echo', $1]; }
+  | T_INLINE_HTML                         { $$ = ['call', 'echo', [['string', $1]]]; }
   | expr ';'                              { $$ = $1; }
   | T_UNSET '(' unset_variables ')' ';'   { $$ = ['call', 'unset', $3]; }
   | T_FOREACH 

@@ -29,21 +29,30 @@ var fs = require('fs');
  */
 module.exports = {
   // Current version
-  VERSION: '0.0.5',
+  VERSION: '0.0.6',
 
   // contains the PHP tokenizer
-  parser: null,
+  _parser: false,
 
   // retro-PHP-compatibility layer
   globals: false,
 
   // current execution context
   context: false,
-  
+
+  // gets the parser
+  parser: function() {
+    if (!this._parser) {
+      this._parser = require('./parser').parser;
+    }
+    return this._parser;
+  },
+
   // cleans actual context
   clean: function() {
     this.globals = require('./compat');
     this.context = require('./context').init(this);
+    this._parser = false;
     return this;
   }
   // run a eval over PHP code

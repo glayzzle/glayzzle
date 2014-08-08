@@ -30,6 +30,39 @@ lexer.lex = function() {
   }
   return token;
 };
+
+// fix of input algorithm @see https://github.com/zaach/jison-lex/pull/10
+lexer.input = function() {
+  var ch = this._input[0];
+  if ( ch == '\r' && this._input[1] == '\n' ) {
+      ch += '\n'; 
+      this.yyleng++;
+      this.offset++;
+      this._input = this._input.slice(1);
+      if (this.options.ranges) {
+          this.yylloc.range[1]++;
+      }
+  }
+  this.yytext += ch;
+  this.yyleng++;
+  this.offset++;
+  this.match += ch;
+  this.matched += ch;
+  var lines = ch.match(/(?:\r\n?|\n).*/g);
+  if (lines) {
+      this.yylineno++;
+      this.yylloc.last_line++;
+  } else {
+      this.yylloc.last_column++;
+  }
+  if (this.options.ranges) {
+      this.yylloc.range[1]++;
+  }
+
+  this._input = this._input.slice(1);
+  return ch;
+};
+
 // FORCE TO CHANGE THE INITIAL STATE IN EVAL MODE
 var setInput = lexer.setInput;
 lexer.setInput = function (input, yy) {

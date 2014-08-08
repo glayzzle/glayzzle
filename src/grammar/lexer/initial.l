@@ -48,44 +48,33 @@
 }
 
 <INITIAL>{ANY_CHAR} {
-  while(this._input.length > 0) {
-    var char = this.input();
+  var eot = this._input.length;
+  var i = 0;
+  var char;
+  while(i < eot) {
+    char = this._input[i];
     if (char == '<') {
-      var q = this.input();
-      /*if (q == 's' && this._input.substring(0, 6) == 'cript ') {
-          this.unput('<s');
-          break;
-      } else */ 
-      if(q == '?') {
+      char = ++i < eot && this._input[i];
+      if (char == '?') {
         if (
-          this._input.substring(0, 3) == 'php' || this._input.substring(0, 1) == '='
+          this._input[i+1] == '='
+          || this._input.substring(i + 1, i + 3) == 'php'
         ) {
-          this.unput('<?');
-          break;
-        } else if (conf.short_tags) {
-          this.unput('<?');
+          i --;
           break;
         }
-      } else if(conf.asp_tags && q == '%') {
-        this.unput('<%');
+      } else if(conf.asp_tags && char == '%') {
+        i --;
         break;
       }
     }
+    i++;
   }
+  consume(this, i);
   return T_INLINE_HTML;
 }
 
 <ST_IN_SCRIPTING>("?>"|"</script"{WHITESPACE}*">"){NEWLINE}? {
-  if (this._input.length > 0) {
-    var c = this.input();
-    if ( 
-      c != '\r\n'
-      && c != '\n'
-      && c != '\r'
-    ) {
-      this.unput(c);
-    }
-  }
   this.popState();
   return T_CLOSE_TAG;
 }

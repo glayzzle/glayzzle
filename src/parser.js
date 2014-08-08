@@ -226,7 +226,7 @@ case 71: this.$ = ['static', $$[$0-1]];
 break;
 case 72: this.$ = ['call', 'echo', $$[$0-1]]; 
 break;
-case 73: this.$ = ['call', 'echo', $$[$0]]; 
+case 73: this.$ = ['call', 'echo', [['string', $$[$0]]]]; 
 break;
 case 74: this.$ = $$[$0-1]; 
 break;
@@ -965,7 +965,7 @@ parse: function parse(input) {
     }
     return true;
 }};
-var lexer = require('./lexer.js');
+try { var lexer = require('./lexer.js'); } catch(e) { } 
 
 parser.lexer = lexer;
 function Parser () {
