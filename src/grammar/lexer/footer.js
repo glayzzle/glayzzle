@@ -22,7 +22,6 @@ lexer.lex = function() {
     ) {
       token = lex.call(this);
     }
-    if (token == this.EOF) token = T_EOF;
     if (!this.mode_eval && token == T_OPEN_TAG_WITH_ECHO) {
       // open tag with echo statement
       return T_ECHO; 

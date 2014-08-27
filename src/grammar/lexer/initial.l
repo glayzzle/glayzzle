@@ -1,10 +1,4 @@
 
-<INITIAL>"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"'php'"){WHITESPACE}*">" {
-  this.begin("ST_IN_SCRIPTING");
-  return T_OPEN_TAG;
-}
-
-
 <INITIAL>"<%=" {
   if (conf.asp_tags) {
     this.begin("ST_IN_SCRIPTING");
@@ -58,7 +52,7 @@
       if (char == '?') {
         if (
           this._input[i+1] == '='
-          || this._input.substring(i + 1, i + 3) == 'php'
+          || this._input.substring(i + 1, i + 4) == 'php'
         ) {
           i --;
           break;
@@ -74,7 +68,7 @@
   return T_INLINE_HTML;
 }
 
-<ST_IN_SCRIPTING>("?>"|"</script"{WHITESPACE}*">"){NEWLINE}? {
+<ST_IN_SCRIPTING>"?>"{NEWLINE}? {
   this.popState();
   return T_CLOSE_TAG;
 }
