@@ -1,5 +1,4 @@
 /* lexical grammar, rewrite from zend_language_scanner.l (PHP 5.5) */
-%lex
 
 LNUM                [0-9]+
 DNUM                ([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
@@ -43,6 +42,3 @@ NEWLINE             (\r\n|\n|\r)
 <ST_IN_SCRIPTING,ST_VAR_OFFSET>{ANY_CHAR} {
   this.reject();
 }
-
-/lex
-
