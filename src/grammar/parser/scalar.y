@@ -1,7 +1,8 @@
 
 static_scalar:
-  ('+'|'-')? T_LNUMBER | T_DNUMBER { $$ = ['number', $1]; }
+  ('+'|'-')? (T_LNUMBER|T_DNUMBER) { $$ = ['number', ($1 ? $1 : '') + $2]; }
   | T_CONSTANT_ENCAPSED_STRING     { $$ = ['string', $1.substring(1, $1.length - 1)]; }
+  | T_STRING                       { $$ = ['const', $1]; }
   | T_LINE                         { $$ = ['number', this.lexer.yylloc.last_line]; }
   | T_FILE                         { $$ = $1; }
   | T_DIR                          { $$ = $1; }
