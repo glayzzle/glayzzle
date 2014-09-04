@@ -7,8 +7,8 @@
 %% /* language grammar */
 
 start:
-  T_EOF { return []; }
-  | top_statement_list T_EOF { return $1 || []; }
+  top_statement_list  { return $1 || []; }
+  | /* empty */       { return []; }
 ;
 
 top_statement_list:
