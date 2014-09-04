@@ -1,32 +1,20 @@
 
-inner_statement_list:
-  inner_statement                         { $$ = [$1]; }
-  | inner_statement_list inner_statement  { $$ = $1; $1.push($2); }
-  | /* empty */                           { $$ = false; }
-;
-
-
 inner_statement:
-    statement                             { $$ = $1; }
-  | function_declaration_statement        { $$ = $1; }
-  | class_declaration_statement           { $$ = $1; }
-  | T_HALT_COMPILER '(' ')' ';'           { this.compile_error("__HALT_COMPILER() can only be used from the outermost scope"); }
+    function_declaration_statement        { /* inner_statement */ $$ = $1; }
+  | class_declaration_statement           { /* inner_statement */ $$ = $1; }
+  | T_HALT_COMPILER '(' ')' ';'           { /* inner_statement */ this.compile_error("__HALT_COMPILER() can only be used from the outermost scope"); }
+  | statement                             { /* inner_statement */ $$ = $1; }
 ;
 
 
 statement:
-    unticked_statement                    { $$ = $1; }
-  | T_STRING ':'                          { this.compile_error("LABELS and GOTO statements are not supported"); }
-;
-
-unticked_statement:
-    '{' inner_statement_list '}'          { $$ = $2; }
+    '{' inner_statement* '}'          { /* statement */ $$ = $2; }
   | T_IF parenthesis_expr 
       statement 
       elseif_list 
-      else_single                         { $$ = ['if', $2, $3, $4, $5]; }
+      else_single                         { /* statement */ $$ = ['if', $2, $3, $4, $5]; }
   | T_IF parenthesis_expr ':' 
-    inner_statement_list 
+    inner_statement* 
     new_elseif_list 
     new_else_single 
     T_ENDIF ';'                           { $$ = ['if', $2, $4, $5, $6]; }
@@ -45,9 +33,8 @@ unticked_statement:
   | T_BREAK expr ';'                      { $$ = ['break', $2]; }
   | T_CONTINUE ';'                        { $$ = ['continue', null]; }
   | T_CONTINUE expr ';'                   { $$ = ['continue', $2]; }
-  | T_RETURN ';'                          { $$ = ['return']; }
-  | T_RETURN expr_without_variable ';'    { $$ = ['return', $2]; }
-  | T_RETURN variable ';'                 { $$ = ['return', $2]; }
+  | T_RETURN ';'                          { $$ = ['return', null]; }
+  | T_RETURN expr ';'                     { $$ = ['return', $2]; }
   | yield_expr ';'                        { $$ = ['yield', $1]; }
   | T_GLOBAL global_var_list ';'          { $$ = ['global', $2]; }
   | T_STATIC static_var_list ';'          { $$ = ['static', $2]; }
@@ -76,11 +63,12 @@ unticked_statement:
   | T_DECLARE '(' declare_list ')' 
     declare_statement                     { $$ = ['declare', $3, $5]; }
   | ';' /* empty statement */             { $$ = false; }
-  | T_TRY '{' inner_statement_list '}' 
+  | T_TRY '{' inner_statement* '}' 
     catch_statement 
     finally_statement                     { $$ = ['try', $3, $5, $6]; }
   | T_THROW expr ';'                      { $$ = ['throw', $2]; }
   | T_GOTO T_STRING ';'                   { this.compile_error("LABELS and GOTO statements are not supported"); }
+  | T_STRING ':'                          { /* statement */ this.compile_error("LABELS and GOTO statements are not supported"); }
 ;
 
 
@@ -96,7 +84,7 @@ catch_statement:
 ;
 
 finally_statement:
-    T_FINALLY '{' inner_statement_list '}'        { /* finally_statement */ $$ = $3; }
+    T_FINALLY '{' inner_statement* '}'        { /* finally_statement */ $$ = $3; }
   | /* empty */                                   { /* finally_statement */ $$ = false; }
 ;
 
@@ -114,7 +102,7 @@ additional_catch:
   T_CATCH '(' 
     fully_qualified_class_name const_variable 
   ')' '{' 
-    inner_statement_list 
+    inner_statement* 
   '}'                                                 { /* additional_catch */ $$ = ['catch', $3, $4, $7]; }
 ;
 
@@ -129,7 +117,7 @@ unset_variable:
 
 declare_statement:
     statement                                     { $$ = [$1]; }
-  | ':' inner_statement_list T_ENDDECLARE ';'     { $$ = $2; }
+  | ':' inner_statement* T_ENDDECLARE ';'     { $$ = $2; }
 ;
 
 
@@ -148,5 +136,4 @@ assignment_list:
 assignment_list_element:
     variable                                      { $$ = $1; }
   | T_LIST '('  assignment_list ')'               { $$ = ['list', $3]; }
-  | /* empty */                                   { $$ = false; }
 ;

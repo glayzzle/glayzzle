@@ -30,7 +30,7 @@ unticked_class_declaration_statement:
           break;
         case 'property':
           for(var p in $6[i][2]) {
-            if ($6[i][2][p][0] == 'var') {
+            if ($6[i][2][p][0] == 'let') {
               body.properties[$6[i][2][p][1][1]] = {
                 flags: $6[i][1],
                 value: []
@@ -44,7 +44,9 @@ unticked_class_declaration_statement:
           }
           break;
         case 'constant':
-          // @todo
+          for(var p in $6[i][1]) {
+            body.constants[$6[i][1][p][0]] = $6[i][1][p][1];
+          }
           break;
         case 'use':
           body.traits.push($6[i][1]);
@@ -112,7 +114,7 @@ class_statement:
 
 method_body:
   ';' /* abstract method */             { $$ = []; }
-  | '{' inner_statement_list '}'        { $$ = $2; }
+  | '{' inner_statement* '}'        { $$ = $2; }
 ;
 
 variable_modifiers:
@@ -152,14 +154,14 @@ class_constant_declaration:
 ;
 
 new_expr:
-		T_NEW class_name_reference ctor_arguments
+  T_NEW class_name_reference ctor_arguments                             { $$ = ['new', $2, $3]; }
 ;
 
 
 class_name:
-		T_STATIC
-	|	namespace_name
-	|	T_NS_SEPARATOR namespace_name
+    T_STATIC                                              { /* class_name */ $$ = ['ref', 'static']; }
+  | T_NS_SEPARATOR namespace_name                         { /* class_name */ $$ = ['ref', $2]; }
+  | namespace_name                                        { /* class_name */ $$ = ['ref', $1]; }
 ;
 
 fully_qualified_class_name:
@@ -168,14 +170,9 @@ fully_qualified_class_name:
 ;
 
 class_name_reference:
-		class_name
-	|	dynamic_class_name_reference
-;
-
-
-dynamic_class_name_reference:
-		base_variable T_OBJECT_OPERATOR  object_property  dynamic_class_name_variable_properties
-	|	base_variable { $$ = $1; }
+    base_variable T_OBJECT_OPERATOR  object_property  dynamic_class_name_variable_properties
+  | base_variable { $$ = $1; }
+  | class_name
 ;
 
 
@@ -191,25 +188,25 @@ dynamic_class_name_variable_property:
 
 
 ctor_arguments:
-    function_call_parameter_list      { $$ = $1; }
-  | /* empty */                       { $$ = false; }
+    function_call_parameter_list      { /* ctor_arguments */ $$ = $1; }
+  | /* empty */                       { /* ctor_arguments */ $$ = false; }
 ;
 
 
 method:
-  function_call_parameter_list        { $$ = $1; }
+  function_call_parameter_list        { /* method */ $$ = $1; }
 ;
 
 method_or_not:
-    method                            { $$ = $1; }
-  | array_method_dereference          { $$ = $1; }
-  | /* empty */                       { $$ = false; }
+    method                            { /* method_or_not: methd */ $$ = $1; }
+  | array_method_dereference          { /* method_or_not: array */ $$ = $1; }
+  | /* empty */                       { /* method_or_not: empty */ $$ = false; }
 ;
 
 
 static_member:
 		class_name T_DOUBLE_COLON variable_without_objects
-	|	variable_class_name T_DOUBLE_COLON variable_without_objects
+	|	reference_variable T_DOUBLE_COLON variable_without_objects
 
 ;
 
@@ -227,14 +224,6 @@ object_dim_list:
 
 
 class_constant:
-		class_name T_DOUBLE_COLON T_STRING
-	|	variable_class_name T_DOUBLE_COLON T_STRING
-;
-
-static_class_name_scalar:
-	class_name T_DOUBLE_COLON T_CLASS
-;
-
-class_name_scalar:
-	class_name T_DOUBLE_COLON T_CLASS
+    class_name T_DOUBLE_COLON T_STRING              { /* class_constant */ $$ = ['prop', $3, $1]; }
+  | reference_variable T_DOUBLE_COLON T_STRING     { /* class_constant */ $$ = ['prop', $3, $1]; }
 ;

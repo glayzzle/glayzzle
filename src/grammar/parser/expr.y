@@ -2,8 +2,8 @@
 expr_without_variable:
     T_LIST '('  assignment_list ')' '=' expr  { $$ = ['list', $3, $6]; }
   | variable '=' expr                         { $$ = ['set', $1, $3]; }
-  | variable '=' '&' variable                 { $$ = ['set', $1, $3]; }
-  | variable '=' '&' T_NEW class_name_reference ctor_arguments
+  | variable '=' '&' variable                 { $$ = ['set', $1, $4]; }
+  | variable '=' '&' new_expr                 { $$ = ['set', $1, $4]; }
   | T_CLONE expr                              { $$ = ['clone', $2]; }
   | variable T_PLUS_EQUAL expr                { $$ = ['set', $1, ['op', 'add', $1, $3] ]; }
   | variable T_MINUS_EQUAL expr               { $$ = ['set', $1, ['op', 'sub', $1, $3] ]; }
@@ -16,10 +16,10 @@ expr_without_variable:
   | variable T_XOR_EQUAL expr
   | variable T_SL_EQUAL expr
   | variable T_SR_EQUAL expr
-  | variable T_INC                         { $$ = ['op', 'post', '+', $1]; }
-  | T_INC variable                         { $$ = ['op', 'pre', '+', $1]; }
-  | variable T_DEC                         { $$ = ['op', 'post', '-', $1]; }
-  | T_DEC variable                         { $$ = ['op', 'pre', '-', $1]; }
+  | variable T_INC                            { $$ = ['op', 'post', '+', $1]; }
+  | T_INC variable                            { $$ = ['op', 'pre', '+', $1]; }
+  | variable T_DEC                            { $$ = ['op', 'post', '-', $1]; }
+  | T_DEC variable                            { $$ = ['op', 'pre', '-', $1]; }
   | expr T_BOOLEAN_OR expr
   | expr T_BOOLEAN_AND expr
   | expr T_LOGICAL_OR expr
@@ -51,7 +51,15 @@ expr_without_variable:
   | expr T_INSTANCEOF class_name_reference            { $$ = ['compare', '@', $1, $3]; }
   | parenthesis_expr                                  { $$ = $1; }
   | new_expr                                          { $$ = $1; }
-  | '(' new_expr ')' instance_call                    { $$ = $2;  $$ = $5; }
+  | '(' new_expr ')' instance_call                    {
+      if ($4) {
+        // @fixme check instance_call signature
+        $4[3] = $2;
+        $$ = $4;
+      } else {
+        $$ = $2;
+      }
+    }
   | expr '?' expr ':' expr                            { $$ = ['?', $1, $3, $5]; }
   | expr '?' ':' expr                                 { $$ = ['?', $1, ['const', 'null'], $4]; }
   | internal_functions_in_yacc                        { $$ = $1; }
@@ -62,22 +70,20 @@ expr_without_variable:
   | T_OBJECT_CAST expr
   | T_BOOL_CAST expr
   | T_UNSET_CAST expr
-  | T_EXIT exit_expr
-  | '@' expr
-  | scalar                                            { /* expr : scalar */ $$ = $1; }
+  | T_EXIT exit_expr                                  { /* expr : exit */ $$ = ['call', 'exit', $2]; }
+  | '@' expr                                          { /* expr : ignore errors */ $$ = ['ignore', $2]; }
   | combined_scalar_offset
   | combined_scalar                                   { /* expr : combined_scalar */  $$ = $1; }
+  | scalar                                            { /* expr : scalar */ $$ = $1; }
   | '`' backticks_expr '`'
-  | T_PRINT expr
+  | T_PRINT expr                                      { $$ = ['call', 'print', $2]; }
   | T_YIELD
+  | T_STATIC T_FUNCTION is_reference '(' parameter_list ')' lexical_vars '{' 
+      inner_statement*
+    '}'                                               { /* expr: closure2 */ $$ = ['function', false, $5, $9, $7 /** use statements **/ ]; }
   | T_FUNCTION is_reference '(' parameter_list ')' lexical_vars '{' 
-      inner_statement_list 
-    '}'                                               { /* expr: closure */ $$ = ['function', false, $3, $7, $6 /** use statements **/ ]; }
-  | T_STATIC function is_reference 
-    '(' parameter_list ')' l
-    exical_vars '{' 
-      inner_statement_list
-    '}'
+      inner_statement* 
+    '}'                                               { /* expr: closure1 */ $$ = ['function', false, $4, $8, $6 /** use statements **/ ]; }
 ;
 
 yield_expr:
@@ -99,8 +105,8 @@ global_var_list:
 
 
 global_var:
-    '$' variable                                        { /* global_var */ $$ = ['var', $2]; }
-  | '$' '{' expr '}'                                    { /* global_var */ $$ = ['var', $3]; }
+    '$' variable                                        { /* global_var */ $$ = ['let', $2]; }
+  | '$' '{' expr '}'                                    { /* global_var */ $$ = ['let', $3]; }
   | const_variable                                      { /* global_var */ $$ = $1; }
 ;
 
@@ -145,6 +151,7 @@ backticks_expr:
 
 expr:
   expr_without_variable             { /* expr : novar */ $$ = $1; }
+  | '&' variable                    { /* expr : &var */ $$ = $2; }
   | variable                        { /* expr : var */ $$ = $1; }
 ;
 

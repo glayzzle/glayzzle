@@ -5,7 +5,7 @@ function_declaration_statement:
 
 unticked_function_declaration_statement:
   T_FUNCTION is_reference T_STRING '(' parameter_list ')' '{' 
-    inner_statement_list 
+    inner_statement* 
   '}'                             { /* unticked_function_declaration_statement */ $$ = ['function', $3, $5, $8, false]; }
 ;
 
@@ -30,19 +30,15 @@ non_empty_parameter_list:
 
 
 function_call_parameter_list:
-    '(' ')'                                           { /* function_call_parameter_list */ $$ = []; }
-  | '(' non_empty_function_call_parameter_list ')'    { /* function_call_parameter_list */ $$ = $2; }
-  | '(' yield_expr ')'                                { /* function_call_parameter_list */ $$ = $2; }
+    '(' ')'                                                                                                     { /* function_call_parameter_list */ $$ = []; }
+  | '(' non_empty_function_call_parameter_list ')'                                                              { /* function_call_parameter_list */ $$ = $2; }
+  | '(' yield_expr ')'                                                                                          { /* function_call_parameter_list */ $$ = $2; }
 ;
 
 
 non_empty_function_call_parameter_list:
-    non_empty_function_call_parameter_list ',' expr_without_variable      { /* non_empty_function_call_parameter_list */ $$ = $1; $1.push($3); }
-  | non_empty_function_call_parameter_list ',' variable                   { /* non_empty_function_call_parameter_list */ $$ = $1; $1.push($3); }
-  | non_empty_function_call_parameter_list ',' '&' variable               { /* non_empty_function_call_parameter_list */ $$ = $1; $1.push($4); }
-  | expr_without_variable                                                 { /* non_empty_function_call_parameter_list */ $$ = [$1]; }
-  | variable                                                              { /* non_empty_function_call_parameter_list */ $$ = [$1]; }
-  | '&' variable                                                          { /* non_empty_function_call_parameter_list */ $$ = [$1]; }
+    non_empty_function_call_parameter_list ',' expr                                                             { /* non_empty_function_call_parameter_list */ $$ = $1; $1.push($3); }
+  | expr                                                                                                        { /* non_empty_function_call_parameter_list */ $$ = [$1]; }
 ;
 
 
@@ -63,16 +59,19 @@ chaining_instance_call:
 ;
 
 instance_call:
-		/* empty */
-	|	chaining_instance_call
+    chaining_instance_call        { $$ = $1; }
+  | /* empty */                   { $$ = false; }
 ;
 
 function_call:
-		namespace_name function_call_parameter_list
-	|	T_NS_SEPARATOR namespace_name function_call_parameter_list
-	|	class_name T_DOUBLE_COLON variable_name 	function_call_parameter_list
-	|	class_name T_DOUBLE_COLON variable_without_objects function_call_parameter_list
-	|	variable_class_name T_DOUBLE_COLON variable_name  function_call_parameter_list
-	|	variable_class_name T_DOUBLE_COLON variable_without_objects  function_call_parameter_list
-	|	variable_without_objects function_call_parameter_list
+    T_NS_SEPARATOR namespace_name function_call_parameter_list                                                      { $$ = ['call', $2, $3]; }
+  | namespace_name function_call_parameter_list                                                                     { $$ = ['call', $1, $2]; }
+  | double_colon_expr variable_name function_call_parameter_list                                                    { $$ = ['call', ['offset', $1, $3], $4]; }
+  | double_colon_expr variable_without_objects function_call_parameter_list                                         { $$ = ['call', ['offset', $1, $3], $4]; }
+  | variable_without_objects function_call_parameter_list                                                           { $$ = ['call', $1, $2]; }
+;
+
+double_colon_expr: 
+    reference_variable T_DOUBLE_COLON
+  | class_name T_DOUBLE_COLON
 ;

@@ -12,17 +12,17 @@ foreach_variable:
 
 for_statement:
   statement                                     { /* for_statement */ $$ = $1; }
-  | ':' inner_statement_list T_ENDFOR ';'       { /* for_statement */ $$ = $2; }
+  | ':' inner_statement* T_ENDFOR ';'       { /* for_statement */ $$ = $2; }
 ;
 
 foreach_statement:
     statement                                   { /* foreach_statement */ $$ = $1; }
-  | ':' inner_statement_list T_ENDFOREACH ';'   { /* foreach_statement */ $$ = $2; }
+  | ':' inner_statement* T_ENDFOREACH ';'   { /* foreach_statement */ $$ = $2; }
 ;
 
 while_statement:
     statement                                   { /* while_statement */ $$ = $1; }
-  | ':' inner_statement_list T_ENDWHILE ';'     { /* while_statement */ $$ = $2; }
+  | ':' inner_statement* T_ENDWHILE ';'     { /* while_statement */ $$ = $2; }
 ;
 
 for_expr:
