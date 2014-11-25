@@ -3,7 +3,7 @@
 %expect 3
 %start start
 
-@import 'parser/def.y'
+@import 'old/parser/def.y'
 
 %% /* language grammar */
 
@@ -21,16 +21,16 @@ top_statement:
   | statement                                             { /* top_statement : statement */ $$ = $1; }
 ;
 
-@import 'parser/mixed.y'
-@import 'parser/namespace.y'
-@import 'parser/statements.y'
-@import 'parser/expr.y'
-@import 'parser/function.y'
-@import 'parser/class.y'
-@import 'parser/trait.y'
-@import 'parser/if.y'
-@import 'parser/switch.y'
-@import 'parser/loops.y'
-@import 'parser/array.y'
-@import 'parser/scalar.y'
-@import 'parser/variable.y'
+@import 'old/parser/mixed.y'
+@import 'old/parser/namespace.y'
+@import 'old/parser/statements.y'
+@import 'old/parser/expr.y'
+@import 'old/parser/function.y'
+@import 'old/parser/class.y'
+@import 'old/parser/trait.y'
+@import 'old/parser/if.y'
+@import 'old/parser/switch.y'
+@import 'old/parser/loops.y'
+@import 'old/parser/array.y'
+@import 'old/parser/scalar.y'
+@import 'old/parser/variable.y'
