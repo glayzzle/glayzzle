@@ -12,5 +12,5 @@
  */
 module.exports = {
   'lexer': ['lexer.l'],
-  'parser': ['parser.y']
+  'parser': ['old/parser.y']
 };
