@@ -3,20 +3,28 @@
 %expect 3
 %start start
 
-@import 'parser/def.y'
+@import 'parser/tokens.y'
 
 %% /* language grammar */
 
 start:
-  top_statement* { return $1 || []; }
+  namespace_declaration   { return $1 || []; }
+  | top_statement*          { return $1 || []; }
 ;
 
 top_statement:
-  constant_declaration { 
-    /* top_statement : const */ $$ = $1; 
-  }
+    function_declaration    { $$ = $1; }
+  | class_declaration       { $$ = $1; }
+  | trait_declaration       { $$ = $1; }
+  | interface_declaration   { $$ = $1; }
+  | any_declaration
 ;
 
-@import 'parser/mixed.y'
-@import 'parser/scalar.y'
-@import 'parser/variable.y'
+@import 'parser/namespace.y'
+@import 'parser/function.y'
+@import 'parser/class.y'
+@import 'parser/any.y'
+
+%%
+
+@import 'parser/ast.js'
