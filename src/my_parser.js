@@ -51,6 +51,13 @@ module.exports = {
         '\nat line ' + this.lexer.yylloc.first_line
       );
     }
+    /** force to expect specified token **/
+    ,expect: function(token) {
+      if (this.token != token) {
+        this.error(this.token, token);
+      }
+      return true;
+    }
     /** consume the next token **/
     ,next: function() {
       this.token = this.lexer.lex() || this.error(lex.EOF);
@@ -131,14 +138,19 @@ module.exports = {
     ,read_top_statement: function(token) {
       if (token == tokens.T_FUNCTION ) {
         return this.read_function(token);
-      } else if ( token == tokens.T_FINAL) {
-        var next = this.read();
-        if (next == tokens.T_INTERFACE) {
+      } else if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
+        var flag = this.read_class_scope(token);
+        token = this.read();
+        if ( token == tokens.T_CLASS) {
+          return this.read_class(token, flag);
+        } else if ( token == tokens.T_INTERFACE, flag ) {
           return this.read_interface(token);
+        } else if ( token == tokens.T_TRAIT, flag ) {
+          return this.read_trait(token);
         } else {
-          return this.read_class(token);
+          this.error(this.token, [tokens.T_CLASS, tokens.T_INTERFACE, tokens.T_TRAIT]);
         }
-      } else if ( token == tokens.T_ABSTRACT || token == tokens.T_CLASS) {
+      } else if ( token == tokens.T_CLASS) {
         return this.read_class(token);
       } else if ( token == tokens.T_INTERFACE ) {
         return this.read_interface(token);
@@ -195,18 +207,28 @@ module.exports = {
       
     }
     /** reading a class **/
-    ,read_class: function(token) {
-      if (token != tokens.T_FINAL) this.error(token, tokens.T_FINAL);
+    ,read_class: function(token, flag) {
+      this.expect(tokens.T_CLASS);
+      // @todo
+      return ['class', flag];
     }
     /** **/
     ,read_class_scope: function(token) {
-      if (token == tokens.T_FINAL) this.error(token, tokens.T_FINAL);
+      if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
+        this.next();
+        return token;
+      }
+      return 0;
     }
     /** reading an interface **/
-    ,read_interface: function(token) {
+    ,read_interface: function(token, flag) {
+      this.expect(tokens.T_INTERFACE);
+      return ['interface', flag];
     }
     /** reading a trait **/
-    ,read_trait: function(token) {
+    ,read_trait: function(token, flag) {
+      this.expect(tokens.T_TRAIT);
+      return ['trait', flag];
     }
   }
 };
