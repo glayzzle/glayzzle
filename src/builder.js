@@ -38,7 +38,7 @@ module.exports = {
   // gets the current parser or load the default php parser
   ,getParser: function() {
     if (!this.parser) {
-      this.parser = require('./parser').parser;
+      this.parser = require('./my_parser').parser;
       this.parser.define_function = function() {
         var name = arguments[0];
         arguments.shift();
