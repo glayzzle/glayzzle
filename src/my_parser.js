@@ -10,7 +10,7 @@ function getTokenName(token) {
   if (!isNumber(token)) {
     return "'" + token + "'";
   } else {
-    if (token == 1) return 'the end of file (EOF)'; 
+    if (token == 1) return 'the end of file (EOF)';
     return names[token];
   }
 }
@@ -47,7 +47,7 @@ module.exports = {
         }
       }
       throw new Error(
-        'Parse Error : unexpected ' + token + msgExpect, 
+        'Parse Error : unexpected ' + token + msgExpect,
         '\nat line ' + this.lexer.yylloc.first_line
       );
     }
@@ -65,6 +65,7 @@ module.exports = {
     }
     /** convert an token to ast **/
     ,read_token: function(token) {
+console.log("read_token:",token);
       if (isNumber(token)) {
         return [token, this.lexer.yytext, this.lexer.yylloc.first_line];
       } else {
@@ -101,6 +102,7 @@ module.exports = {
     ,read_namespace: function(token) {
       if (token != tokens.T_NAMESPACE) this.error(token, tokens.T_NAMESPACE);
       token = this.next();
+console.log('read_namespace:', token);
       if (token == '{') {
         var body = this.read_top_statements(this.next());
         if (this.token != '}') this.error(this.token, '}');
@@ -126,9 +128,11 @@ module.exports = {
     }
     /** reading a list of top statements **/
     ,read_top_statements: function(token) {
+console.log("read_top_statements:",token);
       var result = [];
       if (token) this.token = token;
-      while(this.token != lex.EOF) {
+      while(this.token !== lex.EOF && this.token !== '}') {
+console.log("	while:",this.token);
         result.push(this.read_top_statement(this.token));
         this.token = this.lexer.lex() || lex.EOF;
       }
@@ -136,6 +140,7 @@ module.exports = {
     }
     /** reading a top statement **/
     ,read_top_statement: function(token) {
+console.log("read_top_statement:",token);
       if (token == tokens.T_FUNCTION ) {
         return this.read_function(token);
       } else if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
@@ -172,6 +177,7 @@ module.exports = {
     }
     /** reads a simple inner statement **/
     ,read_inner_statement: function(token) {
+console.log("read_inner_statement:",token);
       if (token == '{') {
         var body = this.read_inner_statements(this.next());
         if (this.token != '}') this.error(this.token, '}');
@@ -204,7 +210,7 @@ module.exports = {
     }
     /** reads a list of parameters **/
     ,read_parameter_list: function(token) {
-      
+
     }
     /** reading a class **/
     ,read_class: function(token, flag) {
