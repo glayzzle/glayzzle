@@ -65,14 +65,18 @@ module.exports = {
     }
     /** convert an token to ast **/
     ,read_token: function(token) {
-console.log("read_token:",token);
       if (isNumber(token)) {
         return [token, this.lexer.yytext, this.lexer.yylloc.first_line];
       } else {
         return token;
       }
     }
-    /** helper : reads a list of tokens / sample : T_STRING ',' T_STRING ... **/
+    /** 
+     * Helper : reads a list of tokens / sample : T_STRING ',' T_STRING ...
+     * <ebnf>
+     * list ::= separator? ( item separator )* item
+     * </ebnf>
+     */
     ,read_list: function(token, item, separator) {
       var result = [];
       if (token == separator) token = next;           // trim separator
@@ -90,7 +94,11 @@ console.log("read_token:",token);
       }
       return result;
     }
-    /** main entry **/
+    /**
+     * <ebnf>
+     * start ::= namespace | top_statement
+     * </ebnf>
+     */
     ,read_start: function(token) {
       if (token == tokens.T_NAMESPACE) {
         return this.read_namespace(token);
@@ -98,15 +106,20 @@ console.log("read_token:",token);
         return this.read_top_statement(token);
       }
     }
-    /** reading namespaces **/
+    /**
+     * <ebnf>
+     * namespace ::= T_NAMESPACE namespace_name? '{' top_statements '}' | T_NAMESPACE namespace_name ';' top_statements
+     * </ebnf>
+     */
     ,read_namespace: function(token) {
       if (token != tokens.T_NAMESPACE) this.error(token, tokens.T_NAMESPACE);
       token = this.next();
-console.log('read_namespace:', token);
       if (token == '{') {
-        var body = this.read_top_statements(this.next());
-        if (this.token != '}') this.error(this.token, '}');
-        return ['namespace', [], body];
+        return [
+            'namespace'
+            , []
+            , this.read_code_block(token, true)
+        ];
       } else {
         var name = this.read_namespace_name(token);
         if (this.token == ';') {
@@ -122,25 +135,37 @@ console.log('read_namespace:', token);
         }
       }
     }
-    /** reading a namespace **/
+    /** 
+     * reading a namespace name
+     * <ebnf>
+     *  namespace_name ::= T_NS_SEPARATOR? (T_STRING T_NS_SEPARATOR)* T_STRING
+     * </ebnf>
+     */
     ,read_namespace_name: function(token) {
       return this.read_list(token, tokens.T_STRING, tokens.T_NS_SEPARATOR);
     }
-    /** reading a list of top statements **/
+    /**
+     * reading a list of top statements (helper for top_statement*)
+     * <ebnf>
+     *  top_statements ::= top_statement*
+     * </ebnf>
+     */
     ,read_top_statements: function(token) {
-console.log("read_top_statements:",token);
       var result = [];
       if (token) this.token = token;
       while(this.token !== lex.EOF && this.token !== '}') {
-console.log("	while:",this.token);
         result.push(this.read_top_statement(this.token));
         this.token = this.lexer.lex() || lex.EOF;
       }
       return result;
     }
-    /** reading a top statement **/
+    /** 
+     * reading a top statement
+     * <ebnf>
+     *  top_statement ::= function | class | interface | trait | inner_statement
+     * </ebnf>
+     */
     ,read_top_statement: function(token) {
-console.log("read_top_statement:",token);
       if (token == tokens.T_FUNCTION ) {
         return this.read_function(token);
       } else if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
@@ -165,54 +190,156 @@ console.log("read_top_statement:",token);
         return this.read_inner_statement(token);
       }
     }
-    /** reads a list of simple inner statements **/
+    /** 
+     * reads a list of simple inner statements (helper for inner_statement*)
+     * <ebnf>
+     *  inner_statements ::= inner_statement*
+     * </ebnf>
+     */
     ,read_inner_statements: function(token) {
       var result = [];
       if (token) this.token = token;
-      while(this.token != lex.EOF) {
+      while(this.token != lex.EOF && this.token !== '}') {
         result.push(this.read_inner_statement(this.token));
         this.token = this.lexer.lex() || lex.EOF;
       }
       return result;
     }
-    /** reads a simple inner statement **/
+    /** 
+     * reads a simple inner statement
+     * <ebnf>
+     *  inner_statement ::= '{' inner_statements '}' | token
+     * </ebnf>
+     */
     ,read_inner_statement: function(token) {
-console.log("read_inner_statement:",token);
+      switch(token) {
+        case '{':
+          return this.read_code_block(token, false);
+        case tokens.T_IF:
+          return this.read_if(token);
+        default:
+          return this.read_token(token);
+      }
+    }
+    /**
+     * <ebnf>
+     *  if ::= 
+     * </ebnf>
+     */
+    ,read_if: function(token) {
+    }
+    /**
+     * <ebnf>
+     *  code_block ::= '{' (inner_statements | top_statements) '}'
+     * </ebnf>
+     */
+    ,read_code_block: function(token, top) {
       if (token == '{') {
-        var body = this.read_inner_statements(this.next());
+        var body = top ? 
+          this.read_inner_statements(this.next())
+          : this.read_top_statements(this.next())
+        ;
         if (this.token != '}') this.error(this.token, '}');
         this.next();
         return body;
-      } else if (token == '}' ) {
-        this.error(token);
       } else {
-        return this.read_token(token);
+        this.error(this.token, '{');
       }
     }
-    /** checks if current token is a reference keyword **/
+    /** 
+     * checks if current token is a reference keyword
+     */
     ,is_reference: function(token) {
       return (token == '&');
     }
-    /** reading a function **/
+    /** 
+     * reading a function
+     * <ebnf>
+     * function ::= T_FUNCTION '&'?  T_STRING '(' parameter_list ')' '{' inner_statements '}'
+     * </ebnf>
+     */
     ,read_function: function(token) {
       if (token != tokens.T_FUNCTION) this.error(token, tokens.T_FUNCTION);
-      var isRef = this.is_reference(token);
-      if (isRef) token = this.next();
-      if (token != tokens.T_STRING) this.error(token, tokens.T_STRING);
+      var isRef = this.is_reference(this.next());
+      if (isRef) this.next();
+      if (this.token != tokens.T_STRING) this.error(this.token, tokens.T_STRING);
       var name = this.lexer.yytext;
       if (this.next() != '(') this.error(this.token, '(');
       var params = this.read_parameter_list(this.next());
       if (this.token != ')') this.error(this.token, ')');
       if (this.next() != '{') this.error(this.token, '{');
-      var body = this.read_inner_statements(this.next());
-      if (this.token != '}') this.error(this.token, '}');
+      var body = this.read_code_block(this.token, false);
       return ['function', name, params, body, isRef];
     }
-    /** reads a list of parameters **/
+    /** 
+     * reads a list of parameters
+     * <ebnf>
+     *  parameter_list ::= (parameter ',')* parameter?
+     * </ebnf>
+     */
     ,read_parameter_list: function(token) {
-
+      var result = [];
+      if (this.token != ')') {
+        while(this.token != lex.EOF) {
+          result.push(this.read_parameter(this.token));
+          if (this.token == ',') {
+            this.token = this.lexer.lex() || lex.EOF;
+          } else if (this.token == ')') {
+            break;
+          } else {
+            this.error(this.token, [',', ')']);
+          }
+        }
+      }
+      return result;
     }
-    /** reading a class **/
+    /**
+     * <ebnf>
+     *  parameter ::= type? '&'? T_VARIABLE ('=' scallar)?
+     * </ebnf>
+     */
+    ,read_parameter: function(token) {
+      var type = this.read_type(token);
+      var isRef = this.is_reference(this.token);
+      if (isRef) this.next();
+      if (this.token != tokens.T_VARIABLE) this.error(this.token, tokens.T_VARIABLE);
+      var name = this.lexer.yytext;
+      var value = [];
+      if (this.next() == '=') {
+        value = this.read_scallar(this.next());
+      }
+      return [name, type, value, isRef];
+    }
+    /**
+     * read type hinting
+     * <ebnf>
+     *  type = T_ARRAY | namespace_name;
+     * </ebnf>
+     */
+    ,read_type: function(token) {
+      switch(token) {
+        case tokens.T_ARRAY:
+          this.next();
+          return 'array';
+        case tokens.T_NS_SEPARATOR:
+        case tokens.T_STRING:
+          return this.read_namespace_name(token);
+        default:
+          return 'mixed';
+      }
+    }
+    /**
+     * @todo reading a scallar value
+     */
+    ,read_scallar: function( token ) {
+      return this.read_token(token);
+    }
+    /**
+     * reading a class
+     * <ebnf>
+     * class ::= class_scope? T_CLASS '@todo'
+     * </ebnf>
+     */
     ,read_class: function(token, flag) {
       this.expect(tokens.T_CLASS);
       // @todo
@@ -226,12 +353,22 @@ console.log("read_inner_statement:",token);
       }
       return 0;
     }
-    /** reading an interface **/
+    /** 
+     * reading an interface
+     * <ebnf>
+     * interface ::= class_scope? T_INTERFACE '@todo'
+     * </ebnf>
+     */
     ,read_interface: function(token, flag) {
       this.expect(tokens.T_INTERFACE);
       return ['interface', flag];
     }
-    /** reading a trait **/
+    /** 
+     * reading a trait 
+     * <ebnf>
+     * trait ::= class_scope? T_TRAIT '@todo'
+     * </ebnf>
+     */
     ,read_trait: function(token, flag) {
       this.expect(tokens.T_TRAIT);
       return ['trait', flag];
