@@ -71,7 +71,7 @@ module.exports = {
         return token;
       }
     }
-    /** 
+    /**
      * Helper : reads a list of tokens / sample : T_STRING ',' T_STRING ...
      * <ebnf>
      * list ::= separator? ( item separator )* item
@@ -79,7 +79,7 @@ module.exports = {
      */
     ,read_list: function(token, item, separator) {
       var result = [];
-      if (token == separator) token = next;           // trim separator
+      if (token == separator) token = this.next();           // trim separator
       if (token != item) {
         this.error(token, [item, separator]);
       }
@@ -135,7 +135,7 @@ module.exports = {
         }
       }
     }
-    /** 
+    /**
      * reading a namespace name
      * <ebnf>
      *  namespace_name ::= T_NS_SEPARATOR? (T_STRING T_NS_SEPARATOR)* T_STRING
@@ -159,7 +159,7 @@ module.exports = {
       }
       return result;
     }
-    /** 
+    /**
      * reading a top statement
      * <ebnf>
      *  top_statement ::= function | class | interface | trait | inner_statement
@@ -186,11 +186,56 @@ module.exports = {
         return this.read_interface(token);
       } else if ( token == tokens.T_TRAIT ) {
         return this.read_trait(token);
+      } else if( token == tokens.T_USE ) {
+        return this.read_use_statements(token);
       } else {
         return this.read_inner_statement(token);
       }
     }
-    /** 
+    /**
+     * <ebnf>
+     * use_statements ::=
+     *		use_statements ',' use_statement
+     *		| use_statement
+     * </ebnf>
+     */
+    ,read_use_statements: function(token) {
+        var result = [];
+        if (token) this.token = token;
+        while(this.token !== lex.EOF) {
+          result.push(this.read_use_statement(this.token));
+          if(this.token !== tokens.T_USE) break;
+          this.token = this.lexer.lex() || lex.EOF;
+        }
+        return result;
+    }
+    /**
+     * <ebnf>
+     * use_statement ::=
+     *		(T_FUNCTION | T_CONST)? namespace_name
+     *      | (T_FUNCTION | T_CONST)? namespace_name T_AS T_STRING
+     * </ebnf>
+     */
+    ,read_use_statement: function(token) {
+        if (token != tokens.T_USE) this.error(token, tokens.T_USE);
+        this.next();
+        if(
+            this.token === tokens.T_FUNCTION
+            || this.token === tokens.T_CONST
+        ) {
+            this.next();
+        }
+        var name = this.read_namespace_name(this.token);
+        if(this.token === tokens.T_AS) {
+            this.next();
+            if(this.token !== tokens.T_STRING)
+                this.error(this.token, tokens.T_STRING);
+            return ['use', name, this.lexer.yytext];
+        } else {
+            return ['use', name];
+        }
+	}
+    /**
      * reads a list of simple inner statements (helper for inner_statement*)
      * <ebnf>
      *  inner_statements ::= inner_statement*
@@ -205,7 +250,7 @@ module.exports = {
       }
       return result;
     }
-    /** 
+    /**
      * reads a simple inner statement
      * <ebnf>
      *  inner_statement ::= '{' inner_statements '}' | token
@@ -223,7 +268,7 @@ module.exports = {
     }
     /**
      * <ebnf>
-     *  if ::= 
+     *  if ::=
      * </ebnf>
      */
     ,read_if: function(token) {
@@ -235,7 +280,7 @@ module.exports = {
      */
     ,read_code_block: function(token, top) {
       if (token == '{') {
-        var body = top ? 
+        var body = top ?
           this.read_inner_statements(this.next())
           : this.read_top_statements(this.next())
         ;
@@ -246,13 +291,13 @@ module.exports = {
         this.error(this.token, '{');
       }
     }
-    /** 
+    /**
      * checks if current token is a reference keyword
      */
     ,is_reference: function(token) {
       return (token == '&');
     }
-    /** 
+    /**
      * reading a function
      * <ebnf>
      * function ::= T_FUNCTION '&'?  T_STRING '(' parameter_list ')' code_block
@@ -271,7 +316,7 @@ module.exports = {
       var body = this.read_code_block(this.token, false);
       return ['function', name, params, body, isRef];
     }
-    /** 
+    /**
      * reads a list of parameters
      * <ebnf>
      *  parameter_list ::= (parameter ',')* parameter?
@@ -353,7 +398,7 @@ module.exports = {
       }
       return 0;
     }
-    /** 
+    /**
      * reading an interface
      * <ebnf>
      * interface ::= class_scope? T_INTERFACE '@todo'
@@ -363,8 +408,8 @@ module.exports = {
       this.expect(tokens.T_INTERFACE);
       return ['interface', flag];
     }
-    /** 
-     * reading a trait 
+    /**
+     * reading a trait
      * <ebnf>
      * trait ::= class_scope? T_TRAIT '@todo'
      * </ebnf>
