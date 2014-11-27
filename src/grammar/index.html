@@ -1,0 +1,521 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="generator" content="Railroad Diagram Generator 1.36.893"><style type="text/css" xml:space="preserve">
+    ::-moz-selection
+    {
+      color: #FFFCF0;
+      background: #0F0C00;
+    }
+    ::selection
+    {
+      color: #FFFCF0;
+      background: #0F0C00;
+    }      
+    .ebnf a
+    {
+      text-decoration: none;
+    }
+    .ebnf a:hover
+    {
+      color: #050400;
+      text-decoration: underline;
+    }    
+    .signature
+    {
+      color: #806600;
+      font-size: 11px;
+      text-align: right;
+    }
+    body
+    {
+      font: normal 12px Verdana, sans-serif;
+      color: #0F0C00;
+      background: #FFFCF0;
+    }
+    a:link, a:visited
+    {
+      color: #0F0C00;
+    }
+    a:link.signature, a:visited.signature
+    {
+      color: #806600;
+    }
+    a.button, #tabs li a
+    {
+      padding: 0.25em 0.5em;
+      border: 1px solid #806600;
+      background: #F1E8C6;
+      color: #806600;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    a.button:hover, #tabs li a:hover
+    {
+      color: #050400;
+      background: #FFF6D1;
+      border-color: #050400;       
+    }     
+    #tabs
+    {
+      padding: 3px 10px;
+      margin-left: 0;
+      margin-top: 58px;
+      border-bottom: 1px solid #0F0C00;
+    }  
+    #tabs li
+    {
+      list-style: none;
+      margin-left: 5px;
+      display: inline;
+    }
+    #tabs li a
+    {     
+      border-bottom: 1px solid #0F0C00;
+    }
+    #tabs li a.active
+    {
+      color: #0F0C00;
+      background: #FFFCF0;
+      border-color: #0F0C00;
+      border-bottom: 1px solid #FFFCF0;
+      outline: none;
+    }
+    #divs div
+    {
+      display: none;
+      overflow:auto;
+    }
+    #divs div.active
+    {
+      display: block;
+    }
+    #text
+    {
+      border-color: #806600;
+      background: #FFFEFA;
+      color: #050400;
+    }
+    .small
+    {
+      vertical-align: top;
+      text-align: right;
+      font-size: 9px;
+      font-weight: normal;
+      line-height: 120%;
+    }
+    td.small
+    {
+      padding-top: 0px;
+    }
+    .hidden
+    {
+      visibility: hidden;
+    }
+    td:hover .hidden 
+    {
+      visibility: visible;
+    }
+    div.download
+    {
+      display: none;
+      background: #FFFCF0;
+      position: absolute;
+      right: 34px;
+      top: 94px;
+      padding: 10px;
+      border: 1px dotted #0F0C00;
+    }
+    #divs div.ebnf, div.ebnf
+    {
+      display: block;
+      padding-left: 16px;
+      padding-top: 2px; 
+      padding-bottom: 2px; 
+      background: #FFF6D1;
+    }
+    table.palette
+    {
+      border-top: 1px solid #050400;
+      border-right: 1px solid #050400;
+      margin-bottom: 4px
+    }
+    td.palette
+    {
+      border-bottom: 1px solid #050400;
+      border-left: 1px solid #050400;
+    }
+    a.palette
+    {
+      padding: 2px 3px 2px 10px;
+      text-decoration: none;
+    }
+    .palette
+    {
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -o-user-select: none;
+      -ms-user-select: none;
+    }
+  </style></head>
+   <body>
+      
+      <p style="font-size: 14px; font-weight:bold"><a name="list">list:</a></p>
+      <img border="0" src="diagram/list.png" height="68" width="494" usemap="#list.map"><map name="list.map">
+         <area shape="rect" coords="49,17,131,49" href="#separator" title="separator">
+         <area shape="rect" coords="211,17,257,49" href="#item" title="item">
+         <area shape="rect" coords="277,17,359,49" href="#separator" title="separator">
+         <area shape="rect" coords="419,17,465,49" href="#item" title="item"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#list" title="list" shape="rect">list</a>     ::= <a href="#separator" title="separator" shape="rect">separator</a>? ( <a href="#item" title="item" shape="rect">item</a> <a href="#separator" title="separator" shape="rect">separator</a> )* <a href="#item" title="item" shape="rect">item</a></pre></div>
+         
+      </p>
+      
+      <p>no references</p><br><p style="font-size: 14px; font-weight:bold"><a name="start">start:</a></p>
+      <img border="0" src="diagram/start.png" height="100" width="212" usemap="#start.map"><map name="start.map">
+         <area shape="rect" coords="49,45,141,77" href="#namespace" title="namespace">
+         <area shape="rect" coords="49,1,163,33" href="#top_statement" title="top_statement"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#start" title="start" shape="rect">start</a>    ::= ( <a href="#namespace" title="namespace" shape="rect">namespace</a> | <a href="#top_statement" title="top_statement" shape="rect">top_statement</a> )*</pre></div>
+         
+      </p>
+      
+      <p>no references</p><br><p style="font-size: 14px; font-weight:bold"><a name="namespace">namespace:</a></p>
+      <img border="0" src="diagram/namespace.png" height="102" width="546" usemap="#namespace.map"><map name="namespace.map">
+         <area shape="rect" coords="49,1,159,33" href="#T_NAMESPACE" title="T_NAMESPACE">
+         <area shape="rect" coords="199,1,333,33" href="#namespace_name" title="namespace_name">
+         <area shape="rect" coords="373,1,463,33" href="#code_block" title="code_block">
+         <area shape="rect" coords="49,67,159,99" href="#T_NAMESPACE" title="T_NAMESPACE">
+         <area shape="rect" coords="179,67,313,99" href="#namespace_name" title="namespace_name">
+         <area shape="rect" coords="377,67,497,99" href="#top_statements" title="top_statements"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#namespace" title="namespace" shape="rect">namespace</a>
+         ::= <a href="#T_NAMESPACE" title="T_NAMESPACE" shape="rect">T_NAMESPACE</a> <a href="#namespace_name" title="namespace_name" shape="rect">namespace_name</a>? <a href="#code_block" title="code_block" shape="rect">code_block</a>
+           | <a href="#T_NAMESPACE" title="T_NAMESPACE" shape="rect">T_NAMESPACE</a> <a href="#namespace_name" title="namespace_name" shape="rect">namespace_name</a> ';' <a href="#top_statements" title="top_statements" shape="rect">top_statements</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#start" title="start">start</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="namespace_name">namespace_name:</a></p>
+      <img border="0" src="diagram/namespace_name.png" height="68" width="662" usemap="#namespace_name.map"><map name="namespace_name.map">
+         <area shape="rect" coords="49,17,181,49" href="#T_NS_SEPARATOR" title="T_NS_SEPARATOR">
+         <area shape="rect" coords="261,17,341,49" href="#T_STRING" title="T_STRING">
+         <area shape="rect" coords="361,17,493,49" href="#T_NS_SEPARATOR" title="T_NS_SEPARATOR">
+         <area shape="rect" coords="553,17,633,49" href="#T_STRING" title="T_STRING"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#namespace_name" title="namespace_name" shape="rect">namespace_name</a>
+         ::= <a href="#T_NS_SEPARATOR" title="T_NS_SEPARATOR" shape="rect">T_NS_SEPARATOR</a>? ( <a href="#T_STRING" title="T_STRING" shape="rect">T_STRING</a> <a href="#T_NS_SEPARATOR" title="T_NS_SEPARATOR" shape="rect">T_NS_SEPARATOR</a> )* <a href="#T_STRING" title="T_STRING" shape="rect">T_STRING</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#namespace" title="namespace">namespace</a></li>
+            
+            <li><a href="#type" title="type">type</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="top_statements">top_statements:</a></p>
+      <img border="0" src="diagram/top_statements.png" height="56" width="212" usemap="#top_statements.map"><map name="top_statements.map">
+         <area shape="rect" coords="49,1,163,33" href="#top_statement" title="top_statement"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#top_statements" title="top_statements" shape="rect">top_statements</a>
+         ::= <a href="#top_statement" title="top_statement" shape="rect">top_statement</a>*</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#code_block" title="code_block">code_block</a></li>
+            
+            <li><a href="#namespace" title="namespace">namespace</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="top_statement">top_statement:</a></p>
+      <img border="0" src="diagram/top_statement.png" height="212" width="222" usemap="#top_statement.map"><map name="top_statement.map">
+         <area shape="rect" coords="49,1,119,33" href="#function" title="function">
+         <area shape="rect" coords="49,45,99,77" href="#class" title="class">
+         <area shape="rect" coords="49,89,123,121" href="#interface" title="interface">
+         <area shape="rect" coords="49,133,95,165" href="#trait" title="trait">
+         <area shape="rect" coords="49,177,173,209" href="#inner_statement" title="inner_statement"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#top_statement" title="top_statement" shape="rect">top_statement</a>
+         ::= <a href="#function" title="function" shape="rect">function</a>
+           | <a href="#class" title="class" shape="rect">class</a>
+           | <a href="#interface" title="interface" shape="rect">interface</a>
+           | <a href="#trait" title="trait" shape="rect">trait</a>
+           | <a href="#inner_statement" title="inner_statement" shape="rect">inner_statement</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#start" title="start">start</a></li>
+            
+            <li><a href="#top_statements" title="top_statements">top_statements</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="inner_statements">inner_statements:</a></p>
+      <img border="0" src="diagram/inner_statements.png" height="56" width="222" usemap="#inner_statements.map"><map name="inner_statements.map">
+         <area shape="rect" coords="49,1,173,33" href="#inner_statement" title="inner_statement"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#inner_statements" title="inner_statements" shape="rect">inner_statements</a>
+         ::= <a href="#inner_statement" title="inner_statement" shape="rect">inner_statement</a>*</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#code_block" title="code_block">code_block</a></li>
+            
+            <li><a href="#inner_statement" title="inner_statement">inner_statement</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="inner_statement">inner_statement:</a></p>
+      <img border="0" src="diagram/inner_statement.png" height="80" width="326" usemap="#inner_statement.map"><map name="inner_statement.map">
+         <area shape="rect" coords="97,1,229,33" href="#inner_statements" title="inner_statements">
+         <area shape="rect" coords="49,45,105,77" href="#token" title="token"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#inner_statement" title="inner_statement" shape="rect">inner_statement</a>
+         ::= '{' <a href="#inner_statements" title="inner_statements" shape="rect">inner_statements</a> '}'
+           | <a href="#token" title="token" shape="rect">token</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#inner_statements" title="inner_statements">inner_statements</a></li>
+            
+            <li><a href="#top_statement" title="top_statement">top_statement</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="code_block">code_block:</a></p>
+      <img border="0" src="diagram/code_block.png" height="80" width="326" usemap="#code_block.map"><map name="code_block.map">
+         <area shape="rect" coords="97,1,229,33" href="#inner_statements" title="inner_statements">
+         <area shape="rect" coords="97,45,217,77" href="#top_statements" title="top_statements"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#code_block" title="code_block" shape="rect">code_block</a>
+         ::= '{' ( <a href="#inner_statements" title="inner_statements" shape="rect">inner_statements</a> | <a href="#top_statements" title="top_statements" shape="rect">top_statements</a> ) '}'</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#function" title="function">function</a></li>
+            
+            <li><a href="#namespace" title="namespace">namespace</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="function">function:</a></p>
+      <img border="0" src="diagram/function.png" height="52" width="682" usemap="#function.map"><map name="function.map">
+         <area shape="rect" coords="29,1,129,33" href="#T_FUNCTION" title="T_FUNCTION">
+         <area shape="rect" coords="239,1,319,33" href="#T_STRING" title="T_STRING">
+         <area shape="rect" coords="385,1,497,33" href="#parameter_list" title="parameter_list">
+         <area shape="rect" coords="563,1,653,33" href="#code_block" title="code_block"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#function" title="function" shape="rect">function</a> ::= <a href="#T_FUNCTION" title="T_FUNCTION" shape="rect">T_FUNCTION</a> '&amp;'? <a href="#T_STRING" title="T_STRING" shape="rect">T_STRING</a> '(' <a href="#parameter_list" title="parameter_list" shape="rect">parameter_list</a> ')' <a href="#code_block" title="code_block" shape="rect">code_block</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#top_statement" title="top_statement">top_statement</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="parameter_list">parameter_list:</a></p>
+      <img border="0" src="diagram/parameter_list.png" height="68" width="414" usemap="#parameter_list.map"><map name="parameter_list.map">
+         <area shape="rect" coords="69,17,155,49" href="#parameter" title="parameter">
+         <area shape="rect" coords="279,17,365,49" href="#parameter" title="parameter"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#parameter_list" title="parameter_list" shape="rect">parameter_list</a>
+         ::= ( <a href="#parameter" title="parameter" shape="rect">parameter</a> ',' )* <a href="#parameter" title="parameter" shape="rect">parameter</a>?</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#function" title="function">function</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="parameter">parameter:</a></p>
+      <img border="0" src="diagram/parameter.png" height="52" width="520" usemap="#parameter.map"><map name="parameter.map">
+         <area shape="rect" coords="49,1,97,33" href="#type" title="type">
+         <area shape="rect" coords="227,1,321,33" href="#T_VARIABLE" title="T_VARIABLE">
+         <area shape="rect" coords="411,1,471,33" href="#scallar" title="scallar"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#parameter" title="parameter" shape="rect">parameter</a>
+         ::= <a href="#type" title="type" shape="rect">type</a>? '&amp;'? <a href="#T_VARIABLE" title="T_VARIABLE" shape="rect">T_VARIABLE</a> ( '=' <a href="#scallar" title="scallar" shape="rect">scallar</a> )?</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#parameter_list" title="parameter_list">parameter_list</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="type">type:</a></p>
+      <img border="0" src="diagram/type.png" height="80" width="232" usemap="#type.map"><map name="type.map">
+         <area shape="rect" coords="49,1,123,33" href="#T_ARRAY" title="T_ARRAY">
+         <area shape="rect" coords="49,45,183,77" href="#namespace_name" title="namespace_name"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#type" title="type" shape="rect">type</a>     ::= <a href="#T_ARRAY" title="T_ARRAY" shape="rect">T_ARRAY</a>
+           | <a href="#namespace_name" title="namespace_name" shape="rect">namespace_name</a></pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#parameter" title="parameter">parameter</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="class">class:</a></p>
+      <img border="0" src="diagram/class.png" height="52" width="368" usemap="#class.map"><map name="class.map">
+         <area shape="rect" coords="49,1,145,33" href="#class_scope" title="class_scope">
+         <area shape="rect" coords="185,1,259,33" href="#T_CLASS" title="T_CLASS"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#class" title="class" shape="rect">class</a>    ::= <a href="#class_scope" title="class_scope" shape="rect">class_scope</a>? <a href="#T_CLASS" title="T_CLASS" shape="rect">T_CLASS</a> '@todo'</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#top_statement" title="top_statement">top_statement</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="interface">interface:</a></p>
+      <img border="0" src="diagram/interface.png" height="52" width="398" usemap="#interface.map"><map name="interface.map">
+         <area shape="rect" coords="49,1,145,33" href="#class_scope" title="class_scope">
+         <area shape="rect" coords="185,1,289,33" href="#T_INTERFACE" title="T_INTERFACE"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#interface" title="interface" shape="rect">interface</a>
+         ::= <a href="#class_scope" title="class_scope" shape="rect">class_scope</a>? <a href="#T_INTERFACE" title="T_INTERFACE" shape="rect">T_INTERFACE</a> '@todo'</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#top_statement" title="top_statement">top_statement</a></li>
+            
+         </ul>
+         
+      </p><br><p style="font-size: 14px; font-weight:bold"><a name="trait">trait:</a></p>
+      <img border="0" src="diagram/trait.png" height="52" width="364" usemap="#trait.map"><map name="trait.map">
+         <area shape="rect" coords="49,1,145,33" href="#class_scope" title="class_scope">
+         <area shape="rect" coords="185,1,255,33" href="#T_TRAIT" title="T_TRAIT"></map>
+      
+      <p>
+         
+         <div class="ebnf"><pre><a href="#trait" title="trait" shape="rect">trait</a>    ::= <a href="#class_scope" title="class_scope" shape="rect">class_scope</a>? <a href="#T_TRAIT" title="T_TRAIT" shape="rect">T_TRAIT</a> '@todo'</pre></div>
+         
+      </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#top_statement" title="top_statement">top_statement</a></li>
+            
+         </ul>
+         
+      </p><br><hr>
+      
+      <p>
+         
+         <table border="0" class="signature">
+            
+            <tr>
+               
+               <td style="width: 100%">&nbsp;</td>
+               
+               <td valign="top">
+                  
+                  <nobr class="signature">... generated by <a name="Railroad-Diagram-Generator" class="signature" title="http://www.bottlecaps.de/rr/ui" href="http://www.bottlecaps.de/rr/ui" target="_blank">Railroad Diagram Generator</a></nobr>
+                  
+               </td>
+               
+               <td><a name="Railroad-Diagram-Generator" title="http://www.bottlecaps.de/rr/ui" href="http://www.bottlecaps.de/rr/ui" target="_blank">
+                     <img border="0" src="diagram/rr-1.36.893.png" height="16" width="16"></a></td>
+               
+            </tr>
+            
+         </table>
+         
+      </p>
+      
+   </body>
+</html>

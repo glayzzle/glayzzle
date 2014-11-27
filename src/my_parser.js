@@ -96,7 +96,7 @@ module.exports = {
     }
     /**
      * <ebnf>
-     * start ::= namespace | top_statement
+     * start ::= (namespace | top_statement)*
      * </ebnf>
      */
     ,read_start: function(token) {
@@ -255,7 +255,7 @@ module.exports = {
     /** 
      * reading a function
      * <ebnf>
-     * function ::= T_FUNCTION '&'?  T_STRING '(' parameter_list ')' '{' inner_statements '}'
+     * function ::= T_FUNCTION '&'?  T_STRING '(' parameter_list ')' code_block
      * </ebnf>
      */
     ,read_function: function(token) {
@@ -313,7 +313,7 @@ module.exports = {
     /**
      * read type hinting
      * <ebnf>
-     *  type = T_ARRAY | namespace_name;
+     *  type ::= T_ARRAY | namespace_name
      * </ebnf>
      */
     ,read_type: function(token) {
