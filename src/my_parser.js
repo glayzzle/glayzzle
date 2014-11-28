@@ -23,11 +23,10 @@ module.exports = {
     /** main entry point : converts a source code to AST **/
     parse: function(code) {
       this.lexer.setInput(code);
-      var token = this.lexer.lex() || lex.EOF;
+      this.token = this.lexer.lex() || lex.EOF;
       var ast = [];
-      while(token != lex.EOF) {
-        ast.push(this.read_start(token));
-        token = this.lexer.lex() || lex.EOF;
+      while(this.token != lex.EOF) {
+        ast.push(this.read_start(this.token));
       }
       return ast;
     }
@@ -66,8 +65,11 @@ module.exports = {
     /** convert an token to ast **/
     ,read_token: function(token) {
       if (isNumber(token)) {
-        return [token, this.lexer.yytext, this.lexer.yylloc.first_line];
+        var result = [token, this.lexer.yytext, this.lexer.yylloc.first_line];
+        this.next();
+        return result;
       } else {
+        this.next();
         return token;
       }
     }
@@ -351,7 +353,7 @@ module.exports = {
       var name = this.lexer.yytext;
       var value = [];
       if (this.next() == '=') {
-        value = this.read_scallar(this.next());
+        value = this.read_scalar(this.next());
       }
       return [name, type, value, isRef];
     }
@@ -374,10 +376,101 @@ module.exports = {
       }
     }
     /**
-     * @todo reading a scallar value
+     * @todo reading a scalar value
      */
-    ,read_scallar: function( token ) {
-      return this.read_token(token);
+    ,read_scalar: function( token ) {
+      switch(token) {
+        // texts
+        case tokens.T_CONSTANT_ENCAPSED_STRING:
+          var value = this.lexer.yytext;
+          this.next();
+          return ['string', value];
+        case tokens.T_START_HEREDOC:
+          token = this.next();
+          var value = '';
+          if (token == tokens.T_ENCAPSED_AND_WHITESPACE) {
+            value = this.lexer.yytext;
+            token = this.next();
+          } 
+          if (token != tokens.T_END_HEREDOC) {
+            this.error(token, tokens.T_END_HEREDOC);
+          } else this.next();
+          return ['string', value];
+        // NUMERIC
+        case tokens.T_LNUMBER:  // long
+        case tokens.T_DNUMBER:  // double
+          var value = this.lexer.yytext;
+          this.next();
+          return ['number', value];
+        case tokens.T_STRING:  // CONSTANTS
+          var value = this.lexer.yytext;
+          if ( this.next() == tokens.T_DOUBLE_COLON) {
+            // class constant
+            if (this.next() != tokens.T_STRING ) {
+              this.error(this.token, tokens.T_STRING);
+            } else {
+              value = [value, this.lexer.yytext];
+            }
+            this.next();
+          }
+          return ['const', value];
+        case tokens.T_ARRAY:  // array parser
+        case '[':             // short array format
+          return this.read_array(token, false);
+        // magic constants
+        case tokens.T_CLASS_C:
+        case tokens.T_TRAIT_C:
+        case tokens.T_FUNC_C:
+        case tokens.T_METHOD_C:
+        case tokens.T_LINE:
+        case tokens.T_FILE:
+        case tokens.T_DIR:
+        case tokens.T_NS_C:
+          this.next();
+          return this.get_magic_constant(token);
+        default:
+          this.error(token, 'T_SCALAR');
+      }
+    }
+    /**
+     * Parse an array
+     */
+    ,read_array: function(token, vars) {
+      var expect = null;
+      var items = [];
+      if (token == tokens.T_ARRAY) {
+        token = this.next();
+        if (token != '(') {
+          this.error(token, '(');
+        }
+        expect = ')';
+      } else if (token == '[') {
+        expect = ']';
+      } else {
+        this.error(token, [tokens.T_ARRAY, '[']);
+      }
+      if (this.next() != expect) {
+        while(this.token != lex.EOF) {
+          var entry = this.read_scalar(this.token);
+          if (this.token == tokens.T_DOUBLE_ARROW) {
+            items.push([entry, this.read_scalar(this.next())]);
+          } else {
+            items.push([null, entry]);
+          }
+          if (this.token == ',') {
+            this.next();
+          } else break;
+        }
+      }
+      if (this.token != expect) this.error(this.token, expect);
+      this.next();
+      return ['array', items];
+    }
+    /**
+     * Converts the constant token to it's scallar value
+     */
+    ,get_magic_constant: function(token) {
+      return ['string', '@todo'];
     }
     /**
      * reading a class
