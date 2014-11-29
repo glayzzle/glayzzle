@@ -87,8 +87,9 @@ module.exports = {
       return true;
     }
     /** consume the next token **/
-    ,next: function() {
+    ,next: function(token) {
       this.token = this.lexer.lex() || this.error(lex.EOF);
+      if (token ) this.expect(token);
       return this.token;
     }
     /**
@@ -507,21 +508,45 @@ module.exports = {
     /**
      * reading a class
      * <ebnf>
-     * class ::= class_scope? T_CLASS '@todo'
+     * class ::= class_scope? T_CLASS T_STRING (T_EXTENDS NAMESPACE_NAME)? (T_IMPLEMENTS (NAMESPACE_NAME ',')* NAMESPACE_NAME)? '{' CLASS_BODY '}'
      * </ebnf>
      */
     ,read_class: function(token, flag) {
       this.expect(tokens.T_CLASS);
-      // @todo
-      return ['class', flag];
+      this.next(tokens.T_STRING);
+      var propName = this.lexer.yytext;
+
+      this.next();
+      var propExtends = false, propImplements = false;
+      if (this.token == tokens.T_EXTENDS) {
+        propExtends = this.read_namespace_name( this.next() );
+      }
+      if (this.token == tokens.T_IMPLEMENTS) {
+        propImplements = this.read_namespace_name( this.next() );
+      }
+      if ( this.token != '{') this.error(this.token, '{');
+      var body = null;
+      if ( this.token != '}') this.error(this.token, '}');
+      this.next();
+      return ['class', propName, flag, propExtends, propImplements, body];
     }
-    /** **/
+    /**
+     * Read the class visibility
+     * <ebnf>
+     *   class_scope ::= (T_FINAL | T_ABSTRACT)?
+     * </ebnf>
+     */
     ,read_class_scope: function(token) {
       if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
         this.next();
         return token;
       }
       return 0;
+    }
+    /**
+     * Reads a class body
+     */
+    ,read_class_body: function() {
     }
     /**
      * reading an interface
