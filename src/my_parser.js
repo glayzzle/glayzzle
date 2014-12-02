@@ -15,19 +15,47 @@ function getTokenName(token) {
   }
 }
 
+
 module.exports = {
   parser: {
     // le lexer
     lexer: lex,
     token: null,
+    entries: {
+      'T_SCALAR': [
+          tokens.T_CONSTANT_ENCAPSED_STRING,
+          tokens.T_START_HEREDOC,
+          tokens.T_LNUMBER,
+          tokens.T_DNUMBER,
+          tokens.T_STRING,
+          tokens.T_ARRAY,'[',
+          tokens.T_CLASS_C,
+          tokens.T_TRAIT_C,
+          tokens.T_FUNC_C,
+          tokens.T_METHOD_C,
+          tokens.T_LINE,
+          tokens.T_FILE,
+          tokens.T_DIR,
+          tokens.T_NS_C
+      ],
+      'T_MAGIC_CONST': [
+          tokens.T_CLASS_C,
+          tokens.T_TRAIT_C,
+          tokens.T_FUNC_C,
+          tokens.T_METHOD_C,
+          tokens.T_LINE,
+          tokens.T_FILE,
+          tokens.T_DIR,
+          tokens.T_NS_C
+      ]
+    }
     /** main entry point : converts a source code to AST **/
-    parse: function(code) {
+    ,parse: function(code) {
       this.lexer.setInput(code);
-      var token = this.lexer.lex() || lex.EOF;
+      this.token = this.lexer.lex() || lex.EOF;
       var ast = [];
-      while(token != lex.EOF) {
-        ast.push(this.read_start(token));
-        token = this.lexer.lex() || lex.EOF;
+      while(this.token != lex.EOF) {
+        ast.push(this.read_start(this.token));
       }
       return ast;
     }
@@ -59,15 +87,29 @@ module.exports = {
       return true;
     }
     /** consume the next token **/
-    ,next: function() {
+    ,next: function(token) {
       this.token = this.lexer.lex() || this.error(lex.EOF);
+      if (token ) this.expect(token);
       return this.token;
+    }
+    /**
+     * Check if token is of specified type
+     */
+    ,is: function(token, type) {
+      if (!type) {
+        type = token;
+        token = this.token;
+      }
+      return this.entries[type].indexOf(token) != -1;
     }
     /** convert an token to ast **/
     ,read_token: function(token) {
       if (isNumber(token)) {
-        return [token, this.lexer.yytext, this.lexer.yylloc.first_line];
+        var result = [token, this.lexer.yytext, this.lexer.yylloc.first_line];
+        this.next();
+        return result;
       } else {
+        this.next();
         return token;
       }
     }
@@ -368,7 +410,7 @@ module.exports = {
       var name = this.lexer.yytext;
       var value = [];
       if (this.next() == '=') {
-        value = this.read_scallar(this.next());
+        value = this.read_scalar(this.next());
       }
       return [name, type, value, isRef];
     }
@@ -391,29 +433,137 @@ module.exports = {
       }
     }
     /**
-     * @todo reading a scallar value
+     * @todo reading a scalar value
      */
-    ,read_scallar: function( token ) {
-      return this.read_token(token);
+    ,read_scalar: function( token ) {
+      if (this.is(token, 'T_MAGIC_CONST')) {
+        return this.get_magic_constant(token);
+      } else {
+        switch(token) {
+          // texts
+          case tokens.T_CONSTANT_ENCAPSED_STRING:
+            var value = this.lexer.yytext;
+            this.next();
+            return ['string', value];
+          case tokens.T_START_HEREDOC:
+            token = this.next();
+            var value = '';
+            if (token == tokens.T_ENCAPSED_AND_WHITESPACE) {
+              value = this.lexer.yytext;
+              token = this.next();
+            } 
+            if (token != tokens.T_END_HEREDOC) {
+              this.error(token, tokens.T_END_HEREDOC);
+            } else this.next();
+            return ['string', value];
+          // NUMERIC
+          case tokens.T_LNUMBER:  // long
+          case tokens.T_DNUMBER:  // double
+            var value = this.lexer.yytext;
+            this.next();
+            return ['number', value];
+          case tokens.T_STRING:  // CONSTANTS
+            var value = this.lexer.yytext;
+            if ( this.next() == tokens.T_DOUBLE_COLON) {
+              // class constant
+              if (this.next() != tokens.T_STRING ) {
+                this.error(this.token, tokens.T_STRING);
+              } else {
+                value = [value, this.lexer.yytext];
+              }
+              this.next();
+            }
+            return ['const', value];
+          case tokens.T_ARRAY:  // array parser
+          case '[':             // short array format
+            return this.read_array(token, false);
+          default:
+            this.error(token, 'T_SCALAR');
+        }
+      }
+    }
+    /**
+     * Parse an array
+     */
+    ,read_array: function(token, vars) {
+      var expect = null;
+      var items = [];
+      if (token == tokens.T_ARRAY) {
+        token = this.next();
+        if (token != '(') {
+          this.error(token, '(');
+        }
+        expect = ')';
+      } else if (token == '[') {
+        expect = ']';
+      } else {
+        this.error(token, [tokens.T_ARRAY, '[']);
+      }
+      if (this.next() != expect) {
+        while(this.token != lex.EOF) {
+          var entry = this.read_scalar(this.token);
+          if (this.token == tokens.T_DOUBLE_ARROW) {
+            items.push([entry, this.read_scalar(this.next())]);
+          } else {
+            items.push([null, entry]);
+          }
+          if (this.token == ',') {
+            this.next();
+          } else break;
+        }
+      }
+      if (this.token != expect) this.error(this.token, expect);
+      this.next();
+      return ['array', items];
+    }
+    /**
+     * Converts the constant token to it's scallar value
+     */
+    ,get_magic_constant: function(token) {
+      return ['string', '@todo'];
     }
     /**
      * reading a class
      * <ebnf>
-     * class ::= class_scope? T_CLASS '@todo'
+     * class ::= class_scope? T_CLASS T_STRING (T_EXTENDS NAMESPACE_NAME)? (T_IMPLEMENTS (NAMESPACE_NAME ',')* NAMESPACE_NAME)? '{' CLASS_BODY '}'
      * </ebnf>
      */
     ,read_class: function(token, flag) {
       this.expect(tokens.T_CLASS);
-      // @todo
-      return ['class', flag];
+      this.next(tokens.T_STRING);
+      var propName = this.lexer.yytext;
+
+      this.next();
+      var propExtends = false, propImplements = false;
+      if (this.token == tokens.T_EXTENDS) {
+        propExtends = this.read_namespace_name( this.next() );
+      }
+      if (this.token == tokens.T_IMPLEMENTS) {
+        propImplements = this.read_namespace_name( this.next() );
+      }
+      if ( this.token != '{') this.error(this.token, '{');
+      var body = null;
+      if ( this.token != '}') this.error(this.token, '}');
+      this.next();
+      return ['class', propName, flag, propExtends, propImplements, body];
     }
-    /** **/
+    /**
+     * Read the class visibility
+     * <ebnf>
+     *   class_scope ::= (T_FINAL | T_ABSTRACT)?
+     * </ebnf>
+     */
     ,read_class_scope: function(token) {
       if (token == tokens.T_FINAL || token == tokens.T_ABSTRACT) {
         this.next();
         return token;
       }
       return 0;
+    }
+    /**
+     * Reads a class body
+     */
+    ,read_class_body: function() {
     }
     /**
      * reading an interface
