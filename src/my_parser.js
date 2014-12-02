@@ -77,22 +77,34 @@ module.exports = {
      * list ::= separator? ( item separator )* item
      * </ebnf>
      */
-    ,read_list: function(token, item, separator) {
-      var result = [];
-      if (token == separator) token = this.next();           // trim separator
-      if (token != item) {
-        this.error(token, [item, separator]);
-      }
-      result.push(this.lexer.yytext);
-      this.token = this.lexer.lex() || lex.EOF;
-      while(this.token != lex.EOF) {
-        if (this.token != separator) break;
-        this.token = this.lexer.lex() || lex.EOF;     // trim separator
-        if (this.token != item) break;
-        result.push(this.lexer.yytext);
-        this.token = this.lexer.lex() || lex.EOF;
-      }
-      return result;
+    , read_list: function(token, item, separator) {
+        var result = [];
+        if (token == separator)
+            token = this.next();           // trim separator
+
+        if (typeof (item) === "function") {
+            while (this.token != lex.EOF) {
+                result.push(item.apply(this, [token]));
+                if (this.token != separator) break;
+                this.next();
+            }
+        } else {
+            if (token != item) {
+                this.error(token, [item, separator]);
+            }
+            result.push(this.lexer.yytext);
+            this.token = this.lexer.lex() || lex.EOF;
+            while (this.token != lex.EOF) {
+                if (this.token != separator)
+                    break;
+                this.token = this.lexer.lex() || lex.EOF;     // trim separator
+                if (this.token != item)
+                    break;
+                result.push(this.lexer.yytext);
+                this.token = this.lexer.lex() || lex.EOF;
+            }
+        }
+        return result;
     }
     /**
      * <ebnf>
@@ -121,6 +133,9 @@ module.exports = {
             , this.read_code_block(token, true)
         ];
       } else {
+        if(this.token === tokens.T_NS_SEPARATOR)
+            this.error(this.token, ['{', tokens.T_STRING]);
+
         var name = this.read_namespace_name(token);
         if (this.token == ';') {
           var body = this.read_top_statements(this.next());
@@ -195,17 +210,18 @@ module.exports = {
     /**
      * <ebnf>
      * use_statements ::=
-     *		use_statements ',' use_statement
-     *		| use_statement
+     *      use_statements ',' use_statement
+     *      | use_statement
      * </ebnf>
      */
     ,read_use_statements: function(token) {
         var result = [];
         if (token) this.token = token;
         while(this.token !== lex.EOF) {
-          result.push(this.read_use_statement(this.token));
-          if(this.token !== tokens.T_USE) break;
-          this.token = this.lexer.lex() || lex.EOF;
+            if (token != tokens.T_USE) this.error(token, tokens.T_USE);
+            result.push(this.read_list(this.next(), this.read_use_statement, ','));
+            if(this.token !== tokens.T_USE) break;
+            this.token = this.lexer.lex() || lex.EOF;
         }
         return result;
     }
@@ -217,8 +233,7 @@ module.exports = {
      * </ebnf>
      */
     ,read_use_statement: function(token) {
-        if (token != tokens.T_USE) this.error(token, tokens.T_USE);
-        this.next();
+        var result = null;
         if(
             this.token === tokens.T_FUNCTION
             || this.token === tokens.T_CONST
@@ -230,10 +245,12 @@ module.exports = {
             this.next();
             if(this.token !== tokens.T_STRING)
                 this.error(this.token, tokens.T_STRING);
-            return ['use', name, this.lexer.yytext];
+            result = ['use', name, this.lexer.yytext];
+            this.next();
         } else {
-            return ['use', name];
+            result = ['use', name];
         }
+        return result;
 	}
     /**
      * reads a list of simple inner statements (helper for inner_statement*)
