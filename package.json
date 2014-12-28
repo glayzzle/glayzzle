@@ -17,15 +17,21 @@
     "type": "git",
     "url": "https://github.com/glayzzle/glayzzle.git"
   },
-  "keywords": [ "php" ],
+  "keywords": [
+    "php"
+  ],
   "author": "Ioan Chiriac",
   "contributors": [
-    { "name" : "Anthony Terrien"
-      , "url" : "http://anthonyterrien.com/"
+    {
+      "name": "Anthony Terrien",
+      "url": "http://anthonyterrien.com/"
     }
   ],
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/glayzzle/glayzzle/issues"
+  },
+  "dependencies": {
+    "php-parser": "0.0.2"
   }
 }
