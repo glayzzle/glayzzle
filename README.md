@@ -61,16 +61,18 @@ Project Status :
 ================
 
 Actually the project is a Prof Of Concept, and does not run over all PHP syntax.
-Take a look at test folder for supported syntaxes.
+
+[![Build Status](https://travis-ci.org/glayzzle/glayzzle.svg)](https://travis-ci.org/glayzzle/glayzzle)
+[![Coverage Status](https://coveralls.io/repos/glayzzle/glayzzle/badge.png)](https://coveralls.io/r/glayzzle/glayzzle)
 
 Here's the todo list :
 
 | TASK                                                      | STATUS           |
 |-----------------------------------------------------------|------------------|
-| Finish the lexer                                          | [progress...10%] |
-| Convert back the AST to JS                                | [progress...30%] | 
+| Finish the lexer                                          | [progress...90%] |
+| Convert back the AST to JS                                | [progress...60%] |
 | Make some benchmarks                                      | [progress...20%] |
-| Create a framework for packaging the PHP code             | [progress...50%] |
+| Create a framework for packaging the PHP code             | [progress...20%] |
 | Create a cache system to improve interpretation speeds    | [progress...70%] |
 | Migrate common PHP functions to be compliant with php     | [progress...05%] |
 | Migrate most used PHP modules                             |                  |

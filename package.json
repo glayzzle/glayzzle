@@ -1,14 +1,11 @@
 {
   "name": "glayzzle",
-  "version": "0.0.5",
+  "version": "0.1.50",
   "homepage": "http://glayzzle.com",
   "description": "A NodeJS engine that converts on-fly the php into JS and execute it.",
   "main": "./src/php.js",
   "bin": {
     "glz": "./bin/glz"
-  },
-  "directories": {
-    "src": "test"
   },
   "scripts": {
     "test": "echo \"See https://github.com/glayzzle/tests\" && exit 0"
@@ -33,5 +30,8 @@
   },
   "dependencies": {
     "php-parser": "0.0.2"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.2"
   }
 }
