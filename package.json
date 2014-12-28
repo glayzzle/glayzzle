@@ -8,7 +8,7 @@
     "glz": "./bin/glz"
   },
   "scripts": {
-    "test": "echo \"See https://github.com/glayzzle/tests\" && exit 0"
+    "test": "node node_modules/istanbul/lib/cli.js cover test/index.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "php-parser": "0.0.2"
   },
   "devDependencies": {
-    "coveralls": "^2.11.2"
+    "coveralls": "^2.11.2",
+    "istanbul": "^0.3.5"
   }
 }
