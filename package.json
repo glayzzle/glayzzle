@@ -1,6 +1,6 @@
 {
   "name": "glayzzle",
-  "version": "0.1.50",
+  "version": "0.1.0",
   "homepage": "http://glayzzle.com",
   "description": "A NodeJS engine that converts on-fly the php into JS and execute it.",
   "main": "./src/php.js",
@@ -29,7 +29,7 @@
     "url": "https://github.com/glayzzle/glayzzle/issues"
   },
   "dependencies": {
-    "php-parser": "0.0.2"
+    "php-parser": "latest"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
