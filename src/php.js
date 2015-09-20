@@ -55,7 +55,9 @@ Object.defineProperty(php.prototype, "stdout", {
   enumerable: false,
   configurable: false,
   writable: true,
-  value: process.stdout.write
+  value: function(msg) {
+    process.stdout.write(msg);
+  }
 });
 
 // define PHP output module
@@ -63,7 +65,9 @@ Object.defineProperty(php.prototype, "stderr", {
   enumerable: false,
   configurable: false,
   writable: true,
-  value: process.stderr.write
+  value: function(msg) {
+    process.stderr.write(msg);
+  }
 });
 
 // defines the path module (resolves filenames)
@@ -88,7 +92,7 @@ Object.defineProperty(php.prototype, "constant", {
   configurable: false,
   writable: false,
   value: function(key) {
-    return this.context.constants.get(name);
+    return this.context.constants.get(key);
   }
 });
 
@@ -98,7 +102,7 @@ Object.defineProperty(php.prototype, "trigger_error", {
   enumerable: false,
   configurable: false,
   writable: false,
-  value: function(message, type, error) {
+  value: function(e, type) {
     type = type || this.constant('E_USER_NOTICE');
     var errType = 'Error';
     switch(type) {
@@ -111,10 +115,7 @@ Object.defineProperty(php.prototype, "trigger_error", {
     }
     // @todo : output with the standard error writer
     this.stderr(
-      errType + ' : ' + message + '\nCaused by : \n' 
-      + e.message
-      + '\n\nStack : '
-      + e.stack
+      errType + ' : ' + e.message + '\nCaused by : \n' + e.stack
     );
     return true;
   }
