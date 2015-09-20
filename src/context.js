@@ -23,7 +23,6 @@ function getCacheFile(php, filename) {
  */
 var context = function(php) {
   this.php        = php;
-  this.builder    = new builder(php);
   this.constants  = require('./constants')(php);
   this.parser     = require('php-parser');
 };
@@ -54,31 +53,38 @@ context.prototype.eval = function(code) {
   try {
     var ast = this.parser.parseEval(code);
   } catch(e) {
-    // @todo parse error
-    throw e;
+    // parse error (syntax)
+    this.php.trigger_error(e, this.php.constant('E_PARSE'));
+    return null;
   }
 
   // 2. Convert AST to Javascript
   try {
-    code = this.builder.getCode(ast, 'evald code');
+    code = builder.getCode(ast, 'evald code');
   } catch(e) {
-    // @todo parse error
-    throw e;
+    // parse error (ast syntax)
+    this.php.trigger_error(e, this.php.constant('E_PARSE'));
+    return null;
   }
 
   // 3. Evaluate the javascript
   try {
-    code = Function('php', 
-      code.header.join(';\n')
-      + 'return {' + code.functions.join(',\n') + '};'
-    )(this.php);
+    code = Function('php', code.toString())(this.php);
   } catch(e) {
-    // @todo parse error
-    throw e;
+    // internal error (builder)
+    console.error('Internal Eval Error (caused by)', e.stack);
+    return null;
   }
 
   // 4. Execute the eval body
-  return code.__main();
+  try {
+    return code.__main();
+  } catch(e) {
+    // not catched error
+    this.php.trigger_error(e, this.php.constant('E_ERROR'));
+    return null;
+  }
+  
 };
 
 /**
