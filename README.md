@@ -10,7 +10,7 @@ After building the Javascript, the program will execute the result.
 
 The overtime for parsing is similar to PHP, on a batch mode, the JIT gain will cover the gap.
 
-In the server mode, the resulting JS code is (eventually parsed if updated) and executed once and the object structure is keeped in memory, so the difference between an include in PHP or with Glayzzle is just enormous !
+In the server mode, the resulting JS code is (eventually parsed if updated) and executed once and the object structure is kept in memory, so the difference between an include in PHP or with Glayzzle is just enormous !
 
 
 Install & Run :
