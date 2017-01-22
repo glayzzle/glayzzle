@@ -1,20 +1,69 @@
-Glayzzle - PHP under NodeJS
-===========================
+Glayzzle - PHP to JS transpiler
+===============================
 
-The main idea of this projet is to enable a developper to run a plain PHP script
-dirrectly from a NodeJS environement, without using the PHP engine.
+This is a CLI library in order to run a PHP script using the NodeJS V8 engine.
 
-The project parse the script with a lexical parser, and converts back the AST to Javascript. 
+[![npm version](https://badge.fury.io/js/glayzzle.svg)](https://www.npmjs.com/package/glayzzle)
+[![Build Status](https://travis-ci.org/glayzzle/glayzzle.svg)](https://travis-ci.org/glayzzle/glayzzle)
+[![Coverage Status](https://coveralls.io/repos/glayzzle/glayzzle/badge.png)](https://coveralls.io/r/glayzzle/glayzzle)
+[![Gitter](https://img.shields.io/badge/GITTER-join%20chat-green.svg)](https://gitter.im/glayzzle/Lobby)
 
-After building the Javascript, the program will execute the result.
+Why (disclaimer) ?
+------------------
 
-The overtime for parsing is similar to PHP, on a batch mode, the JIT gain will cover the gap.
+I'm a PHP developper from years. Now I'm mainly using NodeJS and Javascript because that's the way to go. I won't discuss about NodeJS vs PHP, because they came with different solutions.
 
-In the server mode, the resulting JS code is (eventually parsed if updated) and executed once and the object structure is kept in memory, so the difference between an include in PHP or with Glayzzle is just enormous !
+The main motivation behind this project
 
+You are JS purist and Glayzzle burns your eyes !
+------------------------------------------------
+
+This project is not made for someone who masters JS and don't like PHP. It's just a matter of taste, some guys prefer SOLID vs Duck typing, and may prefer use a friendly syntax used from years instead learning a new syntax like Typescript.
+
+What you can do with ?
+----------------------
+
+The project is still under developpement, so you can't use it yet :smile:.
+
+Seriously, I plan to :
+
+* Handle all PHP structures (namespace, classes, traits, interfaces)
+* Impl a PHP core specific layer (in order to support main PHP functions)
+* Impl a new syntax keyword in order to natively support any Javascript library
+* Impl a debug support with node
+* Impl plugins for gulp/grunt/babel in order to export code for browser
+* Add a support for [apache codova](https://cordova.apache.org/)
+* Add a support for [electron](http://electron.atom.io/)
+
+Things you could do with :
+
+* Write a mobile application
+* Write a GUI application
+* Every [cool stuff](http://blog.teamtreehouse.com/7-awesome-things-can-build-node-js) you could do in NodeJS
+* Write an application for the browser
+* Use frameworks like Vue.JS, SailsJS or Express/Koa
+
+Things you can't do :
+
+* Run an old application (PHP modules like PDO or lib_mysql will not be available)
+* Dynamic variable name lookup like `$$var`, not sure I want to degrade overall performance in order to be able to do that
+* Maybe others, work is still in progress
+
+For JS guys who cry : Don't block the loop !
+--------------------------------------------
+
+PHP is synchronous, some implementations with libevent/promises was done as experiments - like [react php](http://reactphp.org/) (BTW the `Hello world` demo is almost the same as NodeJS :wink:)
+
+The main problem here is how to make run synchronous code without blocking the loop.
+
+My answer to this would be : let I/O tasks to be run asynchrously, and execute next statement when task result is ready.
+
+Now how to do that without breaking the structure flow, and without degrading performances ?
+
+I will use generators and promises in order to achieve this, the resulting transpiled code will be easy to read and will perform well with a native support.
 
 Install & Run :
-===============
+---------------
 
 ```
 npm install -g glayzzle
@@ -25,7 +74,7 @@ To run a PHP file you can use the same parameter as PHP :
 
 ```
 glz -f your-file.php
-// or 
+// or
 glz your-file.php
 ```
 
@@ -35,49 +84,23 @@ You can also run a script as a server (using NodeJS cluster module)
 glz -S 127.0.0.1:8080 index.php
 ```
 
-Include PHP from JS :
-=====================
+Other planed things :
 
-With this library you can now use and call PHP scripts directly from a JavaScript.
+* Add a standalone FCGI support in order to run it with Apache/Ngnix
+* Add a generic daemon FCGI server (something similar to php-fcgi)
 
-
-```php
-<?php
-// foo.php
-function foo($bar) {
-  echo $bar;
-  return true;
-}
-```
-
-```js
-// main.js
-var PHP = require('php');
-PHP.include('./foo.php');
-console.log('Foo Result : ' + PHP.globals.foo("Hello World"));
-```
 
 Project Status :
 ================
 
 Actually the project is a Prof Of Concept, and does not run over all PHP syntax.
 
-[![Build Status](https://travis-ci.org/glayzzle/glayzzle.svg)](https://travis-ci.org/glayzzle/glayzzle)
-[![Coverage Status](https://coveralls.io/repos/glayzzle/glayzzle/badge.png)](https://coveralls.io/r/glayzzle/glayzzle)
+Here's my todo list :
 
-Here's the todo list :
-
-| TASK                                                      | STATUS           |
-|-----------------------------------------------------------|------------------|
-| Finish the lexer                                          | [progress...90%] |
-| Convert back the AST to JS                                | [progress...60%] |
-| Make some benchmarks                                      | [progress...20%] |
-| Create a framework for packaging the PHP code             | [progress...20%] |
-| Create a cache system to improve interpretation speeds    | [progress...70%] |
-| Migrate common PHP functions to be compliant with php     | [progress...05%] |
-| Migrate most used PHP modules                             |                  |
+- [x] (100%) Develop a [parser/lexer](https://github.com/glayzzle/php-parser)
+- [ ] (.10%) Develop a [runtime](https://github.com/glayzzle/php-runtime)
+- [ ] (.10%) Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
+- [ ] (..0%) Develop a compatibility layer
+- [ ] (..0%) Write some demo projects
 
 If you want to contribute, fell free to contact me from my website http://glayzzle.com or from github.
-Coding rules are here : http://nodeguide.com/style.html
-
-
