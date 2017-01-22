@@ -11,9 +11,16 @@ This is a CLI library in order to run a PHP script using the NodeJS V8 engine.
 Why (disclaimer) ?
 ------------------
 
-I'm a PHP developper from years. Now I'm mainly using NodeJS and Javascript because that's the way to go. I won't discuss about NodeJS vs PHP, because they came with different solutions.
+I'm a PHP developper from years. Now I'm mainly using NodeJS and Javascript because that's the way to go. I won't discuss about NodeJS vs PHP, because they came with different advantages, and honestly I like both for diferents reasons.
 
-The main motivation behind this project
+The main motivation behind this project is to empower a PHP developper with the same abilities of NodeJS or Javascript. You are maybe thinking, if a developper want to do same thing as a nodejs application can do, why not learning and using directly NodeJS ? Well, here some reasons :
+
+* Learning curve
+* Grasp Prototypal principles, scopes ...
+* Habits & loosing landmarks
+* Loosing typehinting habits, or dyslike Duck Typing
+* Loosing SOLID principles / patterns
+* ... and maybe others, [lets chat](https://gitter.im/glayzzle/Lobby) if you want to share your experience
 
 You are JS purist and Glayzzle burns your eyes !
 ------------------------------------------------
@@ -97,10 +104,10 @@ Actually the project is a Prof Of Concept, and does not run over all PHP syntax.
 
 Here's my todo list :
 
-- [x] (100%) Develop a [parser/lexer](https://github.com/glayzzle/php-parser)
-- [ ] (.10%) Develop a [runtime](https://github.com/glayzzle/php-runtime)
-- [ ] (.10%) Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
-- [ ] (..0%) Develop a compatibility layer
-- [ ] (..0%) Write some demo projects
+- [x] 100% - Develop a [parser/lexer](https://github.com/glayzzle/php-parser)
+- [ ] 10% - Develop a [runtime](https://github.com/glayzzle/php-runtime)
+- [ ] 10% - Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
+- [ ] 0% - Develop a compatibility layer
+- [ ] 0% - Write some awesome demod
 
-If you want to contribute, fell free to contact me from my website http://glayzzle.com or from github.
+If you want to contribute, or found a typo (I'm French), fell free to contact me from my website http://glayzzle.com or from github.
