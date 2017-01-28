@@ -4,8 +4,6 @@ Glayzzle - PHP to JS transpiler
 This is a CLI library in order to run a PHP script using the NodeJS V8 engine.
 
 [![npm version](https://badge.fury.io/js/glayzzle.svg)](https://www.npmjs.com/package/glayzzle)
-[![Build Status](https://travis-ci.org/glayzzle/glayzzle.svg)](https://travis-ci.org/glayzzle/glayzzle)
-[![Coverage Status](https://coveralls.io/repos/glayzzle/glayzzle/badge.png)](https://coveralls.io/r/glayzzle/glayzzle)
 [![Gitter](https://img.shields.io/badge/GITTER-join%20chat-green.svg)](https://gitter.im/glayzzle/Lobby)
 
 Why (disclaimer) ?
@@ -106,8 +104,8 @@ Here's my todo list :
 
 - [x] 100% - Develop a [parser/lexer](https://github.com/glayzzle/php-parser)
 - [ ] 10% - Develop a [runtime](https://github.com/glayzzle/php-runtime)
-- [ ] 10% - Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
-- [ ] 0% - Develop a compatibility layer
-- [ ] 0% - Write some awesome demod
+- [ ] 20% - Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
+- [ ] 10% - Develop a [compatibility layer](https://github.com/glayzzle/php-core)
+- [ ] 0% - Write some awesome demo
 
 If you want to contribute, or found a typo (I'm French), fell free to contact me from my website http://glayzzle.com or from github.
