@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "php-core": "^1.1.0",
-    "php-parser": "latest",
-    "php-runtime": "^0.4.0"
+    "php-runtime": "^0.5.1"
   }
 }
