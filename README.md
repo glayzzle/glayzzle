@@ -9,13 +9,15 @@ This is a CLI library in order to run a PHP script using the NodeJS V8 engine.
 Why (disclaimer) ?
 ------------------
 
-I'm a PHP developper from years. Now I'm mainly using NodeJS and Javascript because that's the way to go. I won't discuss about NodeJS vs PHP, because they came with different advantages, and honestly I like both for diferents reasons.
+I'm a PHP developper from years an now I'm mainly using JavaScript. I won't discuss about NodeJS vs PHP, because they came with different advantages, and honestly I like both for diferents reasons.
 
-The main motivation behind this project is to empower a PHP developper with the same abilities of NodeJS or Javascript. You are maybe thinking, if a developper want to do same thing as a nodejs application can do, why not learning and using directly NodeJS ? Well, here some reasons :
+The main motivation behind this project is to empower a PHP developper to be able to do the same things you could do with NodeJS or Javascript. 
 
-* Learning curve
-* Grasp Prototypal principles, scopes ...
-* Habits & loosing landmarks
+You are maybe thinking, if a developper want to do same thing as a nodejs application can do, why not learning and using directly NodeJS ? Well, here some personnal reasons :
+
+* Learning curve (not a big one, everybody knows JS /@YDKJS) with a new framework/libraries/etc...
+* Grasp Prototypal principles, scopes
+* Habits & loosing landmarks (coding style, core functions)
 * Loosing typehinting habits, or dyslike Duck Typing
 * Loosing SOLID principles / patterns
 * ... and maybe others, [lets chat](https://gitter.im/glayzzle/Lobby) if you want to share your experience
@@ -24,6 +26,8 @@ You are JS purist and Glayzzle burns your eyes !
 ------------------------------------------------
 
 This project is not made for someone who masters JS and don't like PHP. It's just a matter of taste, some guys prefer SOLID vs Duck typing, and may prefer use a friendly syntax used from years instead learning a new syntax like Typescript.
+
+I do not say it's the best overall solution, you may choose depending of what best fits to you.
 
 What you can do with ?
 ----------------------
@@ -35,7 +39,7 @@ Seriously, I plan to :
 * Handle all PHP structures (namespace, classes, traits, interfaces)
 * Impl a PHP core specific layer (in order to support main PHP functions)
 * Impl a new syntax keyword in order to natively support any Javascript library
-* Impl a debug support with node
+* Impl a native debug support with sourcemaps
 * Impl plugins for gulp/grunt/babel in order to export code for browser
 * Add a support for [apache codova](https://cordova.apache.org/)
 * Add a support for [electron](http://electron.atom.io/)
@@ -65,7 +69,7 @@ My answer to this would be : let I/O tasks to be run asynchrously, and execute n
 
 Now how to do that without breaking the structure flow, and without degrading performances ?
 
-I will use generators and promises in order to achieve this, the resulting transpiled code will be easy to read and will perform well with a native support.
+Still need a POC, but I think I will use generators and promises in order to achieve this, the resulting transpiled code will be easy to read and will perform well with a native support.
 
 Install & Run :
 ---------------
@@ -105,7 +109,7 @@ Here's my todo list :
 - [x] 100% - Develop a [parser/lexer](https://github.com/glayzzle/php-parser)
 - [ ] 10% - Develop a [runtime](https://github.com/glayzzle/php-runtime)
 - [ ] 20% - Develop a [transpiler](https://github.com/glayzzle/php-transpiler)
-- [ ] 10% - Develop a [compatibility layer](https://github.com/glayzzle/php-core)
+- [ ] 15% - Develop a [compatibility layer](https://github.com/glayzzle/php-core)
 - [ ] 0% - Write some awesome demo
 
-If you want to contribute, or found a typo (I'm French), fell free to contact me from my website http://glayzzle.com or from github.
+If you want to contribute, fell free to make a pull request or [discuss on the chat](https://gitter.im/glayzzle/Lobby) 
