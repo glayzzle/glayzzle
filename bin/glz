@@ -1,35 +1,31 @@
 #!/usr/bin/env node
 
-/**
- * Glayzzle : PHP on NodeJS
+/*!
+ * Copyright (C) 2017 Glayzzle (BSD3 License)
  * @url http://glayzzle.com
  * @author Ioan CHIRIAC
- * @license BSD-3-Clause
  */
-
-var util = require('util');
 var fs = require('fs');
-var PHP = require('../src/php');
-
-
+var phpRuntime = require('php-runtime');
+var version = require('../package.json').version;
 function printVersion() {
-  util.puts('Glayzzle ' + PHP.VERSION + ' (cli) - (c) 2014 Ioan Chiriac');
-  util.puts('Distributed under BSD License - http://glayzzle.com');
+  console.log('Glayzzle '+version+' (cli) - (c) 2017 Ioan Chiriac');
+  console.log('Distributed under BSD License - http://glayzzle.com');
 }
 
 function printHelp() {
-  util.puts('Usage: glz [options] [-f] <file>');
-  util.puts('');
-  util.puts('  -r <code>        Run PHP <code> without using script tags <?..?>');
-  util.puts('  -f <file>        Parse and execute file');
-  util.puts('  -S <addr>:<port> Run with built-in web server.')
-  util.puts('  -v, --version    Print version information and exit');
-  util.puts('  -h, --help       Print help and exit');
+  console.log('Usage: glz [options] [-f] <file>');
+  console.log('');
+  console.log('  -r <code>        Run PHP <code> without using script tags <?..?>');
+  console.log('  -f <file>        Parse and execute file');
+  console.log('  -S <addr>:<port> Run with built-in web server.')
+  console.log('  -v, --version    Print version information and exit');
+  console.log('  -h, --help       Print help and exit');
 }
 
 // aborts the execution with the specified error message
 function abort(message) {
-  util.error(message);
+  console.error(message);
   process.exit(1);
 }
 
@@ -37,7 +33,8 @@ function abort(message) {
 var options = {
   eval: null,
   filename: null,
-  server: false
+  server: false,
+  debug: false
 };
 var args = process.argv.slice(2); // Trim 'node' and the script path.
 
@@ -65,6 +62,11 @@ while (args.length > 0 && isOption(args[0])) {
     case '-S':
       nextArg();
       options.server = args[0];
+      break;
+
+    case '--debug':
+      nextArg();
+      options.debug = true;
       break;
 
     case '-h':
@@ -99,8 +101,13 @@ if ( !options.filename && !options.eval ) {
 }
 
 // initialize environement
-process.env.DEBUG = false;
-PHP.clean();
+var $php = new phpRuntime({
+  core: {
+    config: {
+      extension: ['php-core']
+    }
+  }
+});
 
 // runs the command
 if (options.server) {
@@ -130,18 +137,68 @@ if (options.server) {
         console.log(now.getHours()+':'+now.getMinutes()+':'+now.getSeconds() + '\t' + req.method + ' ' + req.url);
       }
       try {
-        PHP.include(options.filename, false, res);
+        $php.reset();
+        // INJECT GLOBALS
+        var rqTime = (new Date()).getTime() / 1000;
+        var remote = req.socket.address();
+        var queryString = req.url.indexOf('?');
+        if (queryString === -1) {
+          queryString = null;
+        } else {
+          queryString = message.url.substring(queryString + 1);
+        }
+        $php.context.globals._SERVER = $php.array({
+          'GATEWAY_INTERFACE': 'CLI',
+          'SERVER_ADDR': endpoint[0],
+          'SERVER_NAME': endpoint[0],
+          'SERVER_SOFTWARE': 'GLZ/0.1',
+          'SERVER_PROTOCOL': req.httpVersion,
+          'REQUEST_METHOD': req.method,
+          'REQUEST_TIME': Math.round(rqTime),
+          'REQUEST_TIME_FLOAT': rqTime,
+          'QUERY_STRING': queryString,
+          'DOCUMENT_ROOT': process.cwd(),
+          'HTTPS': false,
+          'REMOTE_ADDR': remote.address,
+          'REMOTE_HOST': remote.address,
+          'REMOTE_PORT': remote.port,
+          // REMOTE_USER
+          // REDIRECT_REMOTE_USER
+          'SCRIPT_FILENAME': options.filename,
+          'SERVER_PORT': endpoint[1],
+          // SERVER_SIGNATURE
+          // PATH_TRANSLATED
+          'SCRIPT_NAME': options.filename,
+          'REQUEST_URI': req.url,
+          // PHP_AUTH_DIGEST
+          // PHP_AUTH_USER
+          // PHP_AUTH_PW
+          // AUTH_TYPE
+          // PATH_INFO
+          // ORIG_PATH_INFO
+        });
+        // IMPORT HTTP HEADERS
+        for(var k in req.headers) {
+          $php.context.globals._SERVER.set(
+            'HTTP_' + k.toUpperCase().replace(/-/g, '_'),
+            req.headers[k]
+          );
+        }
+        // BIND OUTPUT
+        $php.stdout._cb = res.write.bind(res);
+        // RUN BOOTSTRAP
+        $php.require(options.filename);
         res.end();
       } catch(e) {
-        util.error(e);
+        console.error(e);
         res.end('Error : ' + e.message);
       }
     }).listen(parseInt(endpoint[1]), endpoint[0]);
   }
 } else if(options.filename) {
   // runs the specified script
-  PHP.include(options.filename);
+  $php.require(options.filename);
 } else if(options.eval) {
   // evaluate the eval arg
-  PHP.eval(options.eval);
+  $php.eval(options.eval);
 }
