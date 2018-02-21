@@ -9,25 +9,25 @@ This is a CLI library in order to run a PHP script using the NodeJS V8 engine.
 Why (disclaimer) ?
 ------------------
 
-I'm a PHP developper from years an now I'm mainly using JavaScript. I won't discuss about NodeJS vs PHP, because they came with different advantages, and honestly I like both for diferents reasons.
+I've been a PHP developper for years and now I'm mainly using JavaScript. I will debate about NodeJS versus PHP, because they come with different advantages, and honestly I like both for different reasons.
 
 The main motivation behind this project is to empower a PHP developper to be able to do the same things you could do with NodeJS or Javascript. 
 
-You are maybe thinking, if a developper want to do same thing as a nodejs application can do, why not learning and using directly NodeJS ? Well, here some personnal reasons :
+You are maybe thinking, if a developper wants to do the same thing as a nodejs application can do, why not learn and use directly NodeJS ? Well, here are some personal reasons :
 
 * Learning curve (not a big one, everybody knows JS /@YDKJS) with a new framework/libraries/etc...
 * Grasp Prototypal principles, scopes
-* Habits & loosing landmarks (coding style, core functions)
-* Loosing typehinting habits, or dyslike Duck Typing
-* Loosing SOLID principles / patterns
-* ... and maybe others, [lets chat](https://gitter.im/glayzzle/Lobby) if you want to share your experience
+* Habits & losing landmarks (coding style, core functions)
+* Losing typehinting habits, or dislike Duck Typing
+* Losing SOLID principles / patterns
+* ... and maybe others, [let's chat](https://gitter.im/glayzzle/Lobby) if you want to share your experience
 
-You are JS purist and Glayzzle burns your eyes !
+You are JS purist and Glayzzle hurts your eyes !
 ------------------------------------------------
 
-This project is not made for someone who masters JS and don't like PHP. It's just a matter of taste, some guys prefer SOLID vs Duck typing, and may prefer use a friendly syntax used from years instead learning a new syntax like Typescript.
+This project is not made for someone who masters JS and doesn't like PHP. It's just a matter of taste, some guys prefer SOLID vs Duck typing, and may prefer to use a friendly syntax for years instead of learning a new syntax like Typescript.
 
-I do not say it's the best overall solution, you may choose depending of what best fits to you.
+I do not say it's the best overall solution, you may choose depending on what's suits you best.
 
 What you can do with ?
 ----------------------
