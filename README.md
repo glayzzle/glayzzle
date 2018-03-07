@@ -27,10 +27,10 @@ You are JS purist and Glayzzle hurts your eyes !
 
 This project is not made for someone who masters JS and doesn't like PHP. It's just a matter of taste, some guys prefer SOLID vs Duck typing, and may prefer to use a friendly syntax for years instead of learning a new syntax like Typescript.
 
-I do not say it's the best overall solution, you may choose depending on what's suits you best.
+I do not say it's the best overall solution, you may choose depending on what suits you best.
 
-What you can do with ?
-----------------------
+What can you do with it ?
+-------------------------
 
 The project is still under developpement, so you can't use it yet :smile:.
 
@@ -41,35 +41,35 @@ Seriously, I plan to :
 * Impl a new syntax keyword in order to natively support any Javascript library
 * Impl a native debug support with sourcemaps
 * Impl plugins for gulp/grunt/babel in order to export code for browser
-* Add a support for [apache codova](https://cordova.apache.org/)
+* Add a support for [apache cordova](https://cordova.apache.org/)
 * Add a support for [electron](http://electron.atom.io/)
 
-Things you could do with :
+Things you can do :
 
 * Write a mobile application
 * Write a GUI application
-* Every [cool stuff](http://blog.teamtreehouse.com/7-awesome-things-can-build-node-js) you could do in NodeJS
+* All the [cool stuff](http://blog.teamtreehouse.com/7-awesome-things-can-build-node-js) you can do in NodeJS
 * Write an application for the browser
 * Use frameworks like Vue.JS, SailsJS or Express/Koa
 
 Things you can't do :
 
 * Run an old application (PHP modules like PDO or lib_mysql will not be available)
-* Dynamic variable name lookup like `$$var`, not sure I want to degrade overall performance in order to be able to do that
+* Use a dynamic variable name lookup like `$$var`, I'm not sure I want to degrade overall performance in order to be able to do that
 * Maybe others, work is still in progress
 
-For JS guys who cry : Don't block the loop !
---------------------------------------------
+For JS guys who scream : Don't block the loop !
+-----------------------------------------------
 
-PHP is synchronous, some implementations with libevent/promises was done as experiments - like [react php](http://reactphp.org/) (BTW the `Hello world` demo is almost the same as NodeJS :wink:)
+PHP is synchronous, however some implementations with libevent/promises were done as experiments - like [react php](http://reactphp.org/) (BTW the `Hello world` demo is almost the same as NodeJS :wink:)
 
-The main problem here is how to make run synchronous code without blocking the loop.
+The main problem here is how to run a synchronous code without blocking the loop.
 
-My answer to this would be : let I/O tasks to be run asynchrously, and execute next statement when task result is ready.
+My answer to this is : let I/O tasks run asynchrously, and execute the next statement when the task result is ready.
 
-Now how to do that without breaking the structure flow, and without degrading performances ?
+Now how to do this without breaking the structure flow, and without degrading performances ?
 
-Still need a POC, but I think I will use generators and promises in order to achieve this, the resulting transpiled code will be easy to read and will perform well with a native support.
+I still need a POC, but I think I will use generators and promises in order to achieve this, the resulting transpiled code will be easy to read and will perform well with a native support.
 
 Install & Run :
 ---------------
